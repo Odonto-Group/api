@@ -1,15 +1,13 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { inject } from '@adonisjs/core/build/standalone'
 
 import AuthenticationService from 'App/Services/AuthenticationService'
+import { inject } from '@adonisjs/fold'
 
+@inject()
 export default class AuthenticationController {
 
     private authenticationService: AuthenticationService;
-    static get inject() {
-        return ['App/Services/AuthenticationService']
-    }
-    
+ 
     constructor(authenticationService: AuthenticationService) {
         this.authenticationService = authenticationService
     }
@@ -26,8 +24,8 @@ export default class AuthenticationController {
     }
   }
 
-  async logout({ response }: HttpContextContract) {
-    await this.authenticationService.logout()
+  async logout({ response, auth }: HttpContextContract) {
+    await this.authenticationService.logout(auth)
     return response.ok({ revoked: true })
   }
 }
