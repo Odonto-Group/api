@@ -19,7 +19,13 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
+import AuthenticationController from 'App/Controllers/Http/AuthenticationController'
 
 Route.get('/', async () => {
   return { hello: 'world' }
 })
+
+Route.post('/login', 'AuthenticationController.login')
+Route.post('/logout', 'AuthenticationController.logout')
+
+
