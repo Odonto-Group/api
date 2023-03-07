@@ -27,13 +27,14 @@ Route.get('/', async () => {
 })
 
 Route.post('/login', 'AuthenticationController.login')
-Route.post('/logout', 'AuthenticationController.logout')
+Route.post('/logout', 'AuthenticationController.logout').middleware('auth:api')
 
 Route.post('/user/store', 'UserController.store').middleware('auth:api')
 
 Route.group(() => {
   Route.get('', 'LeadsController.index')
   Route.get('/posts', 'LeadsController.create')
+  Route.post('/update', 'LeadsController.update')
 }).prefix('/leads').middleware('auth:api')
 
 

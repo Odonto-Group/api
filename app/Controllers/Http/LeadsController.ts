@@ -23,12 +23,12 @@ export default class LeadsController {
 
     async update({ request, response }: HttpContextContract) {
 
-        try {
-            const leads = await this.leadsService.all()
-            return leads;
-        } catch (error) {
-            return response.unauthorized(error.message)
-        }
+        // try {
+        //     const leads = await this.leadsService.all()
+        //     return leads;
+        // } catch (error) {
+        //     return response.unauthorized(error.message)
+        // }
         
     }
 }

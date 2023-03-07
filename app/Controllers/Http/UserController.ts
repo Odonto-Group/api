@@ -1,8 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 import UserService from 'App/Services/UserService';
-import User from 'App/Models/User';
 import { inject } from '@adonisjs/fold'
+import CreateUserValidator from 'App/Validators/CreateUserValidator';
 
 @inject()
 export default class UserController {
@@ -12,9 +12,9 @@ export default class UserController {
   constructor(userService: UserService) {
       this.userService = userService
   }
-
+  
   async store({ request, response }: HttpContextContract) {
-    const data = request.only(['cpf', 'name', 'email', 'password', 'rememberMeToken']);
+    const data = await request.validate(CreateUserValidator)
     
     try {
       const user = await this.userService.store(data)
