@@ -24,5 +24,5 @@ export default class TbLeads extends BaseModel {
   public data: DateTime
 
   @column()
-  public enviou: number
+  public enviou: boolean
 }

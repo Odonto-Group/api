@@ -33,7 +33,7 @@ Route.post('/user/store', 'UserController.store').middleware('auth:api')
 
 Route.group(() => {
   Route.get('', 'LeadsController.index')
-  Route.get('/posts', 'LeadsController.create')
+  Route.get('/status', 'LeadsController.getLeadStatus')
   Route.post('/update', 'LeadsController.update')
 }).prefix('/leads').middleware('auth:api')
 
