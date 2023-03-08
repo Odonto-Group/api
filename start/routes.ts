@@ -19,7 +19,24 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
+import AuthenticationController from 'App/Controllers/Http/AuthenticationController'
+import LeadsController from 'App/Controllers/Http/LeadsController'
 
 Route.get('/', async () => {
   return { hello: 'world' }
 })
+
+Route.post('/login', 'AuthenticationController.login')
+Route.post('/logout', 'AuthenticationController.logout').middleware('auth:api')
+
+Route.post('/user/store', 'UserController.store').middleware('auth:api')
+
+Route.group(() => {
+  Route.get('', 'LeadsController.index')
+  Route.get('/status', 'LeadsController.getLeadStatus')
+  Route.post('/update', 'LeadsController.update')
+}).prefix('/leads').middleware('auth:api')
+
+
+
+
