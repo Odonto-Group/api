@@ -1,8 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { inject } from '@adonisjs/fold'
 import LeadsService from "App/Services/LeadsService";
-import LogStatusService from "App/Services/LogStatusService";
-import StatusService from "App/Services/StatusService";
+import LogStatusService from "App/Services/LogLeadStatusService";
+import StatusService from "App/Services/StatusLeadService";
 import Database from '@ioc:Adonis/Lucid/Database';
 import LeadUpdateValidator from 'App/Validators/LeadUpdateValidator';
 
@@ -44,10 +44,11 @@ export default class LeadsController {
         const data = await request.validate(LeadUpdateValidator)
         const lead_id = data.lead;
         const status = data.status;
+        const mensagem = data.mensagem;
         const user_id = auth.use('api').user.id;
         try {
-            await this.logStatusService.registerLeadLogStatus(lead_id, status, user_id)
-            const leadUpdated = await this.leadsService.updateSendStatus(lead_id,);
+            await this.logStatusService.registerLeadLogStatus(lead_id, status, user_id, mensagem)
+            const leadUpdated = await this.leadsService.updateSendStatus(lead_id);
             return leadUpdated;
 
         } catch (error) {

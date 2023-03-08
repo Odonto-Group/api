@@ -1,9 +1,9 @@
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
-import Status from 'App/Models/Status'
+import TbLeadStatus from 'App/Models/TbLeadStatus'
 
 export default class extends BaseSeeder {
   public async run () {
-    await Status.createMany([
+    await TbLeadStatus.createMany([
       {
         descricao: 'Atendeu',
       },

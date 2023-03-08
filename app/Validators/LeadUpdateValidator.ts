@@ -10,7 +10,8 @@ export default class LeadUpdateValidator {
     ]),
     status: schema.array().members(   
       schema.number()
-    )
+    ),
+    mensagem: schema.string.optional(),
   })
 
   public messages: CustomMessages = {}
