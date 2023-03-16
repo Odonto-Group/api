@@ -18,10 +18,12 @@ export default class LeadsController {
       this.statusService = statusService
     }
 
-    async index({ response }: HttpContextContract) {
+    async index({ request, response }: HttpContextContract) {
+        const pageNumber = request.params().pageNumber
+        const itemsPerPage = request.params().itemsPerPage   
 
         try {
-            const leads = await this.leadsService.all()
+            const leads = await this.leadsService.getPerPage(pageNumber, itemsPerPage)
             return leads;
         } catch (error) {
             return response.unauthorized(error.message)
@@ -38,16 +40,28 @@ export default class LeadsController {
             return response.unauthorized(error.message)
         }
     }
+    
+    async getOneLeadStatus({ request, response }: HttpContextContract){
+        const lead = request.params().lead
+
+        try {
+            const statusService = await this.statusService.getByLead(lead)
+            return statusService;
+        } catch (error) {
+            return response.unauthorized(error.message)
+        }
+    }
 
     async update({ auth, request, response }: HttpContextContract) {
         
         const data = await request.validate(LeadUpdateValidator)
         const lead_id = data.lead;
-        const status = data.status;
+        const status_primario = data.status_primario;
+        const status_secundario = data.status_secundario;
         const mensagem = data.mensagem;
         const user_id = auth.use('api').user.id;
         try {
-            await this.logStatusService.registerLeadLogStatus(lead_id, status, user_id, mensagem)
+            await this.logStatusService.registerLeadLogStatus(lead_id, status_primario, status_secundario, user_id, mensagem)
             const leadUpdated = await this.leadsService.updateSendStatus(lead_id);
             return leadUpdated;
 

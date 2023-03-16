@@ -6,15 +6,15 @@ import { AuthContract } from '@ioc:Adonis/Addons/Auth'
 export default class AuthenticationService {
     async login( auth: AuthContract, cpf: string, password: string ): Promise<any> {
       const user = await User.query().where('cpf', cpf).firstOrFail()
-  
+      
       if (!(await Hash.verify(user.password, password))) {
         throw new Error('Invalid credentials')
       }
-  
+      
       const token = await auth.use('api').generate(user, {
-        expiresIn: '30 mins'
-      })
-  
+        expiresIn: '1 day'
+      })  
+      
       return token
     }
   

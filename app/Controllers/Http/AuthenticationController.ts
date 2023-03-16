@@ -12,6 +12,7 @@ export default class AuthenticationController {
   constructor(authenticationService: AuthenticationService) {
         this.authenticationService = authenticationService
   }
+  
 
   async login({ request, response, auth }: HttpContextContract) {
     const data = await request.validate(LoginValidator)
