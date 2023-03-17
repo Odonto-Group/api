@@ -10,27 +10,58 @@ export default class extends BaseSeeder {
       {
         descricao: 'Não Atendeu',
       },
+
+
       {
-        descricao: 'Convertido',
-      },
-      {
-        descricao: 'Não Convertido',
-      },
-      {
-        descricao: 'Telefone não existe',
-      },
-      {
-        descricao: 'Telefone Errado',
-      },
-      {
-        descricao: 'Já tem plano',
+        descricao: 'Retornar ligação',
       },
       {
         descricao: 'Dentista Particular',
       },
       {
-        descricao: 'Acabou um tratamento recente',
-      }
+        descricao: 'Tratamento recente',
+      },
+      {
+        descricao: 'SAC',
+      },
+      {
+        descricao: 'Problemas Financeiros',
+      },
+      {
+        descricao: 'Efetivado',
+      },
+      {
+        descricao: 'Aguardando Formalização',
+      },
+      {
+        descricao: 'Em negociação',
+      },
+      {
+        descricao: 'Já tem plano',
+      },
+      {
+        descricao: 'Não tem interesse',
+      },
+      {
+        descricao: 'Cidade sem cobertura (mencionar a cidade)',
+      },
+      {
+        descricao: 'Engano',
+      },
+      {
+        descricao: 'Outros',
+      },
+
+      
+      {
+        descricao: 'Telefone inválido',
+      },
+      {
+        descricao: 'Telefone Ocupado',
+      },
+      {
+        descricao: 'Caixa Postal',
+      },
     ])
   }
 }
