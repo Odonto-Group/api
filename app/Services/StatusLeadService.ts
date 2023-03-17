@@ -16,7 +16,6 @@ export default class StatusLeadService {
 
   async getByLead(id_lead: number): Promise<any> {
     const lead = await TbLeads.query().where('id_leads', id_lead).preload('statusLeadsPrimario').preload('statusLeadsSecundario'); 
-    console.log(lead)
     return lead;
   }
   

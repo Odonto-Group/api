@@ -5,16 +5,16 @@ export default class LeadsService {
   
   async all(  ): Promise<any> {
     const leads = await  TbLeads.query().preload('statusLeadsSecundario', (query) => {
-      query.orderBy('updated_at', 'desc').groupLimit(1);
+      query.orderBy('tb_log_leads_status_sec.updated_at', 'desc');
     }); 
     return leads;
   }
 
   async getPerPage(pageNumber:number, itemsPerPage:number): Promise<any> {
     const leads = await TbLeads.query().preload('statusLeadsSecundario', (query) => {
-      query.orderBy('updated_at', 'desc').groupLimit(1);
+      query.groupOrderBy('tb_log_leads_status_sec.updated_at', 'desc').groupLimit(1);
     }).paginate(pageNumber, itemsPerPage)
-    return leads;
+    return leads; 
 
   }
 
