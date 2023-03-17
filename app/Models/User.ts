@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { column, beforeSave, BaseModel } from '@ioc:Adonis/Lucid/Orm'
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
