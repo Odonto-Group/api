@@ -27,6 +27,15 @@ export default class TbLeads extends BaseModel {
   @column()
   public enviou: boolean
 
+  @column.date()
+  public data_nascimento: DateTime
+
+  @column()
+  public cpf: string
+
+  @column()
+  public cep: string
+
   @manyToMany(() => StatusLeads, {
     localKey: 'id_leads',
     relatedKey: 'id',

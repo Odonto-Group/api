@@ -22,7 +22,12 @@ export default class LeadsService {
     const lead = await TbLeads.query().where('id_leads', id_lead).preload('statusLeadsPrimario').preload('statusLeadsSecundario'); 
     return lead;
   }
-
+  
+  async registerLead(data: Object): Promise<any> {
+    const lead = await TbLeads.create(data);
+    return lead;
+  }
+  
   async updateSendStatus(lead_id: number):  Promise<any> {
     
     const lead = await TbLeads.findOrFail(lead_id)

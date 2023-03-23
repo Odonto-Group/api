@@ -3,19 +3,22 @@ import { inject } from '@adonisjs/fold'
 import LeadsService from "App/Services/LeadsService";
 import LogStatusService from "App/Services/LogLeadStatusService";
 import StatusService from "App/Services/StatusLeadService";
-import Database from '@ioc:Adonis/Lucid/Database';
+import ApiViaMaisService from "App/Services/ApiViaMaisService";
 import LeadUpdateValidator from 'App/Validators/LeadUpdateValidator';
+import CreateLeadValidator from 'App/Validators/CreateLeadValidator';
 
 @inject()
 export default class LeadsController {
     private leadsService: LeadsService;
     private logStatusService: LogStatusService;
     private statusService: StatusService;
+    private ApiViaMais: ApiViaMaisService;
 
-    constructor(leadsService: LeadsService, logStatusService: LogStatusService, statusService: StatusService) {
+    constructor(leadsService: LeadsService, logStatusService: LogStatusService, statusService: StatusService, ApiViaMais: ApiViaMaisService) {
       this.leadsService = leadsService
       this.logStatusService = logStatusService
       this.statusService = statusService
+      this.ApiViaMais = ApiViaMais
     }
 
     async index({ request, response }: HttpContextContract) {
@@ -47,6 +50,20 @@ export default class LeadsController {
         try {
             const statusService = await this.statusService.getByLead(lead)
             return statusService;
+        } catch (error) {
+            return response.unauthorized(error.message)
+        }
+    }
+
+    async store({ request, response }: HttpContextContract) {
+        
+        const data = await request.validate(CreateLeadValidator)
+
+        try {
+            const lead = await this.leadsService.registerLead(data)
+            await this.ApiViaMais.sendLead(data);
+
+            return lead;
         } catch (error) {
             return response.unauthorized(error.message)
         }
