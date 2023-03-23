@@ -6,6 +6,7 @@ import StatusService from "App/Services/StatusLeadService";
 import ApiViaMaisService from "App/Services/ApiViaMaisService";
 import LeadUpdateValidator from 'App/Validators/LeadUpdateValidator';
 import CreateLeadValidator from 'App/Validators/CreateLeadValidator';
+import Database from '@ioc:Adonis/Lucid/Database';
 
 @inject()
 export default class LeadsController {
@@ -60,10 +61,13 @@ export default class LeadsController {
         const data = await request.validate(CreateLeadValidator)
 
         try {
-            const lead = await this.leadsService.registerLead(data)
-            await this.ApiViaMais.sendLead(data);
+            const successTransaction = await Database.transaction(async (trx) => {
+                const lead = await this.leadsService.registerLead(data, trx)
+                await this.ApiViaMais.sendLead(data)
+                return lead
+            })
 
-            return lead;
+            return successTransaction;
         } catch (error) {
             return response.unauthorized(error.message)
         }

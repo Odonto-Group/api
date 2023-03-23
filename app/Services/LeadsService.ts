@@ -1,3 +1,4 @@
+import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbLeads from 'App/Models/TbLeads';
 
 
@@ -23,8 +24,8 @@ export default class LeadsService {
     return lead;
   }
   
-  async registerLead(data: Object): Promise<any> {
-    const lead = await TbLeads.create(data);
+  async registerLead(data: Object, trx?: TransactionClientContract): Promise<any> {
+    const lead = await TbLeads.create(data, { client: trx });
     return lead;
   }
   
