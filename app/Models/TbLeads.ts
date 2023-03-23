@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { column, beforeSave, BaseModel, manyToMany, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
+import { column, BaseModel, manyToMany, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
 import StatusLeads from './TbLeadStatus'
 
 export default class TbLeads extends BaseModel {

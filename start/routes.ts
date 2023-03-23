@@ -19,9 +19,6 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
-import AuthenticationController from 'App/Controllers/Http/AuthenticationController'
-import LeadsController from 'App/Controllers/Http/LeadsController'
-import UserController from 'App/Controllers/Http/UserController'
 
 Route.get('/', async () => {
   return { hello: 'world' }
