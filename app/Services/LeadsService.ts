@@ -24,17 +24,15 @@ export default class LeadsService {
     return lead;
   }
   
-  async registerLead(data: Object, trx?: TransactionClientContract): Promise<any> {
+  async registerLead(data: Object, trx: TransactionClientContract): Promise<any> {
     const lead = await TbLeads.create(data, { client: trx });
     return lead;
   }
   
-  async updateSendStatus(lead_id: number):  Promise<any> {
-    
-    const lead = await TbLeads.findOrFail(lead_id)
+  async updateSendStatus(lead: TbLeads):  Promise<any> {
     lead.enviou = true
     await lead.save()
-    return { id: lead.id_leads, enviou: lead.enviou }
+    return lead;  
   }
   
 }

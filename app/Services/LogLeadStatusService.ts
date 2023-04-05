@@ -9,7 +9,12 @@ export default class LogLeadStatusService {
   async registerLeadLogStatus(id_lead: number, status_primario: Array<number>, status_secundario: Array<number>, user_id: number | undefined, mensagem : string | undefined) : Promise<any> {
     
     const log_status_primario_result = await this.registerStatusTable(status_primario, id_lead, user_id, TbLogLeadStatusPrimario);
-    await this.registerStatusTable(status_secundario, id_lead, user_id, TbLogLeadStatusSecundario, mensagem, log_status_primario_result.id);
+    const log_status_secundario_result = await this.registerStatusTable(status_secundario, id_lead, user_id, TbLogLeadStatusSecundario, mensagem, log_status_primario_result.id);
+    
+    return {
+      status_primario: log_status_primario_result,
+      status_secundario: log_status_secundario_result
+    }
     
   }
 
