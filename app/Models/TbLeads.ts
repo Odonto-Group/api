@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { column, beforeSave, BaseModel } from '@ioc:Adonis/Lucid/Orm'
+import { column, BaseModel, manyToMany, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
+import StatusLeads from './TbLeadStatus'
 
 export default class TbLeads extends BaseModel {
   public static table = 'tb_leads'
@@ -25,4 +26,24 @@ export default class TbLeads extends BaseModel {
 
   @column()
   public enviou: boolean
+
+  @manyToMany(() => StatusLeads, {
+    localKey: 'id_leads',
+    relatedKey: 'id',
+    pivotTable: 'tb_log_leads_status_sec',
+    pivotForeignKey: 'id_lead',
+    pivotRelatedForeignKey: 'id_status',
+  })
+
+  public statusLeadsSecundario: ManyToMany<typeof StatusLeads>
+
+  @manyToMany(() => StatusLeads, {
+    localKey: 'id_leads',
+    relatedKey: 'id',
+    pivotTable: 'tb_log_leads_status_prim',
+    pivotForeignKey: 'id_lead',
+    pivotRelatedForeignKey: 'id_status',
+  })
+
+  public statusLeadsPrimario: ManyToMany<typeof StatusLeads>
 }

@@ -1,9 +1,9 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
-export default class TbLogLeadStatus extends BaseModel {
+export default class TbLogLeadStatusPrimario extends BaseModel {
 
-  public static table = 'tb_log_leads_status'
+  public static table = 'tb_log_leads_status_prim'
 
   @column({ isPrimary: true })
   public id: number
@@ -16,9 +16,6 @@ export default class TbLogLeadStatus extends BaseModel {
 
   @column()
   public id_status: number
-
-  @column()
-  public mensagem: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime

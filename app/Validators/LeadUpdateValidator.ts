@@ -8,7 +8,10 @@ export default class LeadUpdateValidator {
     lead: schema.number([
       rules.exists({ table: 'tb_leads', column: 'id_leads' })
     ]),
-    status: schema.array().members(   
+    status_primario: schema.array().members(   
+      schema.number()
+    ),
+    status_secundario: schema.array().members(   
       schema.number()
     ),
     mensagem: schema.string.optional(),
