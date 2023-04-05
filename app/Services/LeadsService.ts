@@ -1,3 +1,4 @@
+import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbLeads from 'App/Models/TbLeads';
 
 
@@ -22,7 +23,12 @@ export default class LeadsService {
     const lead = await TbLeads.query().where('id_leads', id_lead).preload('statusLeadsPrimario').preload('statusLeadsSecundario'); 
     return lead;
   }
-
+  
+  async registerLead(data: Object, trx?: TransactionClientContract): Promise<any> {
+    const lead = await TbLeads.create(data, { client: trx });
+    return lead;
+  }
+  
   async updateSendStatus(lead_id: number):  Promise<any> {
     
     const lead = await TbLeads.findOrFail(lead_id)
