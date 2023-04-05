@@ -80,7 +80,7 @@ export default class LeadsController {
         const status_primario = data.status_primario;
         const status_secundario = data.status_secundario;
         const mensagem = data.mensagem;
-        const user_id = auth.use('api').user.id;
+        const user_id = auth.use('api').user?.id;
         try {
             await this.logStatusService.registerLeadLogStatus(lead_id, status_primario, status_secundario, user_id, mensagem)
             const leadUpdated = await this.leadsService.updateSendStatus(lead_id);
