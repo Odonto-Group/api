@@ -2,7 +2,8 @@ import { DateTime } from 'luxon'
 import { column, beforeSave, BaseModel } from '@ioc:Adonis/Lucid/Orm'
 const bcrypt = require('bcrypt')
 
-export default class User extends BaseModel {
+export default class UserAdmin extends BaseModel {
+  
   @column({ isPrimary: true })
   public id: number
 
@@ -28,7 +29,7 @@ export default class User extends BaseModel {
   public updatedAt: DateTime
 
   @beforeSave()
-  public static async hashPassword (user: User) {
+  public static async hashPassword (user: UserAdmin) {
     if (user.$dirty.password) {
 
       user.password = await bcrypt.hash(user.password, 10)

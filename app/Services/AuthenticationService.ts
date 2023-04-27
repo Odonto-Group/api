@@ -1,11 +1,11 @@
 
-import User from 'App/Models/User'
+import UserAdmin from 'App/Models/UserAdmin'
 import { AuthContract } from '@ioc:Adonis/Addons/Auth'
 const bcrypt = require('bcrypt')
 
 export default class AuthenticationService {
     async login( auth: AuthContract, cpf: string, password: string ): Promise<any> {
-      const user = await User.query().where('cpf', cpf).firstOrFail()
+      const user = await UserAdmin.query().where('cpf', cpf).firstOrFail()
 
       if (!(await bcrypt.compare(password, user.password))) {
         throw new Error('Invalid credentials')
