@@ -17,7 +17,7 @@
     slash "^3.0.0"
     term-size "^2.2.1"
 
-"@adonisjs/application@^5.2.5", "@adonisjs/application@^5.3.0":
+"@adonisjs/application@^5.0.0", "@adonisjs/application@^5.2.5", "@adonisjs/application@^5.3.0", "@adonisjs/application@>=4.0.0":
   version "5.3.0"
   resolved "https://registry.npmjs.org/@adonisjs/application/-/application-5.3.0.tgz"
   integrity sha512-AruZZXMgOdmmRxJEHUbXoqhgRavPfhkeIR2nQtGyxbn0PCNjqlGraq8ypuLINY1J+wNuH2tt0xCS98EDeMdTOQ==
@@ -62,7 +62,7 @@
     "@poppinss/utils" "^5.0.0"
     luxon "^3.0.4"
 
-"@adonisjs/bodyparser@^8.1.7":
+"@adonisjs/bodyparser@^8.0.0", "@adonisjs/bodyparser@^8.1.7":
   version "8.1.7"
   resolved "https://registry.npmjs.org/@adonisjs/bodyparser/-/bodyparser-8.1.7.tgz"
   integrity sha512-2ixzKGszAez1Qq6KNsNs0LcKSfqnZMiaqMleuTh/m4pBLw9CTsVqFS2YH181+6pBhFcTVcXkByh6T1P48Tq5Cw==
@@ -84,7 +84,7 @@
   dependencies:
     "@poppinss/utils" "^5.0.0"
 
-"@adonisjs/core@^5.8.0":
+"@adonisjs/core@^5.0.0", "@adonisjs/core@^5.1.0", "@adonisjs/core@^5.7.1", "@adonisjs/core@^5.8.0":
   version "5.9.0"
   resolved "https://registry.npmjs.org/@adonisjs/core/-/core-5.9.0.tgz"
   integrity sha512-32zG9EW0t0Ck0cMzlwD0+z3GJG7k/gZz6P0+h+s8N1N7fHxGixrKs7W7lT3OcIvk0NsuIw1tUPAU7fAWytHEqA==
@@ -107,7 +107,7 @@
     serve-static "^1.15.0"
     stringify-attributes "^2.0.0"
 
-"@adonisjs/drive@^2.3.0":
+"@adonisjs/drive@^2.0.0", "@adonisjs/drive@^2.3.0":
   version "2.3.0"
   resolved "https://registry.npmjs.org/@adonisjs/drive/-/drive-2.3.0.tgz"
   integrity sha512-3V1kBe2qB/860KcS+dDonv8Xya2YDBdR7291pQgObJeTbV50Vy8RhwdOwtU7ybRfN2kh/svdC4238JGpbQOR9w==
@@ -119,7 +119,7 @@
     fs-extra "^10.1.0"
     memfs "^3.4.7"
 
-"@adonisjs/encryption@^4.0.8":
+"@adonisjs/encryption@^4.0.0", "@adonisjs/encryption@^4.0.8":
   version "4.0.8"
   resolved "https://registry.npmjs.org/@adonisjs/encryption/-/encryption-4.0.8.tgz"
   integrity sha512-zMWbIESPHXafsbiLJyON/hlRYwrTIA3PuTil7xC8W4ngC36PgWe86Ra0x0t961u1We/LaSGkT8Vn93DymqB3aA==
@@ -158,7 +158,7 @@
     "@poppinss/manager" "^5.0.2"
     "@poppinss/utils" "^5.0.0"
 
-"@adonisjs/http-server@^5.12.0":
+"@adonisjs/http-server@^5.0.0", "@adonisjs/http-server@^5.12.0":
   version "5.12.0"
   resolved "https://registry.npmjs.org/@adonisjs/http-server/-/http-server-5.12.0.tgz"
   integrity sha512-+9cw/DRlLO2NSoHsccmMe3pFf6c0/8INds2yf73ZAZOmzUROb9DQaXHocJ/iwHX9EVxtDuKWDc5z0jI1SYdqEA==
@@ -190,7 +190,7 @@
   resolved "https://registry.npmjs.org/@adonisjs/ioc-transformer/-/ioc-transformer-2.3.4.tgz"
   integrity sha512-ik1C7f0Hbqenw6S1Ty06B4pznGfpUH5bL2fiCYgwq+jKPw8CKdsTQKvYudS6Tj68Nr6Mpqow4RNbvFV/OC0mZg==
 
-"@adonisjs/logger@^4.1.5":
+"@adonisjs/logger@^4.0.0", "@adonisjs/logger@^4.1.5":
   version "4.1.5"
   resolved "https://registry.npmjs.org/@adonisjs/logger/-/logger-4.1.5.tgz"
   integrity sha512-JMINhXp/6VW0y4e86luyM8vbBzV4Y5F4IzVklMObCu/SwiaCbp5bgx9Z6QOHiGVW8SFVlRF1KlwLq8pAifjTpQ==
@@ -200,7 +200,7 @@
     abstract-logging "^2.0.1"
     pino "^6.14.0"
 
-"@adonisjs/lucid@^18.3.0":
+"@adonisjs/lucid@^18.0.0", "@adonisjs/lucid@^18.3.0":
   version "18.3.0"
   resolved "https://registry.npmjs.org/@adonisjs/lucid/-/lucid-18.3.0.tgz"
   integrity sha512-EgLgwP/VkTdOjA4MvnXjZmXGJl1qQVpGe4D/bCZqyO4859LZ/kHZ5a4VXe5+b2Nk4QDWF8uYq0MbSMDGskZr1Q==
@@ -392,7 +392,7 @@
     "@poppinss/cliui" "^3.0.5"
     ms "^2.1.3"
 
-"@japa/core@^7.3.2":
+"@japa/core@^7.0.0", "@japa/core@^7.3.2":
   version "7.3.2"
   resolved "https://registry.npmjs.org/@japa/core/-/core-7.3.2.tgz"
   integrity sha512-OtYs6j3nro5Ew57HRZ4AwFC6dB91PB0ZhTnltISMa0lgSXf6mPU3Ma8+7T/t5sYreMLObAAzuS6viVmBZB7AhQ==
@@ -432,7 +432,7 @@
     find-cache-dir "^3.3.2"
     fs-extra "^11.1.0"
 
-"@japa/runner@^2.5.1":
+"@japa/runner@^2.0.0", "@japa/runner@^2.1.1", "@japa/runner@^2.2.3", "@japa/runner@^2.5.1":
   version "2.5.1"
   resolved "https://registry.npmjs.org/@japa/runner/-/runner-2.5.1.tgz"
   integrity sha512-p1zjniMCiGxRnZkUs5WtZjTQhbXcnK0aM2Wu4Qc+w+MBpmOrw5J2zJuge0FweepTUR9CT3r2x65uw4qIshy8XQ==
@@ -883,7 +883,7 @@
     semver "^7.3.7"
     tsutils "^3.21.0"
 
-"@typescript-eslint/parser@^5.37.0":
+"@typescript-eslint/parser@^5.0.0", "@typescript-eslint/parser@^5.37.0":
   version "5.53.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-5.53.0.tgz"
   integrity sha512-MKBw9i0DLYlmdOb3Oq/526+al20AJZpANdT6Ct9ffxcV8nKCHz63t/S0IhlTFNsBIHJv+GY5SFJ0XfqVeydQrQ==
@@ -1012,7 +1012,7 @@ acorn-walk@^8.0.2:
   resolved "https://registry.npmjs.org/acorn-walk/-/acorn-walk-8.2.0.tgz"
   integrity sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==
 
-acorn@^8.0.5, acorn@^8.8.0:
+"acorn@^6 || ^7 || ^8", "acorn@^6.0.0 || ^7.0.0 || ^8.0.0", "acorn@^6.1.0 || ^7 || ^8", acorn@^8.0.5, acorn@^8.8.0:
   version "8.8.2"
   resolved "https://registry.npmjs.org/acorn/-/acorn-8.8.2.tgz"
   integrity sha512-xjIYgE8HBrkpd/sJqOGNspf8uHG+NOHGOw6a/Urj8taM2EXfdNAH2oFcPeIFfsv3+kz/mJrS5VuMqbNLjCa2vw==
@@ -2095,7 +2095,7 @@ eslint-visitor-keys@^3.3.0:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz"
   integrity sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==
 
-eslint@^8.34.0:
+eslint@*, "eslint@^6.0.0 || ^7.0.0 || ^8.0.0", eslint@^8.0.0, eslint@^8.34.0, eslint@>=5, eslint@>=7.0.0, eslint@>=7.28.0:
   version "8.34.0"
   resolved "https://registry.npmjs.org/eslint/-/eslint-8.34.0.tgz"
   integrity sha512-1Z8iFsucw+7kSqXNZVslXS8Ioa4u2KM7GPwuKtkTFAqZ/cHMcEaR+1+Br0wLlot49cNxIiZk5wp8EAbPcYZxTg==
@@ -3476,7 +3476,7 @@ marked-terminal@^5.1.1:
     node-emoji "^1.11.0"
     supports-hyperlinks "^2.2.0"
 
-marked@^4.1.0:
+"marked@^1.0.0 || ^2.0.0 || ^3.0.0 || ^4.0.0", marked@^4.1.0:
   version "4.2.12"
   resolved "https://registry.npmjs.org/marked/-/marked-4.2.12.tgz"
   integrity sha512-yr8hSKa3Fv4D3jdZmtMMPghgVt6TWbk86WQaWhDloQjRSQhMMYCAro7jP7VDJrjjdV8pxVxMssXS8B8Y5DZ5aw==
@@ -3900,6 +3900,11 @@ openapi-schema-validator@^3.0.3:
     openapi-types "1.3.4"
     swagger-schema-official "2.0.0-bab6bed"
 
+openapi-types@>=7:
+  version "12.1.0"
+  resolved "https://registry.npmjs.org/openapi-types/-/openapi-types-12.1.0.tgz"
+  integrity sha512-XpeCy01X6L5EpP+6Hc3jWN7rMZJ+/k1lwki/kTmWzbVhdPie3jd5O2ZtedEx8Yp58icJ0osVldLMrTB/zslQXA==
+
 openapi-types@1.3.4:
   version "1.3.4"
   resolved "https://registry.npmjs.org/openapi-types/-/openapi-types-1.3.4.tgz"
@@ -4208,7 +4213,7 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^2.8.4:
+prettier@^2.8.4, prettier@>=2.0.0:
   version "2.8.4"
   resolved "https://registry.npmjs.org/prettier/-/prettier-2.8.4.tgz"
   integrity sha512-vIS4Rlc2FNh0BySk3Wkd6xmwxB0FpOndW5fisM5H8hsZSxU2VWVB5CWIkIjWvrHjIhxk2g3bfMKM87zNTrZddw==
@@ -5109,7 +5114,7 @@ type-is@^1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typescript@~4.6:
+"typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta", typescript@~4.6:
   version "4.6.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.6.4.tgz"
   integrity sha512-9ia/jWHIEbo49HfjrLGfKbZSuWo9iTMwXO+Ca3pRsSpbsMbc7/IU8NKdCZVRRBafVPGnoJeFL76ZOAA84I9fEg==

@@ -2,7 +2,7 @@ import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
 import TbProdutoComercialParceiro from './TbProdutoComercialParceiro'
 import TbTokenIdParc from './TbTokenIdParc'
 
-export default class Parceiro extends BaseModel {
+export default class TbParceiro extends BaseModel {
 
   @column({ isPrimary: true })
   public id: number

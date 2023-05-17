@@ -13,5 +13,4 @@ export default class TbFormasPagamento extends BaseModel {
     })
     public tbProdutoComercialParceiro: BelongsTo<typeof TbProdutoComercialParceiro>
 
-
 }
