@@ -24,6 +24,9 @@ Route.get('/', async () => {
   return { hello: 'world' }
 })
 
+Route.get('getPlan/:state/:city', 'PlanController.index')
+
+
 Route.post('/login', 'AuthenticationController.login')
 Route.post('/logout', 'AuthenticationController.logout').middleware('auth:api')
 
@@ -40,6 +43,10 @@ Route.group(() => {
   Route.post('/store', 'LeadsController.store')
   Route.post('/update', 'LeadsController.update')
 }).prefix('/leads').middleware('auth:api')
+
+Route.group(() => {
+  Route.get('getPlan/:state/:city', 'PlanController.index')
+}).prefix('/info').middleware('auth:api')
 
 
 

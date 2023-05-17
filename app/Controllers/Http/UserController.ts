@@ -1,6 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-import UserService from 'App/Services/UserService';
+import UserService from 'App/Services/UserAdminService';
 import { inject } from '@adonisjs/fold'
 import CreateUserValidator from 'App/Validators/CreateUserValidator';
 
