@@ -7,8 +7,10 @@ import TbTipoPreco from './TbTipoPreco'
 import TipoPreco from './TbTipoPreco'
 
 export default class TbProdutoComercialParceiro extends BaseModel {
+    public static table = 'tb_ProdutoComercial'
+
     @column({ isPrimary: true })
-    public id: number
+    public id_prodcomerc: number
   
     @column()
     public nu_PublicaInt: number

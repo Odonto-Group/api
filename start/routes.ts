@@ -48,6 +48,13 @@ Route.group(() => {
   Route.get('getPlan/:state/:city', 'PlanController.index')
 }).prefix('/info').middleware('auth:api')
 
+Route.group(() => {
+  Route.post('creditCardPaymentMethod', 'CreditCardPaymentMethod.index')
+  Route.post('boletoPaymentMethod', 'BoletoPaymentMethod.index')
+  Route.post('accountDebitPaymentMethod', 'AccountDebitPaymentMethod.index')
+}).prefix('/payment').middleware('auth:api')
+
+
 
 
 

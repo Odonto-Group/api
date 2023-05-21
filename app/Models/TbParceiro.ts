@@ -3,7 +3,8 @@ import TbProdutoComercialParceiro from './TbProdutoComercialParceiro'
 import TbTokenIdParc from './TbTokenIdParc'
 
 export default class TbParceiro extends BaseModel {
-
+  public static table = 'tb_parceiro'
+  
   @column({ isPrimary: true })
   public id: number
 
