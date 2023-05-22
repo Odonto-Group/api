@@ -64,7 +64,8 @@ export default class LeadsController {
             const successTransaction = await Database.transaction(async (trx) => {
                 const lead = await this.leadsService.registerLead(data, trx)
                 await this.ApiViaMais.sendLead(data)
-                return lead
+                const leadUpdated = await this.leadsService.updateSendStatus(lead);
+                return leadUpdated;
             })
 
             return successTransaction;
@@ -82,9 +83,8 @@ export default class LeadsController {
         const mensagem = data.mensagem;
         const user_id = auth.use('api').user?.id;
         try {
-            await this.logStatusService.registerLeadLogStatus(lead_id, status_primario, status_secundario, user_id, mensagem)
-            const leadUpdated = await this.leadsService.updateSendStatus(lead_id);
-            return leadUpdated;
+            const status = await this.logStatusService.registerLeadLogStatus(lead_id, status_primario, status_secundario, user_id, mensagem)
+            return status;
 
         } catch (error) {
             return response.unauthorized(error.message)
