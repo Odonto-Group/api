@@ -4,15 +4,13 @@ import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 export default class TokenService {
 
   async findParceiro(token: string): Promise<TbParceiro> {
-    const tokenId = await TbTokenIdParc
+    const tokenId = await TbParceiro
     .query()
-    .preload('parceiro', (query) => {
-      query.preload('produtoComercialParceiro')
-    })
-    .where('cd_Codtokenidparc', token)
-    .first();
+    .preload('tokenidparc')
+    .where('id_parceiro', 676)
+    .first(); 
 
-    return tokenId?.parceiro || new TbParceiro;
+    return tokenId || new TbParceiro;
   }
   
 }

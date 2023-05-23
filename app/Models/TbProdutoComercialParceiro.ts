@@ -5,6 +5,7 @@ import TbFormasPagamento from './TbFormasPagamento'
 import TbModProduto from './TbModProduto'
 import TbTipoPreco from './TbTipoPreco'
 import TipoPreco from './TbTipoPreco'
+import TbParceiro from './TbParceiro'
 
 export default class TbProdutoComercialParceiro extends BaseModel {
     public static table = 'tb_ProdutoComercial'
@@ -20,6 +21,11 @@ export default class TbProdutoComercialParceiro extends BaseModel {
   
     @column()
     public en_SitCarencia: number
+
+    @belongsTo(() => TbParceiro, {
+      foreignKey: 'id_prodcomerc'
+    })
+    public parceiro: BelongsTo<typeof TbParceiro>
   
     @belongsTo(() => TbModProduto, {
       foreignKey: 'id_modproduto_c',

@@ -17,10 +17,9 @@ export default class PlanController {
   async index({ request, response }: HttpContextContract) {
     request.params().state = request.params().state || 'DF'
     
-    return this.planService.getPlan('DF', PlansName.ODONTO_CLINICO, Category.PESSOA_FISICA).then((list) => {
-        return list;
-    })
-  }
+    const parceiro =  await this.planService.getPlan(request.params().state , PlansName.ODONTO_CLINICO, Category.PESSOA_FISICA)
 
+    return parceiro
+  }
   
 }
