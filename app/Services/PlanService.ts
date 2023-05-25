@@ -3,21 +3,11 @@ import TbParceiro from 'App/Models/TbParceiro';
 
 export default class PlanService {
 
-  async getPlan(sigla: string, idModProduto: number, idCategoria: number): Promise<any[]> {
+  async getPlan(sigla: string, idModProduto: number, idCategoria: number): Promise<TbParceiro[]> {
     console.log(sigla, idModProduto, idCategoria)
-    const plan = await TbParceiro
+    return await TbParceiro
     .query()
-    .select(
-      'tb_parceiro.*',
-      'tb_tokenidparc.*',
-      'tb_ProdutoComercial.*',
-      'tb_ModProduto.*',
-      'tb_AbrangRegiao.*',
-      'tb_categoria.*',
-      'tb_TipoPreco.*',
-      'tb_formaspgtoIF.*',
-      'tb_UF.*'
-      )
+    .preload('tokenidparc')
     .leftJoin('tb_tokenidparc', 'tb_tokenidparc.nu_IdParceiro_tk', 'tb_parceiro.id_parceiro')
     .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_parceiro.id_prodcomerc_pr')
     .innerJoin('tb_ModProduto', 'tb_ModProduto.id_modproduto', 'tb_ProdutoComercial.id_modproduto_c')
@@ -36,15 +26,6 @@ export default class PlanService {
     .where('nu_cdCorretoraS4E_tk', '=', 0)
     .orderBy('tb_formaspgtoIF.vl_valor', 'asc')
     .distinct();
-
-    const planData = plan.map((parceiro) => {
-      const parceiroData = parceiro.$attributes;
-      const extrasData = parceiro.$extras;
-
-      return { ...parceiroData, ...extrasData };
-    });
-
-    return planData;
   }
   
 }

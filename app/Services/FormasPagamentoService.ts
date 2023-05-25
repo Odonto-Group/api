@@ -5,33 +5,30 @@ import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 export default class FormasPagamentoService {
 
   async findFormaPagamento(idProdutoComercial: number, idBanco: number, formaPagamento: any): Promise<TbFormasPagamento> {
-
+    let tb;
     if (formaPagamento.gpPagto == 2) {
-    // SELECT * FROM tb_formaspgtoIF tfi 
-    // INNER JOIN tb_ProdutoComercial tpc 
-    // 	ON tfi.id_prodcomerc_if = tpc.id_prodcomerc 
-    // INNER JOIN tb_formabco tf 
-    // 	ON tfi.id_formaspgtoIF  = tf.id_formaspgtoIF_fb 
-    // INNER JOIN tb_banco tb tb
-    // 	ON tb.id_banco = tf.id_banco_fb 
-    // WHERE 
-    // 	tpc.id_prodcomerc = 'idProdComercial'
+      tb = await TbFormasPagamento
+      .query()
+      .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_formaspgtoIF.id_prodcomerc_if')
+      .innerJoin('tb_formabco', 'tb_formabco.id_formaspgtoIF_fb', 'tb_formaspgtoIF.id_formaspgtoIF')
+      .innerJoin('tb_banco', 'tb_banco.id_banco', 'tb_formabco.id_banco_fb')
+      .where('tb_formaspgtoIF.id_prodcomerc', idProdutoComercial)
+      .where('tb_banco.id_banco', idBanco)
+      .first();
     } else {
-    // SELECT * FROM tb_formaspgtoIF tfi 
-    // INNER JOIN tb_ProdutoComercial tpc 
-    // 	ON tfi.id_prodcomerc_if = tpc.id_prodcomerc 
-    // INNER JOIN tb_formabco tf 
-    // 	ON tfi.id_formaspgtoIF  = tf.id_formaspgtoIF_fb 
-    // INNER JOIN tb_banco tb
-    // 	ON tb.id_banco = tf.id_banco_fb 
-    // WHERE 
-    // 	tpc.id_prodcomerc = 'idProdComercial'
-    // 	AND id_meiopagto_if = :idPagamento
+      tb = await TbFormasPagamento
+      .query()
+      .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_formaspgtoIF.id_prodcomerc_if')
+      .innerJoin('tb_formabco', 'tb_formabco.id_formaspgtoIF_fb', 'tb_formaspgtoIF.id_formaspgtoIF')
+      .innerJoin('tb_banco', 'tb_banco.id_banco', 'tb_formabco.id_banco_fb')
+      .where('tb_formaspgtoIF.id_prodcomerc', idProdutoComercial)
+      .where('tb_formaspgtoIF.id_meiopagto_if', formaPagamento.idPagto)
+      .first();
     }
     
 
 
-    return new TbFormasPagamento;
+    return tb || new TbFormasPagamento;
   }
   
 }

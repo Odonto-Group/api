@@ -13,11 +13,14 @@ export default class TbFormasPagamento extends BaseModel {
 
     @column()
     public nu_PagUnico: number;
+
+    @column()
+    public cd_CodContratoS4E: number;
   
     @belongsTo(() => TbProdutoComercialParceiro, {
       foreignKey: 'id_prodcomerc_if'
     })
-    public tbProdutoComercialParceiro: BelongsTo<typeof TbProdutoComercialParceiro>
+    public produtoComercialParceiro: BelongsTo<typeof TbProdutoComercialParceiro>
 
     public banco = () => {
       return manyToMany(

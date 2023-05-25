@@ -1,4 +1,4 @@
-import { BaseModel, BelongsTo, HasMany, belongsTo, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import TbParceiro from './TbParceiro';
 
 export default class TbTokenIdParc extends BaseModel {
@@ -7,8 +7,8 @@ export default class TbTokenIdParc extends BaseModel {
   @column({ isPrimary: true })
   public id_tokenidparc: number
 
-  @column({ columnName: 'nu_idParceiro_tk'})
-  public nu_idParceiro_tk: number
+  @column({ columnName: 'nu_IdParceiro_tk'})
+  public nu_IdParceiro_tk: number
 
   @belongsTo(() => TbParceiro)
   public parceiro: BelongsTo<typeof TbParceiro>
