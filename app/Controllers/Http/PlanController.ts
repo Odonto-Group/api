@@ -17,9 +17,9 @@ export default class PlanController {
   async index({ request, response }: HttpContextContract) {
     request.params().state = request.params().state || 'DF'
     
-    const parceiro =  await this.planService.getPlan(request.params().state , PlansName.ODONTO_CLINICO, Category.PESSOA_FISICA)
-
-    return parceiro
+    const plan =  await this.planService.getPlan(request.params().state , PlansName.ODONTO_CLINICO, Category.PESSOA_FISICA)
+    
+    return {valor: plan.produtoComercialParceiro.formasPagamento[0].vl_valor}
   }
   
 }

@@ -45,7 +45,7 @@ Route.group(() => {
 }).prefix('/leads').middleware('auth:api')
 
 Route.group(() => {
-  Route.get('getPlan/:state/:city', 'PlanController.index')
+  Route.get('getPlan/:state', 'PlanController.index')
 }).prefix('/info')
 
 Route.group(() => {

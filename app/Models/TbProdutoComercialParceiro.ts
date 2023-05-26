@@ -7,7 +7,7 @@ import TbTipoPreco from './TbTipoPreco'
 import TipoPreco from './TbTipoPreco'
 import TbParceiro from './TbParceiro'
 
-export default class TbProdutoComercialParceiro extends BaseModel {
+export default class TbProdutoComercial extends BaseModel {
     public static table = 'tb_ProdutoComercial'
 
     @column({ isPrimary: true })
@@ -22,10 +22,10 @@ export default class TbProdutoComercialParceiro extends BaseModel {
     @column()
     public en_SitCarencia: number
 
-    @belongsTo(() => TbParceiro, {
-      foreignKey: 'id_prodcomerc'
+    @hasMany(() => TbParceiro, {
+      foreignKey: 'id_prodcomerc_pr'
     })
-    public parceiro: BelongsTo<typeof TbParceiro>
+    public parceiro: HasMany<typeof TbParceiro>
   
     @belongsTo(() => TbModProduto, {
       foreignKey: 'id_modproduto_c',

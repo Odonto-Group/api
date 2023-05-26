@@ -1,5 +1,5 @@
-import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
-import TbProdutoComercialParceiro from './TbProdutoComercialParceiro'
+import { BaseModel, BelongsTo, belongsTo, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
+import TbProdutoComercial from './TbProdutoComercialParceiro'
 import TbTokenIdParc from './TbTokenIdParc'
 
 export default class TbParceiro extends BaseModel {
@@ -8,10 +8,13 @@ export default class TbParceiro extends BaseModel {
   @column({ isPrimary: true })
   public id_parceiro: number
 
-  @hasMany(() => TbProdutoComercialParceiro, {
-    foreignKey: 'id_prodcomerc',
+  @column()
+  public id_prodcomerc_pr: number
+
+  @belongsTo(() => TbProdutoComercial, {
+    foreignKey: "id_prodcomerc_pr"
   })
-  public produtoComercialParceiro: HasMany<typeof TbProdutoComercialParceiro>
+  public produtoComercialParceiro: BelongsTo<typeof TbProdutoComercial>
 
   @hasMany(() => TbTokenIdParc, {
     foreignKey: 'nu_IdParceiro_tk'

@@ -3,11 +3,12 @@ import TbParceiro from 'App/Models/TbParceiro';
 
 export default class PlanService {
 
-  async getPlan(sigla: string, idModProduto: number, idCategoria: number): Promise<TbParceiro[]> {
-    console.log(sigla, idModProduto, idCategoria)
+  async getPlan(sigla: string, idModProduto: number, idCategoria: number): Promise<TbParceiro> {
     return await TbParceiro
     .query()
-    .preload('tokenidparc')
+    .preload('produtoComercialParceiro', (query) => {
+      query.preload('formasPagamento')
+    })
     .leftJoin('tb_tokenidparc', 'tb_tokenidparc.nu_IdParceiro_tk', 'tb_parceiro.id_parceiro')
     .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_parceiro.id_prodcomerc_pr')
     .innerJoin('tb_ModProduto', 'tb_ModProduto.id_modproduto', 'tb_ProdutoComercial.id_modproduto_c')
@@ -25,7 +26,8 @@ export default class PlanService {
     .where('nu_cdVendedor4E_tk', '=', 0)
     .where('nu_cdCorretoraS4E_tk', '=', 0)
     .orderBy('tb_formaspgtoIF.vl_valor', 'asc')
-    .distinct();
+    .distinct()
+    .first() || new TbParceiro;
   }
   
 }
