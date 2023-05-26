@@ -1,7 +1,7 @@
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 
-export default class Associado extends BaseModel {
+export default class TbAssociado extends BaseModel {
   public static table = 'tb_associado'
 
   @column({ isPrimary: true })
@@ -165,10 +165,4 @@ export default class Associado extends BaseModel {
 
   @column()
   public dt_dataprimvenc: DateTime
-
-  @column()
-  public telemedicina: number
-
-  @column()
-  public telemedicina_solicitado: number
 }

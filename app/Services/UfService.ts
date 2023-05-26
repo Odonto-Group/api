@@ -11,4 +11,13 @@ export default class UfService {
 
     return uf || new TbUf;
   }
+
+  async findUfById(idUf: number): Promise<TbUf> {
+    const uf = await TbUf 
+    .query()
+    .where("id_uf", idUf)
+    .first();
+
+    return uf || new TbUf;
+  }
 }

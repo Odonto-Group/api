@@ -16,7 +16,11 @@ import ResponsavelFinanceiroService from 'App/Services/ResponsavelFinanceiroServ
 import DependenteService from 'App/Services/DependenteService';
 import DocumentService from 'App/Services/DocumentService';
 import Drive from '@ioc:Adonis/Core/Drive'
-import path from 'path'
+import Mail from '@ioc:Adonis/Addons/Mail';
+import TbAssociado from 'App/Models/TbAssociado';
+import TbPagamentoDebito from 'App/Models/TbPagamentoDebito';
+import PagamentoDebitoService from 'App/Services/PagamentoDebitoService';
+import OdontoCobService from 'App/Services/OdontoCobService';
 
 
 @inject()
@@ -28,7 +32,9 @@ export default class PlanPayment {
       , private ufService: UfService
       , private responsavelFinanceiroService: ResponsavelFinanceiroService
       , private dependenteService: DependenteService
-      , private documentService: DocumentService) {} 
+      , private documentService: DocumentService
+      , private pagamentoDebitoService: PagamentoDebitoService
+      , private odontoCobService: OdontoCobService) {} 
 
   async index({ request, response }: HttpContextContract) {
     const token = request.header('Authorization')?.replace('Bearer ', '');
@@ -44,7 +50,7 @@ export default class PlanPayment {
    
     //verifica se produto faz parte da assefaz?
 
-    const associado = await this.associadoService.findAssociado(params.nu_cpf);
+    const associado = await this.associadoService.findAssociado(params.cpf);
 
     if (associado.cd_status != 0) {
         throw new AssociadoComPlanoJaCadastrado();
@@ -59,7 +65,7 @@ export default class PlanPayment {
     let dataExpiracao = this.calcularDataExpiracao(params);
     let dataAgora = DateTime.local();
 
-    let diasParaExpirar = dataAgora.diff(dataExpiracao).plus(1);
+    let diasParaExpirar = dataAgora.diff(dataExpiracao).plus(1).toString();
 
     let valorMensalidade = this.calculaPagamentoUnico(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 
@@ -77,18 +83,71 @@ export default class PlanPayment {
 
     this.saveDependentes(params, associado);
 
-    this.saveDocuments(params, associado); //pular
+    //this.saveDocuments(params, associado); pular tudo de documento
 
+    const vendedorRetorno = this.createVendedor(params)
 
+    const celularAssociado = associado.nu_Celular
+    const whattsSmsAssociado = associado.nu_dddCel + associado.nu_Celular
+
+    await this.emailConsignado(params, associado)
+
+    this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString())
+
+  }
+  executaPagamento(params: any, associado: TbAssociado, valorContrato: number, diasExpirar: string) {
+    if(params.formaPagamento.gpPagto == 2) {
+      this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado);
+
+      this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, diasExpirar)
+
+      if (params.chkPrimeiraBoleto) {
+        const returnPayment = this.odontoCobService.gerarBoleto(associado, diasExpirar, valorContrato)
+        //Continuar linha 575.
+      }
+    }
+  }
+
+  async emailConsignado(params: any, associado: TbAssociado) {
+    if (params.chkDocumentoConsignado) {
+      //documento associado
+    } else {
+      await Mail.send((message) => {
+        message
+          .to(associado.ds_email)
+          .subject('Formulário de Autorização de desconto em folha no GDF')
+          .htmlView('mail.sendFormAuthorizationMail', { cliente: associado.nm_associado })
+          .attach('https://www.odontogroup.com.br/vendas/PDF/AUTORIZACAO_DESCONTO_EM_FOLHA_GDF.pdf')
+      })
+    }
+  }
+
+  createVendedor(params: any) {
+    const vendedor = params.token.vendedor //todo vendedor pelo token
+
+    const vendedorRetorno = {} as any
+    
+    if (vendedor.tx_nome) {
+      vendedorRetorno.nomeCompleto = vendedor.tx_nome
+      vendedorRetorno.nome = vendedor.tx_nome.split(" ")
+      vendedorRetorno.PN = vendedorRetorno.nome[0]
+      vendedorRetorno.ID = vendedor.id_vendedor
+    } else {
+      vendedorRetorno.nomeCompleto = "Vendedor Web"
+      vendedorRetorno.PN = "OdontoGroup"
+      vendedorRetorno.ID = 65083
+    }
+
+    return vendedorRetorno
   }
 
   saveDocuments(params: any, associado: TbAssociado) {
     params.docs && params.docs.forEach(doc => {
-        if (doc.isValid) {
-          const path = this.documentService.uploadImage(doc, associado.id_associado);
+        // if (doc.isValid) {
+        //   const path = this.documentService.uploadImage(doc, associado.id_associado);
           
-          const storagePath = Drive.disk('local').get(path);
-        }
+        //   const storagePath = Drive.disk('local').get(path);
+        // }
     });
   }
 

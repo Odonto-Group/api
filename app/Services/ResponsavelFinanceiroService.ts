@@ -4,6 +4,13 @@ import TbUf from "App/Models/TbUf";
 
 export default class ResponsavelFinanceiroService {
 
+  async buscarResponsavelFinanceiroPorIdAssociado(id_associado_rf: number): Promise<TbResponsavelFinanceiro> {
+    return await TbResponsavelFinanceiro
+        .query()
+        .where('id_associado_rf', id_associado_rf)
+        .first() || new TbResponsavelFinanceiro
+  }
+
   async deleteResponsavelFinanceiroByIdAssociado(id_associado_rf: number) {
     await TbResponsavelFinanceiro
         .query()

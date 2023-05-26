@@ -6,7 +6,7 @@ export default class TbUf extends BaseModel {
     @column({isPrimary: true})
     public id_uf: number;
 
-    @column({)
+    @column()
     public sigla: string;
 
 }
