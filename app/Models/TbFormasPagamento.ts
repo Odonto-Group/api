@@ -1,6 +1,7 @@
 import { BaseModel, BelongsTo, belongsTo, column, manyToMany } from "@ioc:Adonis/Lucid/Orm"
-import TbProdutoComercial from "./TbProdutoComercialParceiro"
 import TbBanco from "./TbBanco"
+import TbMeioPagamento from "./TbMeioPagamento"
+import TbProdutoComercial from "./TbProdutoComercial"
 
 export default class TbFormasPagamento extends BaseModel {
     public static table = 'tb_formaspgtoIF'
@@ -19,9 +20,17 @@ export default class TbFormasPagamento extends BaseModel {
 
     @column()
     public cd_CodContratoS4E: number;
+
+    @column()
+    public id_meiopagto_if: number;
   
     @belongsTo(() => TbProdutoComercial, {
       foreignKey: 'id_prodcomerc_if'
     })
-    public produtoComercialParceiro: BelongsTo<typeof TbProdutoComercial>
+    public produtoComercial: BelongsTo<typeof TbProdutoComercial>
+
+    @belongsTo(() => TbMeioPagamento, {
+      foreignKey: 'id_meiopagto_if'
+    })
+    public meioPagamento: BelongsTo<typeof TbMeioPagamento>
 }

@@ -6,7 +6,7 @@ export default class PlanService {
   async getPlan(sigla: string, idModProduto: number, idCategoria: number): Promise<TbParceiro> {
     return await TbParceiro
     .query()
-    .preload('produtoComercialParceiro', (query) => {
+    .preload('produtoComercial', (query) => {
       query.preload('formasPagamento')
     })
     .leftJoin('tb_tokenidparc', 'tb_tokenidparc.nu_IdParceiro_tk', 'tb_parceiro.id_parceiro')

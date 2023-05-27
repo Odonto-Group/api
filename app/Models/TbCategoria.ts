@@ -4,7 +4,7 @@ export default class TbCategoria extends BaseModel {
     public static table = 'tb_categoria'
 
     @column({ isPrimary: true })
-    public id: number
+    public id_categoria: number
   
     @column()
     public tx_descricao: string

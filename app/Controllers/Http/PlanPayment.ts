@@ -44,9 +44,9 @@ export default class PlanPayment {
         throw new TokenVazioException();
     }
 
-    const tokenIdParc = await this.tokenService.findParceiro(token);
+    const tokenIdParc = await this.tokenService.findToken(token);
     const parceiro = tokenIdParc.parceiro
-    const produtoComercial = parceiro.produtoComercialParceiro
+    const produtoComercial = parceiro.produtoComercial
    
     //verifica se produto faz parte da assefaz?
 

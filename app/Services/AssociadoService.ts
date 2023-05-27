@@ -78,7 +78,7 @@ export default class AssociadoService {
     dadosAssociado.st_mail = 0;
 
     dadosAssociado.nr_proposta = Math.random().toString();
-    dadosAssociado.id_prodcomerc_a = formaPagamento.produtoComercialParceiro.id_prodcomerc;
+    dadosAssociado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
 
     return dadosAssociado
   }
