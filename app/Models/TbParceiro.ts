@@ -59,6 +59,9 @@ export default class TbParceiro extends BaseModel {
   @column()
   public en_SitCarencia: number | null
 
+  @column()
+  public id_prodcomerc_pr: number
+
   @belongsTo(() => TbProdutoComercial, {
     foreignKey: "id_prodcomerc_pr"
   })
