@@ -1,16 +1,16 @@
 import { schema, CustomMessages, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-export default class LoginValidator {
+export default class BuscarPlanoValidator {
   constructor(protected ctx: HttpContextContract) {}
-
   public schema = schema.create({
     state:schema.string([
-      rules.minLength(11),
+      rules.minLength(2),
+      require
     ]),
     
-    city: schema.string([
-      rules.minLength(6)
+    token: schema.string([
+      rules.minLength(7)
     ]),
   })
 

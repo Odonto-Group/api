@@ -16,8 +16,8 @@ export default class TbCarenciaProduto extends BaseModel {
     @column()
     public nu_status: string;
 
-    @hasMany(() => TbCarencia, {
+    @belongsTo(() => TbCarencia, {
         foreignKey: 'id_carencia_pr'
     })
-    public carencia: HasMany<typeof TbCarencia>
+    public carencia: BelongsTo<typeof TbCarencia>
 }

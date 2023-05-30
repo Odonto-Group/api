@@ -1,4 +1,4 @@
-import { BaseModel, BelongsTo, belongsTo, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, BelongsTo, HasMany, belongsTo, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
 import TbCarenciaProduto from "./TbCarenciaProduto";
 
 export default class TbCarencia extends BaseModel {
@@ -16,6 +16,6 @@ export default class TbCarencia extends BaseModel {
     @column()
     public nu_ordemSite: number;
 
-    @belongsTo(() => TbCarenciaProduto)
-    public carenciaProduto: BelongsTo<typeof TbCarenciaProduto>
+    @hasMany(() => TbCarenciaProduto)
+    public carencia: HasMany<typeof TbCarenciaProduto>
 }

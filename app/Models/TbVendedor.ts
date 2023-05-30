@@ -43,8 +43,6 @@ export default class TbVendedor extends BaseModel {
     @column()
     public bl_ativo: boolean;
 
-    @hasMany(() => TbTokenIdParc, {
-        foreignKey: 'nu_IdParceiro_tk'
-    })
+    @hasMany(() => TbTokenIdParc)
     public tokenidparc: HasMany<typeof TbTokenIdParc>
 }

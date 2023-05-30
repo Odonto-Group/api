@@ -6,6 +6,13 @@ export default class TbBanco extends BaseModel {
     @column({isPrimary: true})
     public id_banco: number;
 
+    @column({isPrimary: true})
+    public cd_banco: string;
 
+    @column({isPrimary: true})
+    public nm_banco: number;
+
+    @column({isPrimary: true})
+    public nu_statusbco: number;
 }
   

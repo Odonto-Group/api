@@ -6,7 +6,7 @@ export default class TbParceiro extends BaseModel {
   public static table = 'tb_parceiro'
 
   @column({ isPrimary: true })
-  public id_prodcomerc: number
+  public id_parceiro: number
 
   @column()
   public nm_prodcomerc: string
@@ -59,7 +59,7 @@ export default class TbParceiro extends BaseModel {
   @column()
   public en_SitCarencia: number | null
 
-  @column()
+  @column({columnName: 'id_prodcomerc_pr'})
   public id_prodcomerc_pr: number
 
   @belongsTo(() => TbProdutoComercial, {
@@ -67,8 +67,6 @@ export default class TbParceiro extends BaseModel {
   })
   public produtoComercial: BelongsTo<typeof TbProdutoComercial>
 
-  @hasMany(() => TbTokenIdParc, {
-    foreignKey: 'nu_IdParceiro_tk'
-  })
+  @hasMany(() => TbTokenIdParc)
   public tokenidparc: HasMany<typeof TbTokenIdParc>
 }

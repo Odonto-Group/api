@@ -6,15 +6,15 @@ export default class TbOrgao extends BaseModel {
   @column({ isPrimary: true })
   public id_orgao: number
 
-  @column()
+  @column({columnName: 'id_Fontepag_o'})
   public id_Fontepag_o: number | null
 
-  @column()
+  @column({columnName: 'nu_CodOrgao'})
   public nu_CodOrgao: number | null
 
-  @column()
+  @column({columnName: 'tx_NmFontePagOrgao'})
   public tx_NmFontePagOrgao: string | null
 
-  @column()
+  @column({columnName: 'tx_NmOrgao'})
   public tx_NmOrgao: string | null
 }

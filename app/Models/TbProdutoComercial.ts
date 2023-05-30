@@ -22,9 +22,10 @@ export default class TbProdutoComercial extends BaseModel {
     @column()
     public en_SitCarencia: number
 
-    @hasMany(() => TbParceiro, {
-      foreignKey: 'id_prodcomerc_pr'
-    })
+    @column()
+    public id_categoria_c: string
+
+    @hasMany(() => TbParceiro)
     public parceiro: HasMany<typeof TbParceiro>
   
     @belongsTo(() => TbModProduto, {

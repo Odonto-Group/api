@@ -149,6 +149,14 @@
   dependencies:
     "@poppinss/utils" "^4.0.4"
 
+"@adonisjs/generic-exceptions@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/@adonisjs/generic-exceptions/-/generic-exceptions-3.0.1.tgz"
+  integrity sha512-AHBSvgKj17cQYkj7QL7la8KCB6WeBQPyHlgzX9nimLPY9ViWWmwozuy2skEjsh7+XNIg8vQdZphJyoIf8QzzCQ==
+  dependencies:
+    node-exceptions "^4.0.1"
+    upcast "^4.0.0"
+
 "@adonisjs/hash@^7.2.2":
   version "7.2.2"
   resolved "https://registry.npmjs.org/@adonisjs/hash/-/hash-7.2.2.tgz"
@@ -2343,7 +2351,7 @@ eslint@*, "eslint@^6.0.0 || ^7.0.0 || ^8.0.0", eslint@^8.0.0, eslint@^8.34.0, es
     strip-json-comments "^3.1.0"
     text-table "^0.2.0"
 
-esm@^3.2.25:
+esm@^3.0.84, esm@^3.2.25:
   version "3.2.25"
   resolved "https://registry.npmjs.org/esm/-/esm-3.2.25.tgz"
   integrity sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==
@@ -4075,6 +4083,11 @@ node-emoji@^1.11.0:
   dependencies:
     lodash "^4.17.21"
 
+node-exceptions@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/node-exceptions/-/node-exceptions-4.0.1.tgz"
+  integrity sha512-KJI+FawYOv74x60H6+zrBPfO2vvp9m0pHZi6SH8BBBuc67Irv11DsqY4Le4EBFq1/T5aXFU3hkLrMgtW7RNXxA==
+
 node-fetch@^2.6.7:
   version "2.6.9"
   resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.9.tgz"
@@ -5490,6 +5503,13 @@ unset-value@^1.0.0:
   dependencies:
     has-value "^0.3.1"
     isobject "^3.0.0"
+
+upcast@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/upcast/-/upcast-4.0.0.tgz"
+  integrity sha512-LS0LmQtEPyyM3Zk4Bb7dNpDVha0xD4Z/Ne3zAqal0hCU/nYjoYU7qic2MPKB+Lu+3h5vKSe2iVqvYnZjmLrAyQ==
+  dependencies:
+    esm "^3.0.84"
 
 upper-case-first@^2.0.2:
   version "2.0.2"

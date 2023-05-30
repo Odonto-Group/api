@@ -22,6 +22,7 @@ import TbBanco from 'App/Models/TbBanco';
 import TbParentesco from 'App/Models/TbParentesco';
 import TbEstadoCivil from 'App/Models/TbEstadoCivil';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
+import TbVendedor from 'App/Models/TbVendedor';
 
 @inject()
 export default class PlanController {
@@ -35,27 +36,34 @@ export default class PlanController {
 
   async index({ request, response }: HttpContextContract) {
     request.params().state = request.params().state || 'DF'
+    const token = request.params().token
     
-    const plan =  await this.planService.getPlan(request.params().state , PlansName.ODONTO_CLINICO, Category.PESSOA_FISICA)
+    // UF deve ser obrigatorio
+
+    // todo validar UF e TOKEN
+
+    let plan;
+
+    if (token) {
+      plan = await this.planService.getPlanWithToken(request.params().state, Category.PESSOA_FISICA, token)
+    } else {
+      plan = await this.planService.getBasicPlan(request.params().state, Category.PESSOA_FISICA)
+    }
     
     return {valor: plan.produtoComercial.formasPagamento[0].vl_valor}
   }
   
   async planByToken({ request, response }: HttpContextContract) {
+
+    //to do BANCO FONTE PAGAMENTO CATEGORIA  PERFIS LISTA PARENTESCO e fazer listaEspec
     const token = request.params().token
-    const idVendedor = request.params().idVendedor
 
     const tokenBanco = await this.tokenService.findToken(token)
 
     const carencias = await this.carenciaProdutoService.buscarCarencia(tokenBanco.parceiro.produtoComercial.id_prodcomerc)
 
-    let vendedor;
     if (tokenBanco.vendedor === null) {
-      const vendedorBanco = await this.vendedorService.buscarVendedor(idVendedor);
-
-      vendedor = this.extrairNomesVendedor(vendedorBanco.tx_nome)
-    } else {
-      vendedor = this.extrairNomesVendedor(tokenBanco.vendedor.tx_nome);
+      // LANCAR ERRO TODO
     }
 
     let formasPagamento = {} as any
@@ -144,23 +152,22 @@ export default class PlanController {
       let agencia;
       let promotor;
       let angariador;
-      const produtoComercial =tokenBanco.parceiro.produtoComercial
+      const produtoComercial = tokenBanco.parceiro.produtoComercial
       let confirma = false; 
-      if (produtoComercial) {
-        if ([751, 752, 753, 754].includes(produtoComercial.id_prodcomerc)) {
-          equipe = await TbEquipe.query();
-          agencia = await TbAgencia.query();
-          promotor = await TbPromotor.query();
-          angariador = await TbAngariador.query();
-      }
+    //   if (produtoComercial) {
+    //     if ([751, 752, 753, 754].includes(produtoComercial.id_prodcomerc)) {
+    //       equipe = await TbEquipe.query();
+    //       agencia = await TbAgencia.query();
+    //       promotor = await TbPromotor.query();
+    //       angariador = await TbAngariador.query();
+    //   }
 
-      // Em AdonisJS, a configuração geralmente é acessada usando Env
-      const produtosAssefaz = Env.get('ADESAO_PRODUTOS_ASSEFAZ').split(',');
+    //   const produtosAssefaz = Env.get('ADESAO_PRODUTOS_ASSEFAZ')?.split(',');
     
-      if (produtosAssefaz.includes(produtoComercial.id_prodcomerc)) {
-          confirma = true;
-      }
-    }
+    //   if (produtosAssefaz?.includes(produtoComercial.id_prodcomerc)) {
+    //       confirma = true;
+    //   }
+    // }
     
     let orgaos = [] as TbOrgao[]
     let perfils = [] as TbPerfilServidor[]
@@ -172,19 +179,36 @@ export default class PlanController {
       fontePagadora = await TbFontePagadora.query();
     }
 
-    let ufs = await TbUf.query();
-    let listaSexos = await TbSexo.query()
-    let listaBancos = await TbBanco.query()
-    let listaParentesco = await TbParentesco.query()
-    let listaEstadoCivil = await TbEstadoCivil.query()
-    let listaOrgaoExpedidor = await TbOrgaoExpedidor.query();
+    let ufs = [] as TbUf[] ;
+    let listaSexos = [] as TbSexo[];
+    let listaBancos = [] as TbBanco[];
+    let listaParentesco = [] as TbParentesco[];
+    let listaEstadoCivil = [] as TbEstadoCivil[];
+    let listaOrgaoExpedidor = [] as TbOrgaoExpedidor[];
+ 
+    Promise.all([
+     TbUf.query(),
+     TbSexo.query(),
+     TbBanco.query(),
+     TbParentesco.query(),
+     TbEstadoCivil.query(),
+     TbOrgaoExpedidor.query()
+    ])
+      .then(results => {
+        ufs = results[0]
+        listaSexos = results[1];
+        listaBancos = results[2];
+        listaParentesco = results[3];
+        listaEstadoCivil = results[4];
+        listaOrgaoExpedidor = results[5];
+    })
+    
 
     let dataVencimento = this.criarDataVencimento()
 
     return {
-      tipoVendedor: '', //parametro tipo vendedor
       produtoComercial: produtoComercial,
-      vendedor: vendedor,
+      vendedor: tokenBanco?.vendedor?.tx_nome,
       corretora: tokenBanco.corretora,
       parceiro: tokenBanco.parceiro,
       formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamento,
@@ -195,7 +219,7 @@ export default class PlanController {
       agencias: agencia,
       categoria: tokenBanco.parceiro.produtoComercial.categoria,
       listaUFS: ufs,
-      vendedorPN: vendedor.vendedorPN,
+      vendedorPN: tokenBanco?.vendedor?.tx_nome?.split(" ")[0],
       listaOrgaosExpedidor: listaOrgaoExpedidor,
       listaSexos: listaSexos,
       listaEstadosCivil: listaEstadoCivil,
@@ -208,8 +232,7 @@ export default class PlanController {
       arrGeral: '',// validar parametro local do env
       vencimentoBoletos: dataVencimento,
       bancos: listaBancos,
-      carencias: carencias,
-      confirma: confirma
+      carencias: carencias
     };
   }
 
