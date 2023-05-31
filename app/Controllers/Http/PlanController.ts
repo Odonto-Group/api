@@ -44,9 +44,7 @@ export default class PlanController {
     const token = params.token;
     const state = params.state;
 
-    if(token && await this.tokenService.isTokenValido(token)) {
-      throw new TokenInvalidoException()
-    }
+    await this.validaTokenValido(token)
 
     if(state && await this.ufService.isUFValido(state)) {
       throw new UfInvalidoException()
@@ -67,6 +65,8 @@ export default class PlanController {
   
   async planByToken({ request, response }: HttpContextContract) {
     const token = request.params().token
+
+    await this.validaTokenValido(token)
 
     const tokenBanco = await this.tokenService.findToken(token)
 
@@ -307,6 +307,12 @@ export default class PlanController {
     return {
       vendedorNome: vendedorNomes,
       vendedorPN: vendedorNomes[0]
+    }
+  }
+
+  async validaTokenValido(token: string) {
+    if(token && await this.tokenService.isTokenValido(token)) {
+      throw new TokenInvalidoException()
     }
   }
 }
