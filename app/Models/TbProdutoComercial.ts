@@ -11,20 +11,59 @@ export default class TbProdutoComercial extends BaseModel {
     public static table = 'tb_ProdutoComercial'
 
     @column({ isPrimary: true })
-    public id_prodcomerc: number
+    public id_prodcomerc: number;
   
     @column()
-    public nu_PublicaInt: number
+    public nm_prodcomerc: string;
   
     @column()
-    public en_status: number
+    public dataInicioCorte: number;
   
     @column()
-    public en_SitCarencia: number
-
+    public dataFimCorte: number;
+  
     @column()
-    public id_categoria_c: string
-
+    public en_status: number;
+  
+    @column({ columnName: 'id_modproduto_c' })
+    public id_modproduto_c: number;
+  
+    @column()
+    public nu_PublicaInt: number;
+  
+    @column({ columnName: 'id_ProdutoS4E_c' })
+    public id_ProdutoS4E_c: number;
+  
+    @column()
+    public nu_CodDeptoEmpS4E: number;
+  
+    @column()
+    public nm_NmDeptoEmpS4E: string;
+  
+    @column()
+    public en_responsavel: 'ativo' | 'inativo';
+  
+    @column()
+    public en_familia: 'ativo' | 'inativo';
+  
+    @column()
+    public en_especial: number;
+  
+    @column({ columnName: 'id_categoria_c' })
+    public id_categoria_c: number;
+  
+    @column({ columnName: 'id_TipoPreco_c' })
+    public id_TipoPreco_c: number;
+  
+    @column()
+    public ativa_img: boolean;
+  
+    @column({ columnName: 'HabilitaUpDoc' })
+    public HabilitaUpDoc: number;
+  
+    @column({ columnName: 'en_SitCarencia' })
+    public en_SitCarencia: boolean;
+    
     @hasMany(() => TbParceiro)
     public parceiro: HasMany<typeof TbParceiro>
   

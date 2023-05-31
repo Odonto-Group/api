@@ -1,5 +1,4 @@
 import { BaseModel, BelongsTo, belongsTo, column, manyToMany } from "@ioc:Adonis/Lucid/Orm"
-import TbBanco from "./TbBanco"
 import TbMeioPagamento from "./TbMeioPagamento"
 import TbProdutoComercial from "./TbProdutoComercial"
 
@@ -12,13 +11,13 @@ export default class TbFormasPagamento extends BaseModel {
     @column()
     public vl_valor: number
 
-    @column()
+    @column({columnName: 'nu_PagUnico'})
     public nu_PagUnico: number;
 
     @column()
     public id_prodcomerc_if: number;
 
-    @column()
+    @column({columnName: 'cd_CodContratoS4E'})
     public cd_CodContratoS4E: number;
 
     @column()

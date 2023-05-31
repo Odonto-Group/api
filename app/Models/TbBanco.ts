@@ -1,4 +1,4 @@
-import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class TbBanco extends BaseModel {
     public static table = 'tb_banco'
@@ -6,13 +6,13 @@ export default class TbBanco extends BaseModel {
     @column({isPrimary: true})
     public id_banco: number;
 
-    @column({isPrimary: true})
+    @column()
     public cd_banco: string;
 
-    @column({isPrimary: true})
+    @column()
     public nm_banco: number;
 
-    @column({isPrimary: true})
+    @column()
     public nu_statusbco: number;
 }
   

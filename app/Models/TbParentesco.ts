@@ -18,6 +18,6 @@ export default class TbParentesco extends BaseModel {
   @column()
   public nu_status: number
 
-  @column()
+  @column({columnName: 'nu_UsoTipoPlan'})
   public nu_UsoTipoPlan: number
 }

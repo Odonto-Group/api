@@ -4,7 +4,7 @@ import { inject } from '@adonisjs/fold'
 import TokenService from 'App/Services/TokenService';
 import AssociadoService from 'App/Services/AssociadoService';
 import AssociadoComPlanoJaCadastrado from 'App/Exceptions/AssociadoComPlanoJaCadastrado';
-import TokenVazioException from 'App/Exceptions/TokenVazioException';
+import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import FormaPagamentoNaoEncontrada from 'App/Exceptions/FormaPagamentoNaoEncontrada';
 import FormasPagamentoService from 'App/Services/FormasPagamentoService';
 import { DateTime } from 'luxon';
@@ -41,7 +41,7 @@ export default class PlanPayment {
     const params = request.all()
 
     if(!token) {
-        throw new TokenVazioException();
+        throw new TokenInvalidoException();
     }
 
     const tokenIdParc = await this.tokenService.findToken(token);

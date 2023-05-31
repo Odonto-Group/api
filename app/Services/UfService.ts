@@ -6,7 +6,7 @@ export default class UfService {
   async findUfBySigla(siglaUf: string): Promise<TbUf> {
     const uf = await TbUf 
     .query()
-    .where("sifla", siglaUf)
+    .where("sigla", siglaUf)
     .first();
 
     return uf || new TbUf;
@@ -19,5 +19,15 @@ export default class UfService {
     .first();
 
     return uf || new TbUf;
+  }
+
+  
+  async isUFValido(siglaUf: number): Promise<boolean> {
+    const uf = await TbUf 
+    .query()
+    .where("sigla", siglaUf)
+    .first();
+
+    return !uf;
   }
 }

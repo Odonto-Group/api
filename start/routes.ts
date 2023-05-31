@@ -42,8 +42,10 @@ Route.group(() => {
 }).prefix('/leads').middleware('auth:api')
 
 Route.group(() => {
-  Route.get('getPlanValue/:state/:token', 'PlanController.index')
-  Route.get('getPlanValue/:state', 'PlanController.index')
+  Route.get('getPlanValue/:state/:token?', 'PlanController.index')
+  .where(':state',{
+    
+  })
   Route.get('getPlanDetails/:token', 'PlanController.planByToken')
 }).prefix('/info')
 

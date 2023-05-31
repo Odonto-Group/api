@@ -23,6 +23,11 @@ import TbParentesco from 'App/Models/TbParentesco';
 import TbEstadoCivil from 'App/Models/TbEstadoCivil';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import TbVendedor from 'App/Models/TbVendedor';
+import PlanValidator from 'App/Validators/PlanValidator';
+import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
+import UfService from 'App/Services/UfService';
+import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
+import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
 
 @inject()
 export default class PlanController {
@@ -31,31 +36,36 @@ export default class PlanController {
     private planService: PlanService,
     private tokenService: TokenService,
     private carenciaProdutoService: CarenciaProdutoService,
-    private vendedorService: VendedorService
+    private vendedorService: VendedorService,
+    private ufService: UfService
     ) {}
 
-  async index({ request, response }: HttpContextContract) {
-    request.params().state = request.params().state || 'DF'
-    const token = request.params().token
-    
-    // UF deve ser obrigatorio
+  async index({ params }: HttpContextContract) {
+    const token = params.token;
+    const state = params.state;
 
-    // todo validar UF e TOKEN
+    if(token && await this.tokenService.isTokenValido(token)) {
+      throw new TokenInvalidoException()
+    }
+
+    if(state && await this.ufService.isUFValido(state)) {
+      throw new UfInvalidoException()
+    }
 
     let plan;
 
     if (token) {
-      plan = await this.planService.getPlanWithToken(request.params().state, Category.PESSOA_FISICA, token)
+      plan = await this.planService.getPlanWithToken(state, Category.PESSOA_FISICA, token)
     } else {
-      plan = await this.planService.getBasicPlan(request.params().state, Category.PESSOA_FISICA)
+      plan = await this.planService.getBasicPlan(state, Category.PESSOA_FISICA)
     }
     
-    return {valor: plan.produtoComercial.formasPagamento[0].vl_valor}
+    return {
+      valor: plan.produtoComercial.formasPagamento[0].vl_valor
+    }
   }
   
   async planByToken({ request, response }: HttpContextContract) {
-
-    //to do BANCO FONTE PAGAMENTO CATEGORIA  PERFIS LISTA PARENTESCO e fazer listaEspec
     const token = request.params().token
 
     const tokenBanco = await this.tokenService.findToken(token)
@@ -63,8 +73,24 @@ export default class PlanController {
     const carencias = await this.carenciaProdutoService.buscarCarencia(tokenBanco.parceiro.produtoComercial.id_prodcomerc)
 
     if (tokenBanco.vendedor === null) {
-      // LANCAR ERRO TODO
+      throw new VendedorNaoEncontradoException()
     }
+
+    // let especialidades = [] as any //tokenBanco.parceiro.produtoComercial.id_ProdutoS4E_c para a query no s4e
+
+    let liste = [] as any ;
+    let arrGeral = [] as any;
+
+    // especialidades.forEach(especialidade => {
+    //   if (liste.findIndex(item => item.espec === especialidade.cd_especialidade) === -1) {
+    //     liste.push({
+    //       espec: especialidade.cd_especialidade,
+    //       nm: especialidade.nome_especialidade,
+    //       slug: cleanString(utf8_encode(especialidade.nome_especialidade))
+    //     });
+    //   }
+    //   arrGeral.push(especialidade);
+    // });
 
     let formasPagamento = {} as any
 
@@ -186,7 +212,7 @@ export default class PlanController {
     let listaEstadoCivil = [] as TbEstadoCivil[];
     let listaOrgaoExpedidor = [] as TbOrgaoExpedidor[];
  
-    Promise.all([
+    await Promise.all([
      TbUf.query(),
      TbSexo.query(),
      TbBanco.query(),
@@ -228,8 +254,8 @@ export default class PlanController {
       fontePagamentos: fontePagadora,
       listaParentescos: listaParentesco,
       token: token,
-      listaEspec: '', // validar parametro local do env
-      arrGeral: '',// validar parametro local do env
+      listaEspec: liste, 
+      arrGeral: arrGeral,
       vencimentoBoletos: dataVencimento,
       bancos: listaBancos,
       carencias: carencias
