@@ -1,5 +1,4 @@
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { DateTime } from 'luxon'
 
 export default class TbAssociado extends BaseModel {
   public static table = 'tb_associado'
@@ -22,7 +21,7 @@ export default class TbAssociado extends BaseModel {
   @column()
   public nu_rg: string
 
-  @column()
+  @column({columnName: "ds_OrgaoExpedidor"})
   public ds_OrgaoExpedidor: string
 
   @column()
@@ -34,16 +33,16 @@ export default class TbAssociado extends BaseModel {
   @column()
   public id_sexo_a: number
 
-  @column()
+  @column({columnName: "ds_OrgaoExpedidor"})
   public id_EstadoCivil_a: number
 
-  @column()
+  @column({columnName: "nu_codprodutoS4E"})
   public nu_codprodutoS4E: number
 
-  @column()
+  @column({columnName: "cd_CodContratoS4E"})
   public cd_CodContratoS4E: number
 
-  @column()
+  @column({columnName: "nu_CodDeptoEmpS4E"})
   public nu_CodDeptoEmpS4E: number
 
   @column()
@@ -61,7 +60,7 @@ export default class TbAssociado extends BaseModel {
   @column()
   public nu_ramaltelfixo: string
 
-  @column()
+  @column({columnName: "nu_dddCel"})
   public nu_dddCel: string
 
   @column()
@@ -77,7 +76,7 @@ export default class TbAssociado extends BaseModel {
   public dt_operacao: string
 
   @column()
-  public dt_inicio_vigencia: DateTime
+  public dt_inicio_vigencia: string
 
   @column()
   public nu_motivo_cancelamento: number
@@ -85,7 +84,7 @@ export default class TbAssociado extends BaseModel {
   @column()
   public id_meiopagto_a: number
 
-  @column()
+  @column({columnName: "id_FontePag_a"})
   public id_FontePag_a: number
 
   @column()
@@ -94,10 +93,10 @@ export default class TbAssociado extends BaseModel {
   @column()
   public cd_perfil: number
 
-  @column()
+  @column({columnName: "nu_MatriculaFuncional"})
   public nu_MatriculaFuncional: string
 
-  @column()
+  @column({columnName: "tx_Cargo"})
   public tx_Cargo: string
 
   @column()
@@ -112,7 +111,7 @@ export default class TbAssociado extends BaseModel {
   @column()
   public cd_status: number
 
-  @column()
+  @column({columnName: "dt_alteraStatus"})
   public dt_alteraStatus: string
 
   @column()
@@ -130,19 +129,19 @@ export default class TbAssociado extends BaseModel {
   @column()
   public nu_CEP: number
 
-  @column()
+  @column({columnName: "tx_EndLograd"})
   public tx_EndLograd: string
 
-  @column()
+  @column({columnName: "nu_EndNumero"})
   public nu_EndNumero: string
 
-  @column()
+  @column({columnName: "tx_EndCompl"})
   public tx_EndCompl: string
 
-  @column()
+  @column({columnName: "tx_EndBairro"})
   public tx_EndBairro: string
 
-  @column()
+  @column({columnName: "tx_EndCidade"})
   public tx_EndCidade: string
 
   @column()
@@ -151,18 +150,27 @@ export default class TbAssociado extends BaseModel {
   @column()
   public st_mail: number
 
-  @column()
+  @column({columnName: "nu_cpfAdesionista"})
   public nu_cpfAdesionista: string
 
-  @column()
+  @column({columnName: "st_sitProp"})
   public st_sitProp: string
 
   @column()
   public nr_proposta: string
 
-  @column()
+  @column({columnName: "id_origemVenda"})
   public id_origemVenda: number
 
   @column()
-  public dt_dataprimvenc: DateTime
+  public dt_dataprimvenc: string
+
+  setOrgaoExpedidor(orgao_expedidor: any, orgao_expedidor_uf: any) {
+    this.ds_OrgaoExpedidor = orgao_expedidor + '-' + orgao_expedidor_uf
+  }
+
+  setCelularAttribute(value: string) {
+    this.nu_dddCel = value.substring(0, 2);
+    this.nu_Celular = value.substring( 2, 10);
+  }
 }

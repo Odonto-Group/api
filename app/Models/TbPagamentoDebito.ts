@@ -24,6 +24,6 @@ export default class TbPagamentoDebito extends BaseModel {
   @column()
   public ds_vencimento: string;
 
-  @column()
+  @column({columnName: "nu_OperacaoCEF"})
   public nu_OperacaoCEF: string = '0';
 }

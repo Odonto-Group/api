@@ -11,17 +11,12 @@ import { DateTime } from 'luxon';
 import UfService from 'App/Services/UfService';
 import TbUf from 'App/Models/TbUf';
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
-import TbAssociado from 'App/Models/TbAssociado';
 import ResponsavelFinanceiroService from 'App/Services/ResponsavelFinanceiroService';
 import DependenteService from 'App/Services/DependenteService';
 import DocumentService from 'App/Services/DocumentService';
-import Drive from '@ioc:Adonis/Core/Drive'
-import Mail from '@ioc:Adonis/Addons/Mail';
 import TbAssociado from 'App/Models/TbAssociado';
-import TbPagamentoDebito from 'App/Models/TbPagamentoDebito';
 import PagamentoDebitoService from 'App/Services/PagamentoDebitoService';
 import OdontoCobService from 'App/Services/OdontoCobService';
-
 
 @inject()
 export default class PlanPayment {
@@ -37,15 +32,15 @@ export default class PlanPayment {
       , private odontoCobService: OdontoCobService) {} 
 
   async index({ request, response }: HttpContextContract) {
-    const token = request.header('Authorization')?.replace('Bearer ', '');
     const params = request.all()
+    const token = params.token
 
     if(!token) {
         throw new TokenInvalidoException();
     }
 
-    const tokenIdParc = await this.tokenService.findToken(token);
-    const parceiro = tokenIdParc.parceiro
+    const tokenBanco = await this.tokenService.findToken(token);
+    const parceiro = tokenBanco.parceiro
     const produtoComercial = parceiro.produtoComercial
    
     //verifica se produto faz parte da assefaz?
@@ -75,34 +70,34 @@ export default class PlanPayment {
   
     const uf = await this.ufService.findUfBySigla(params.uf)
 
-    this.salvarAssociado(associado, params, uf, formaPagamento, valorContrato, dataExpiracao)
+    await this.salvarAssociado(associado, params, uf, formaPagamento, valorContrato, dataExpiracao, tokenBanco.vendedor.id_vendedor)
 
     this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado)
 
-    this.saveResponsavelFinanceiro(params, uf, associado);
+    await this.saveResponsavelFinanceiro(params, uf, associado);
 
-    this.saveDependentes(params, associado);
+    await this.saveDependentes(params, associado);
 
     //this.saveDocuments(params, associado); pular tudo de documento
 
-    const vendedorRetorno = this.createVendedor(params)
+    const vendedorRetorno = this.createVendedor(tokenBanco.vendedor)
 
     const celularAssociado = associado.nu_Celular
     const whattsSmsAssociado = associado.nu_dddCel + associado.nu_Celular
 
     await this.emailConsignado(params, associado)
 
-    this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString())
-
+    await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString())
   }
-  executaPagamento(params: any, associado: TbAssociado, valorContrato: number, diasExpirar: string) {
-    if(params.formaPagamento.gpPagto == 2) {
-      this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado);
 
-      this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, diasExpirar)
+  async executaPagamento(params: any, associado: TbAssociado, valorContrato: number, dataExpiracao: string) {
+    if(params.formaPagamento.gpPagto == 2) {
+      await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado);
+
+      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataExpiracao)
 
       if (params.chkPrimeiraBoleto) {
-        const returnPayment = this.odontoCobService.gerarBoleto(associado, diasExpirar, valorContrato)
+        const returnPayment = await this.odontoCobService.gerarBoleto(associado, dataExpiracao, valorContrato)
         //Continuar linha 575.
       }
     }
@@ -112,18 +107,17 @@ export default class PlanPayment {
     if (params.chkDocumentoConsignado) {
       //documento associado
     } else {
-      await Mail.send((message) => {
-        message
-          .to(associado.ds_email)
-          .subject('Formulário de Autorização de desconto em folha no GDF')
-          .htmlView('mail.sendFormAuthorizationMail', { cliente: associado.nm_associado })
-          .attach('https://www.odontogroup.com.br/vendas/PDF/AUTORIZACAO_DESCONTO_EM_FOLHA_GDF.pdf')
-      })
+      // await Mail.send((message) => {
+      //   message
+      //     .to(associado.ds_email)
+      //     .subject('Formulário de Autorização de desconto em folha no GDF')
+      //     .htmlView('mail.sendFormAuthorizationMail', { cliente: associado.nm_associado })
+      //     .attach('https://www.odontogroup.com.br/vendas/PDF/AUTORIZACAO_DESCONTO_EM_FOLHA_GDF.pdf')
+      // })
     }
   }
 
-  createVendedor(params: any) {
-    const vendedor = params.token.vendedor //todo vendedor pelo token
+  createVendedor(vendedor: any) {
 
     const vendedorRetorno = {} as any
     
@@ -151,22 +145,24 @@ export default class PlanPayment {
     });
   }
 
-  saveDependentes(params: any, associado: TbAssociado) {
-      params.nome_dependente && params.nome_dependente.forEach(resp => {
-        this.dependenteService.saveDependente(resp, associado)
+  async saveDependentes(params: any, associado: TbAssociado) { //todo promise all
+      params.nome_dependente && await params.nome_dependente.forEach(async resp => {
+        await this.dependenteService.saveDependente(resp, associado)
       });
   }
 
-  saveResponsavelFinanceiro(params:any, uf: TbUf, associado: TbAssociado) {
+  async saveResponsavelFinanceiro(params:any, uf: TbUf, associado: TbAssociado) {
+    let ufResponsavelFinanceiro = await this.ufService.findUfBySigla(params.responsavelFinanceiro.uf)
+
     params.chkResp ? 
-      this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, uf)
-      : this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado)
+      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, uf)
+      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, ufResponsavelFinanceiro.id_uf)
   }
 
-  salvarAssociado(associado: TbAssociado, params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime) {
-    const dadosAssociado = this.associadoService.buildAssociado(params, uf, formaPagamento, valorContrato, dataExpiracao);
+  async salvarAssociado(associado: TbAssociado, params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+    const dadosAssociado = await this.associadoService.buildAssociado(params, uf, formaPagamento, valorContrato, dataExpiracao, idVendedor);
     
-    this.associadoService.saveAssociado(associado, dadosAssociado);
+    await this.associadoService.saveAssociado(associado, dadosAssociado);
   }
 
   calculaPagamentoUnico(valorMensalidade: number, gpPagto: number, pagamentoUnico) {

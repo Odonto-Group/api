@@ -6,18 +6,16 @@ import ResponsavelFinanceiroService from './ResponsavelFinanceiroService';
 import UfService from './UfService';
 import { default as axios } from 'axios';
 import EmpresaService from './EmpresaService';
-import Config from '@adonisjs/core/build/standalone';
+import { inject } from '@adonisjs/core/build/standalone';
 import Env from '@ioc:Adonis/Core/Env'
 import TbEmpresa from 'App/Models/TbEmpresa';
-import { DateTime } from 'luxon';
 import Mail from '@ioc:Adonis/Addons/Mail';
 
+@inject()
 export default class OdontoCobService {
-
-    
-    private usuario = Env.get('app.usuario')
-    private senha = Env.get('app.senha')
-    private urlBase = Env.get('app.urlBase')
+    private usuario = Env.get('USUARIO_P4X')
+    private senha = Env.get('SENHA_P4X')
+    private urlBase = Env.get('URL_BASE_P4X')
     
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
@@ -64,16 +62,16 @@ export default class OdontoCobService {
 
         const local = Env.get('app.env');
         if (local !== 'local') {
-            await Mail.send(
-                'emails.sendSell',
-                { idClient, tipoPessoa, primeiroNome, geraOc, dataPrimeiroVencimento, tipo: 'boleto', telemedicina: false },
-                (message) => {
-                message
-                    .to(email)
-                    .bcc('suporte@odontogroup.com.br')
-                    .subject('Assunto do Email');
-            }
-            );
+            // await Mail.send(
+            //     'emails.sendSell',
+            //     { idClient, tipoPessoa, primeiroNome, geraOc, dataPrimeiroVencimento, tipo: 'boleto', telemedicina: false },
+            //     (message) => {
+            //     message
+            //         .to(email)
+            //         .bcc('suporte@odontogroup.com.br')
+            //         .subject('Assunto do Email');
+            // }
+            // );
         }
 
         const retorno = {} as any
@@ -172,18 +170,23 @@ export default class OdontoCobService {
     }
 
     async rodaOdontoCob(url: string, body: BodyBoleto) {
-        const response = await axios.post(`https://p4x.srv.br/api/${url}`, body, {
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.geraToken()}`,
-            },
-        });
-
-        if (response.status === 200) {
-            return response.data;
-        } else {
-            return false;
+        try {
+            const response = await axios.post(`https://p4x.srv.br/api/${url}`, body, {
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${await this.geraToken()}`,
+                },
+            });
+    
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                return false;
+            }
+        } catch (erro) {
+            return false
         }
+        
     }
 
     async  geraToken() {

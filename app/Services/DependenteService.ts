@@ -18,7 +18,7 @@ export default class DependenteService {
     dependente.id_sexo_d = resp.sexo_dependente;
     dependente.id_parentesco_d = resp.parentesco_dependente;
     dependente.cd_status = 0;
-    dependente.save();
+    await dependente.save();
   }
 
 }

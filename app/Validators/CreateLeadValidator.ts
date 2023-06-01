@@ -9,7 +9,7 @@ export default class CreateLeadValidator {
     email: schema.string.optional(),
     cpf: schema.string.optional(),
     cep: schema.string.optional(),
-    data_nascimento: schema.date.optional({ format: 'dd/MM/yyyy' }),
+    data_nascimento: schema.date.optional({ format: 'yyyy/MM/dd' }),
     telefone: schema.number(),
     origem: schema.number(),
   })

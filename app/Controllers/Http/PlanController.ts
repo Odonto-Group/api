@@ -140,12 +140,12 @@ export default class PlanController {
             const dia = DateTime.now().day
   
             if (dia < 5) {
-              pag.data_vigencia_final = DateTime.now().set({ day: 1 }).toFormat('dd/M/yyyy');
+              pag.data_vigencia_final = DateTime.now().set({ day: 1 }).toFormat('yyyy/MM/dd');
             } else {
               const currentDate = DateTime.local();
               const nextMonthDate = currentDate.plus({ months: 1 }).startOf('month');
   
-              pag.data_vigencia_final = nextMonthDate.toFormat('dd/MM/yyyy');
+              pag.data_vigencia_final = nextMonthDate.toFormat('yyyy/MM/dd');
             }
   
             break
@@ -266,7 +266,7 @@ export default class PlanController {
     let datas = [] as any;
     let todayIm = DateTime.local().toFormat('yyyy-MM-dd');
     let nextValue = DateTime.local().plus({ days: 1 }).toFormat('yyyy-MM-dd');
-    let nextSelect = DateTime.local().plus({ days: 1 }).toFormat('dd/MM/yyyy');
+    let nextSelect = DateTime.local().plus({ days: 1 }).toFormat('yyyy/MM/dd');
 
     let month = DateTime.local().month;
     let year = DateTime.local().year;
@@ -275,7 +275,7 @@ export default class PlanController {
     let dia = 5;
     do {
       let dtValue = DateTime.local(year, month, dia).toFormat('yyyy-MM-dd');
-      let dtSelect = DateTime.local(year, month, dia).toFormat('dd/MM/yyyy');
+      let dtSelect = DateTime.local(year, month, dia).toFormat('yyyy/MM/dd');
 
       datas[i] = { value: dtValue, select: dtSelect };
 
@@ -286,7 +286,7 @@ export default class PlanController {
     dia = 5;
     do {
       let dtValue = DateTime.local(year, month, dia).plus({ months: 1 }).toFormat('yyyy-MM-dd');
-      let dtSelect = DateTime.local(year, month, dia).plus({ months: 1 }).toFormat('dd/MM/yyyy');
+      let dtSelect = DateTime.local(year, month, dia).plus({ months: 1 }).toFormat('yyyy/MM/dd');
 
       datas[i] = { value: dtValue, select: dtSelect };
 

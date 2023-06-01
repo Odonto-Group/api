@@ -32,25 +32,25 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.tx_EndBairro = params.bairro;
     responsavelFinanceiro.tx_EndCidade = params.cidade;
     responsavelFinanceiro.id_uf_rf = uf.id_uf;
-    responsavelFinanceiro.setCelularAttribute = params.celular;
-    responsavelFinanceiro.save();
+    responsavelFinanceiro.setCelularAttribute(params.telefone_responsavel_financeiro);
+    await responsavelFinanceiro.save();
   }
 
-  async saveResponsavelFinanceiro(params: any, associado: TbAssociado) {
+  async saveResponsavelFinanceiro(params: any, associado: TbAssociado, ufId: number) {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
-    responsavelFinanceiro.nu_CPFRespFin = params.cpf_responsavel_financeiro;
-    responsavelFinanceiro.nm_RespFinanc = params.nome_responsavel_financeiro;
-    responsavelFinanceiro.dt_NascRespFin = params.data_nascimento_responsavel_financeiro;
-    responsavelFinanceiro.ds_emailRespFin = params.email_responsavel_financeiro;
-    responsavelFinanceiro.nu_CEP = params.cep_responsavel_financeiro;
-    responsavelFinanceiro.tx_EndLograd = params.endereco_responsavel_financeiro;
-    responsavelFinanceiro.tx_EndNumero = params.numero_responsavel_financeiro;
-    responsavelFinanceiro.tx_EndCompl = params.complemento_responsavel_financeiro || "";
-    responsavelFinanceiro.tx_EndBairro = params.bairro_responsavel_financeiro;
-    responsavelFinanceiro.tx_EndCidade = params.cidade_responsavel_financeiro;
-    responsavelFinanceiro.id_uf_rf = params.uf_responsavel_financeiro;
-    responsavelFinanceiro.setCelularAttribute(params.telefone_responsavel_financeiro);
-    responsavelFinanceiro.save();
+    responsavelFinanceiro.nu_CPFRespFin = params.responsavelFinanceiro.cpf;
+    responsavelFinanceiro.nm_RespFinanc = params.responsavelFinanceiro.nome;
+    responsavelFinanceiro.dt_NascRespFin = params.responsavelFinanceiro.dataNascimento;
+    responsavelFinanceiro.ds_emailRespFin = params.responsavelFinanceiro.email;
+    responsavelFinanceiro.nu_CEP = params.responsavelFinanceiro.cep;
+    responsavelFinanceiro.tx_EndLograd = params.responsavelFinanceiro.enderenco;
+    responsavelFinanceiro.tx_EndNumero = params.responsavelFinanceiro.numero;
+    responsavelFinanceiro.tx_EndCompl = params.responsavelFinanceiro.complemento || "";
+    responsavelFinanceiro.tx_EndBairro = params.responsavelFinanceiro.bairro;
+    responsavelFinanceiro.tx_EndCidade = params.responsavelFinanceiro.cidade;
+    responsavelFinanceiro.id_uf_rf = ufId;
+    responsavelFinanceiro.setCelularAttribute(params.responsavelFinanceiro.telefone);
+    await responsavelFinanceiro.save();
   }
 }

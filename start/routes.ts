@@ -43,14 +43,11 @@ Route.group(() => {
 
 Route.group(() => {
   Route.get('getPlanValue/:state/:token?', 'PlanController.index')
-  .where(':state',{
-    
-  })
   Route.get('getPlanDetails/:token', 'PlanController.planByToken')
 }).prefix('/info')
 
 Route.group(() => {
-  Route.get('/plan', 'PlanPayment.index')
+  Route.post('/plan', 'PlanPayment.index')
 }).prefix('/payment')
 
 

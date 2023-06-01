@@ -9,43 +9,43 @@ export default class TbResponsavelFinanceiro extends BaseModel {
   @column()
   public id_associado_rf: number
 
-  @column()
+  @column({columnName: "nu_CPFRespFin"})
   public nu_CPFRespFin: string
 
-  @column()
+  @column({columnName: "nm_RespFinanc"})
   public nm_RespFinanc: string
 
-  @column()
+  @column({columnName: "dt_NascRespFin"})
   public dt_NascRespFin: Date
 
-  @column()
+  @column({columnName: "ds_emailRespFin"})
   public ds_emailRespFin: string
 
-  @column()
+  @column({columnName: "nu_CEP"})
   public nu_CEP: string
 
-  @column()
+  @column({columnName: "tx_EndLograd"})
   public tx_EndLograd: string
 
-  @column()
+  @column({columnName: "tx_EndNumero"})
   public tx_EndNumero: string
 
-  @column()
+  @column({columnName: "tx_EndCompl"})
   public tx_EndCompl: string
 
-  @column()
+  @column({columnName: "tx_EndBairro"})
   public tx_EndBairro: string
 
-  @column()
+  @column({columnName: "tx_EndCidade"})
   public tx_EndCidade: string
 
   @column()
   public id_uf_rf: number
 
-  @column()
+  @column({columnName: "nu_dddRespFin"})
   public nu_dddRespFin: number
 
-  @column()
+  @column({columnName: "nu_telRespFin"})
   public nu_telRespFin: number
 
   setCelularAttribute(value: string){
