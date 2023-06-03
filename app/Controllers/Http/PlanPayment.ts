@@ -42,9 +42,10 @@ export default class PlanPayment {
   async index({ request, response }: HttpContextContract) {
     await Database.transaction(async (transaction) => {
       try {
-        await this.fluxoPagamentoPlano(request, transaction);
+        const retorno = await this.fluxoPagamentoPlano(request, transaction);
         transaction.commit();
-        //transaction.rollback();
+
+        return retorno;
       } catch (error) {
         transaction.rollback();
         console.log(error);
@@ -100,7 +101,7 @@ export default class PlanPayment {
 
     //await this.emailConsignado(params, associado)
 
-    return  await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+    return await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   }
 
   async executaPagamento(
