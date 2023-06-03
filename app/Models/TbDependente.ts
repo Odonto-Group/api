@@ -2,6 +2,8 @@ import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class Dependente extends BaseModel {
+  public static table = 'tb_dependente'
+
   @column({ isPrimary: true })
   public id_dependente: number
 
