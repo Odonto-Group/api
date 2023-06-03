@@ -22,7 +22,7 @@ import { FormaPagamento } from 'App/Enums/FormaPagamento';
 export default class OdontoCobService {
     private usuario = Env.get('USUARIO_P4X')
     private senha = Env.get('SENHA_P4X')
-    private urlBase = Env.get('URL_BASE_P4X')
+    private urlBaseP4x = Env.get('URL_BASE_P4X')
     
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
@@ -63,7 +63,7 @@ export default class OdontoCobService {
             
             const linkPagamento = `https://p4x.srv.br/api/v1.0/boletos/${pagamento.id}/imprimir`
 
-            this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
+            await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
 
             await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento, dataPrimeiroVencimento, this.urlBase, tipoPessoa.tipoPessoa, tipoPessoa.numeroProsposta, transaction);
         
@@ -237,7 +237,7 @@ export default class OdontoCobService {
         try {
             const token = await this.geraToken();
 
-            const response = await axios.post(`${Env.get('URL_BASE_P4X_DEV')}boletos`, body, {
+            const response = await axios.post(`${this.urlBaseP4x}/boletos`, body, {
                 headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -262,7 +262,7 @@ export default class OdontoCobService {
         };
 
         try {
-            const response = await axios.post(`${this.urlBase}sandbox/conta/token`, body, {
+            const response = await axios.post(`${this.urlBaseP4x}/conta/token`, body, {
             headers: {
                 'Content-Type': 'application/json'
             }
