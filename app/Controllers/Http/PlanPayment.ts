@@ -57,7 +57,7 @@ export default class PlanPayment {
     const params = request.all()
     const token = params.token
 
-    if(token && (await this.tokenService.isTokenValido(token))) {
+    if(token && !(await this.tokenService.isTokenValido(token))) {
         throw new TokenInvalidoException();
     }
 
