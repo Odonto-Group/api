@@ -126,9 +126,9 @@ export default class PlanPayment {
         }
 
         if (responsavelFinanceiroBanco) {
-          this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
+          await  this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
         } else {
-          this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
+          await this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
         }
       } else {
         returnPayment.formaPagamento = "Débito em Conta";
@@ -149,9 +149,9 @@ export default class PlanPayment {
         }
 
         if (responsavelFinanceiroBanco) {
-          this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
+          await this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
         } else {
-          this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
+          await this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
         }
       }
     }

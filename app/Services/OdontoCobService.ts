@@ -60,7 +60,8 @@ export default class OdontoCobService {
 
         const retorno = {} as RetornoGeracaoPagamento
         if (pagamento) {
-            const linkPagamento = `https://p4x.srv.br/pagamentos/?token=${pagamento.id}`
+            
+            const linkPagamento = `https://p4x.srv.br/api/v1.0/boletos/${pagamento.id}/imprimir`
 
             this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
 
@@ -236,7 +237,7 @@ export default class OdontoCobService {
         try {
             const token = await this.geraToken();
 
-            const response = await axios.post(`https://p4x.srv.br/sandbox/boletos`, body, {
+            const response = await axios.post(`${Env.get('URL_BASE_P4X_DEV')}boletos`, body, {
                 headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
