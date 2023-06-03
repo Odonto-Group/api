@@ -1,11 +1,13 @@
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import TbAssociado from "App/Models/TbAssociado";
 import TbDependente from "App/Models/TbDependente";
+import TbParentesco from "App/Models/TbParentesco";
 import TbSexo from "App/Models/TbSexo";
 export default class DependenteService {
 
   async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract) {
     const idSexo = await TbSexo.query().where('nm_sexo', novoDependente.sexo).first();
+    const idParentesco = await TbParentesco.query().where('nm_siglagraupar', novoDependente.parentesco).first()
 
     const dependente = new TbDependente();
     dependente.nm_dependente = novoDependente.nome;
@@ -20,7 +22,7 @@ export default class DependenteService {
     dependente.nm_mae = novoDependente.nomeMae;
     dependente.cd_associado_d = associado.id_associado;
     dependente.id_sexo_d = idSexo?.id_sexo || 0;
-    dependente.id_parentesco_d = novoDependente.parentesco;
+    dependente.id_parentesco_d = idParentesco?.id_parentesco || 14;
     dependente.cd_status = 0;
     await dependente.useTransaction(transaction).save();
   }
