@@ -43,7 +43,7 @@ export default class Dependente extends BaseModel {
   @column()
   public nu_vl_mensalidade: number
 
-  setOrgaoExpedidor(orgao: string, uf: string){
-      this.ds_orgao_expedidor = orgao + '-' + uf;
+  setOrgaoExpedidor(orgaoExpedidor: string, uf: string){
+      this.ds_orgao_expedidor = orgaoExpedidor + '-' + uf;
   }
 }
