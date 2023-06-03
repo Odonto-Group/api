@@ -1,18 +1,12 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 import { inject } from '@adonisjs/fold'
-import { PlansName } from 'App/Enums/PlansName';
 import { Category } from 'App/Enums/Category';
 import PlanService from 'App/Services/PlanService';
 import TokenService from 'App/Services/TokenService';
 import CarenciaProdutoService from 'App/Services/CarenciaProdutoService';
 import VendedorService from 'App/Services/VendedorService';
 import { DateTime } from 'luxon';
-import TbEquipe from 'App/Models/TbEquipe';
-import TbAgencia from 'App/Models/TbAgencia';
-import TbPromotor from 'App/Models/TbPromotor';
-import TbAngariador from 'App/Models/TbAngariador';
-import Env from '@ioc:Adonis/Core/Env'
 import TbOrgao from 'App/Models/TbOrgao';
 import TbFontePagadora from 'App/Models/TbFontePagadora';
 import TbPerfilServidor from 'App/Models/TbPerfilServidor';
@@ -22,8 +16,6 @@ import TbBanco from 'App/Models/TbBanco';
 import TbParentesco from 'App/Models/TbParentesco';
 import TbEstadoCivil from 'App/Models/TbEstadoCivil';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
-import TbVendedor from 'App/Models/TbVendedor';
-import PlanValidator from 'App/Validators/PlanValidator';
 import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import UfService from 'App/Services/UfService';
 import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
@@ -44,7 +36,7 @@ export default class PlanController {
     const token = params.token;
     const state = params.state;
 
-    await this.validaTokenValido(token)
+    await this.validaToken(token)
 
     if(state && await this.ufService.isUFValido(state)) {
       throw new UfInvalidoException()
@@ -66,7 +58,7 @@ export default class PlanController {
   async planByToken({ request, response }: HttpContextContract) {
     const token = request.params().token
 
-    await this.validaTokenValido(token)
+    await this.validaToken(token)
 
     const tokenBanco = await this.tokenService.findToken(token)
 
@@ -310,8 +302,8 @@ export default class PlanController {
     }
   }
 
-  async validaTokenValido(token: string) {
-    if(token && await this.tokenService.isTokenValido(token)) {
+  async validaToken(token: string) {
+    if(token && !(await this.tokenService.isTokenValido(token))) {
       throw new TokenInvalidoException()
     }
   }

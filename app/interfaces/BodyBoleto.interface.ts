@@ -30,4 +30,5 @@ interface BodyBoleto {
     smsEnvio: boolean;
     nossoNumero: string;
     convenioId: string;
+    incluirPix: boolean
   }

@@ -1,6 +1,5 @@
 import DocumentoPessoaInvalido from 'App/Exceptions/DocumentoPessoaInvalido';
 import TbAssociado from 'App/Models/TbAssociado';
-import TbPagamentoBoletoOdontoCob from 'App/Models/TbPagamentoBoletoOdontoCob';
 import PagamentoBoletoOdontoCobService from './PagamentoBoletoOdontoCobService';
 import ResponsavelFinanceiroService from './ResponsavelFinanceiroService';
 import UfService from './UfService';
@@ -9,7 +8,15 @@ import EmpresaService from './EmpresaService';
 import { inject } from '@adonisjs/core/build/standalone';
 import Env from '@ioc:Adonis/Core/Env'
 import TbEmpresa from 'App/Models/TbEmpresa';
-import Mail from '@ioc:Adonis/Addons/Mail';
+import { DateTime } from 'luxon';
+import AssociadoService from './AssociadoService';
+import PagamentoCartaoOdontoCobService from './PagamentoCartaoOdontoCobService';
+import { MailSenderService } from './MailSenderService';
+import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
+import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
+import NaoFoiPossivelCriarPagamento from 'App/Exceptions/NaoFoiPossivelEfetuarPagamento';
+import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.interface';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
 
 @inject()
 export default class OdontoCobService {
@@ -19,68 +26,121 @@ export default class OdontoCobService {
     
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
-        private responsavelFinanceiroService: ResponsavelFinanceiroService,
         private ufService: UfService,
-        private empresaService: EmpresaService
+        private empresaService: EmpresaService,
+        private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
+        private mailSenderService: MailSenderService
     ){}
 
-    async gerarBoleto(associado: TbAssociado, dataPrimeiroVencimento: string, valorMensalidade: number) {
-        let url = 'v1/boletos'
+    async gerarBoleto(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string, valorMensalidade: number, transaction: TransactionClientContract, nomePlano: string): Promise<RetornoGeracaoPagamento> {
+        let url = 'api/v1/boletos'
 
-        let tipoPessoa;
-        let resquestBody;
-        let idClient;
-        let numeroProsposta;
-        let primeiroNome;
-        let email;
+        let tipoPessoa = {} as TipoPessoaBoleto
         if (associado.nu_cpf.length == 11) {
-            tipoPessoa = 'PF'
-            idClient = associado.id_associado;
-            numeroProsposta = associado.nr_proposta
-            primeiroNome = associado.nm_associado.split(' ')[0]
-            email = associado.ds_email
-            resquestBody = await this.criaBodyPessoaFisica(associado, dataPrimeiroVencimento, valorMensalidade);
+            tipoPessoa.tipoPessoa = 'PF'
+            tipoPessoa.idClient = associado.id_associado;
+            tipoPessoa.numeroProsposta = associado.nr_proposta
+            tipoPessoa.primeiroNome = associado.nm_associado.split(' ')[0]
+            tipoPessoa.email = associado.ds_email
+            tipoPessoa.bodyPagamento = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento, valorMensalidade);
         } else if (associado.nu_cpf.length == 14) {
             const empresa = await this.empresaService.buscarEmpresa(associado.nu_cpf)
-            idClient = empresa.id_cdempresa
-            numeroProsposta = empresa.nr_proposta
-            tipoPessoa = 'PJ'
-            primeiroNome = empresa.nm_responsavel.split(' ')[0]
-            email = 'carlos.a.queiroz@gmail.com';
-            resquestBody = this.criaBodyPessoaJuridica(empresa, dataPrimeiroVencimento, valorMensalidade);
+            tipoPessoa.idClient = empresa.id_cdempresa
+            tipoPessoa.numeroProsposta = empresa.nr_proposta
+            tipoPessoa.tipoPessoa = 'PJ'
+            tipoPessoa.primeiroNome = empresa.nm_responsavel.split(' ')[0]
+            tipoPessoa.email = 'carlos.a.queiroz@gmail.com';
+            tipoPessoa.bodyPagamento = await this.criaBodyPessoaJuridica(empresa, dataPrimeiroVencimento, valorMensalidade);
         } else {
             throw new DocumentoPessoaInvalido();
         }
 
-        const geraOc = await this.rodaOdontoCob(url, resquestBody)
-
-        if (geraOc) {
-            this.pagamentoBoletoOdontoCobService.removeByClient(idClient);
-
-            await this.pagamentoBoletoOdontoCobService.savePagamento(idClient, geraOc, dataPrimeiroVencimento, this.urlBase, tipoPessoa, numeroProsposta);
-        }
-
-        const local = Env.get('app.env');
-        if (local !== 'local') {
-            // await Mail.send(
-            //     'emails.sendSell',
-            //     { idClient, tipoPessoa, primeiroNome, geraOc, dataPrimeiroVencimento, tipo: 'boleto', telemedicina: false },
-            //     (message) => {
-            //     message
-            //         .to(email)
-            //         .bcc('suporte@odontogroup.com.br')
-            //         .subject('Assunto do Email');
-            // }
-            // );
-        }
-
-        const retorno = {} as any
         
-        retorno.linkPagamento = this.urlBase + 'v1.0/boletos/$geraOC->id/imprimir';
-        retorno.formaPagamento = 'Boleto'
+        const pagamento = await this.rodaOdontoCob(url, tipoPessoa.bodyPagamento)
+
+        const retorno = {} as RetornoGeracaoPagamento
+        if (pagamento) {
+            const linkPagamento = `https://p4x.srv.br/pagamentos/?token=${pagamento.id}`
+
+            this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
+
+            await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento, dataPrimeiroVencimento, this.urlBase, tipoPessoa.tipoPessoa, tipoPessoa.numeroProsposta, transaction);
+        
+            const planoContent = { 
+                "nome-plano": nomePlano,
+                "data-vencimento": DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
+                "nome-cliente": associado.nm_associado,
+                "link-pagamento": linkPagamento
+            };
+    
+            await this.mailSenderService.sendEmailAdesao("gui.henmelo@gmail.com", 'Bem-vindo à OdontoGroup.', planoContent)
+    
+            retorno.linkPagamento = linkPagamento;
+            retorno.formaPagamento = FormaPagamento.BOLETO
+        } else {
+            throw new NaoFoiPossivelCriarPagamento()
+        }
 
         return retorno
-    } 
+    }
+
+    async geraCartao(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string): Promise<RetornoGeracaoPagamento> {
+        const uf = await this.ufService.findUfById(associado.id_UF_a);
+        const url = '/v1.1/sacadores/pagamentos/token';
+
+        this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
+    
+        const dataExpiracao = DateTime.local().plus({ days: 7 }).toFormat('yyyy/mm/dd')
+
+        const body = {
+                "dataExpiracao": dataExpiracao,
+                "compraId": associado.nr_proposta,
+                "compradorId": associado.id_associado,
+                "descricao": "ADESÃO PLANO ODONTOLÓGICO - ODONTOGROUP",
+                "valor": associado.nu_vl_mensalidade,
+                "compradorNomeCompleto": responsavelFinanceiro.nm_RespFinanc,
+                "compradorDocumentoTipo": "PF",
+                "compradorDocumentoNumero": responsavelFinanceiro.nu_CPFRespFin,
+                "compradorEmail": responsavelFinanceiro.ds_emailRespFin,
+                "compradorTelefone": responsavelFinanceiro.nu_dddRespFin + responsavelFinanceiro.nu_telRespFin,
+                "compradorEnderecoLogradouro": responsavelFinanceiro.tx_EndLograd,
+                "compradorEnderecoNumero": responsavelFinanceiro.tx_EndNumero,
+                "compradorEnderecoComplemento": responsavelFinanceiro.tx_EndCompl,
+                "compradorEnderecoCep" : responsavelFinanceiro.nu_CEP,
+                "compradorEnderecoCidade": responsavelFinanceiro.tx_EndCidade,
+                "compradorEnderecoEstado": uf.sigla,
+                "salvarCartao": true
+        }
+    
+        const retorno = {} as RetornoGeracaoPagamento
+
+        const pagamento = await this.rodaOdontoCob(url, body)
+
+        if (pagamento) {
+            const dataD7 = DateTime.local().plus({ days: 7 }).toFormat('yyyy-MM-dd')
+
+            const linkPagamento = `https://p4x.srv.br/pagamentos/?token=${pagamento.id}`
+    
+            this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
+    
+            const planoContent = { 
+            "nome-plano": nomePlano,
+            "data-vencimento": DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
+            "nome-cliente": associado.nm_associado,
+            "link-pagamento": linkPagamento
+            };
+    
+            this.mailSenderService.sendEmailAdesao('gui.henmelo@gmail.com', 'Bem-vindo à OdontoGroup.', planoContent)
+    
+            retorno.formaPagamento = FormaPagamento.CARTAO_CREDITO
+            retorno.linkPagamento = linkPagamento
+        } else {
+            throw new NaoFoiPossivelCriarPagamento()
+        }
+
+        return retorno;
+    }
+    
 
     async criaBodyPessoaJuridica(empresa: TbEmpresa, dataPrimeiroVencimento: string, valorMensalidade: number): Promise<BodyBoleto> {
         await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(empresa.nu_cnpj)
@@ -121,13 +181,13 @@ export default class OdontoCobService {
             pagadorCelular: `${empresa.nu_dddcel ?? '00'}${empresa.nu_celular ?? '000000000'}`,
             smsEnvio: false,
             nossoNumero: nossoNumero,
-            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8'
+            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8',
+            incluirPix: true,
           };
     }
 
-    async criaBodyPessoaFisica(associado: TbAssociado, dataPrimeiroVencimento: string, valorMensalidade: number): Promise<BodyBoleto> {
+    async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string, valorMensalidade: number): Promise<BodyBoleto> {
         await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(associado.id_associado.toString())
-        const responsavelFinanceiro = await this.responsavelFinanceiroService.buscarResponsavelFinanceiroPorIdAssociado(associado.id_associado)
         const uf = await this.ufService.findUfById(associado.id_UF_a)
 
         const nome = responsavelFinanceiro.nm_RespFinanc.split(' ')
@@ -165,16 +225,21 @@ export default class OdontoCobService {
             pagadorCelular: responsavelFinanceiro.nu_dddRespFin.toString(),
             smsEnvio: false,
             nossoNumero: nossoNumero,
-            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8'
+            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8',
+            incluirPix: true,
+
             };
     }
+    
 
-    async rodaOdontoCob(url: string, body: BodyBoleto) {
+    async rodaOdontoCob(url: string, body: any) {
         try {
-            const response = await axios.post(`https://p4x.srv.br/api/${url}`, body, {
+            const token = await this.geraToken();
+
+            const response = await axios.post(`https://p4x.srv.br/sandbox/boletos`, body, {
                 headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await this.geraToken()}`,
+                'Authorization': `Bearer ${token}`,
                 },
             });
     
@@ -196,7 +261,7 @@ export default class OdontoCobService {
         };
 
         try {
-            const response = await axios.post(`${this.urlBase}v1/conta/token`, body, {
+            const response = await axios.post(`${this.urlBase}sandbox/conta/token`, body, {
             headers: {
                 'Content-Type': 'application/json'
             }

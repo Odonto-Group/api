@@ -17,6 +17,13 @@ import DocumentService from 'App/Services/DocumentService';
 import TbAssociado from 'App/Models/TbAssociado';
 import PagamentoDebitoService from 'App/Services/PagamentoDebitoService';
 import OdontoCobService from 'App/Services/OdontoCobService';
+import NaoFoiPossivelGerarBoletoException from 'App/Exceptions/NaoFoiPossivelGerarBoletoException';
+import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
+import SmsService from 'App/Services/SmsService';
+import { Exception } from '@adonisjs/core/build/standalone';
+import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
+import { RequestContract } from '@ioc:Adonis/Core/Request';
+import NaoFoiPossivelGerarPagamentoCartaoException from 'App/Exceptions/NaoFoiPossivelGerarPagamentoCartaoException';
 
 @inject()
 export default class PlanPayment {
@@ -29,13 +36,27 @@ export default class PlanPayment {
       , private dependenteService: DependenteService
       , private documentService: DocumentService
       , private pagamentoDebitoService: PagamentoDebitoService
-      , private odontoCobService: OdontoCobService) {} 
+      , private odontoCobService: OdontoCobService
+      , private smsService: SmsService) {} 
 
   async index({ request, response }: HttpContextContract) {
+    await Database.transaction(async (transaction) => {
+      try {
+        await this.fluxoPagamentoPlano(request, transaction);
+        transaction.commit();
+        //transaction.rollback();
+      } catch (error) {
+        transaction.rollback();
+        console.log(error);
+      }
+    })
+  }
+
+  async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
     const params = request.all()
     const token = params.token
 
-    if(!token) {
+    if(token && (await this.tokenService.isTokenValido(token))) {
         throw new TokenInvalidoException();
     }
 
@@ -47,7 +68,7 @@ export default class PlanPayment {
 
     const associado = await this.associadoService.findAssociado(params.cpf);
 
-    if (associado.cd_status != 0) {
+    if (associado.cd_status && associado.cd_status != 0) {
         throw new AssociadoComPlanoJaCadastrado();
     }
 
@@ -58,49 +79,83 @@ export default class PlanPayment {
     }
 
     let dataExpiracao = this.calcularDataExpiracao(params);
-    let dataAgora = DateTime.local();
-
-    let diasParaExpirar = dataAgora.diff(dataExpiracao).plus(1).toString();
 
     let valorMensalidade = this.calculaPagamentoUnico(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 
-    let quantidadeVidas = this.calculaNumeroVidas(1, params.nome_dependente);
+    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes);
     
     const valorContrato = valorMensalidade * quantidadeVidas;
   
     const uf = await this.ufService.findUfBySigla(params.uf)
 
-    await this.salvarAssociado(associado, params, uf, formaPagamento, valorContrato, dataExpiracao, tokenBanco.vendedor.id_vendedor)
+    await this.salvarAssociado(associado, params, uf, formaPagamento, valorContrato, dataExpiracao, tokenBanco.vendedor.id_vendedor, transaction)
 
-    this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado)
+    this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado, transaction)
 
-    await this.saveResponsavelFinanceiro(params, uf, associado);
+    const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, uf, associado, transaction);
 
-    await this.saveDependentes(params, associado);
+    await this.saveDependentes(params, associado, transaction);
 
     //this.saveDocuments(params, associado); pular tudo de documento
 
-    const vendedorRetorno = this.createVendedor(tokenBanco.vendedor)
+    //await this.emailConsignado(params, associado)
 
-    const celularAssociado = associado.nu_Celular
-    const whattsSmsAssociado = associado.nu_dddCel + associado.nu_Celular
-
-    await this.emailConsignado(params, associado)
-
-    await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString())
+    return  await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   }
 
-  async executaPagamento(params: any, associado: TbAssociado, valorContrato: number, dataExpiracao: string) {
-    if(params.formaPagamento.gpPagto == 2) {
-      await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado);
+  async executaPagamento(
+      params: any,
+      associado: TbAssociado,
+      valorContrato: number,
+      dataExpiracao: string,
+      responsavelFinanceiroBanco: TbResponsavelFinanceiro,
+      transaction: TransactionClientContract,
+      nomePlano: string) {
+    let returnPayment: any
+    if(params.formaPagamento.gpPagto == 2) { //Boleto
+      await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
-      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataExpiracao)
+      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataExpiracao, transaction)
 
-      if (params.chkPrimeiraBoleto) {
-        const returnPayment = await this.odontoCobService.gerarBoleto(associado, dataExpiracao, valorContrato)
-        //Continuar linha 575.
+      if (params.primeiraBoleto) {
+        returnPayment = await this.odontoCobService.gerarBoleto(associado, responsavelFinanceiroBanco, dataExpiracao, valorContrato, transaction, nomePlano)
+
+        if (!returnPayment.linkPagamento) {
+          throw new NaoFoiPossivelGerarBoletoException();
+        }
+
+        if (responsavelFinanceiroBanco) {
+          this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
+        } else {
+          this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
+        }
+      } else {
+        returnPayment.formaPagamento = "Débito em Conta";
+        returnPayment.agencia = params.agencia;
+        returnPayment.conta = params.conta;
+        returnPayment.linkPagamento = '';
+
+        await this.associadoService.ativarPlanoAssociado(associado);
+      }
+    } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
+      throw new Exception("PAGAMENTO CONSIGANDO NAO FOI DESENVOLVIDO");
+    } else {
+      if (associado.id_meiopagto_a == 1) {//CARTAO
+        returnPayment = await this.odontoCobService.geraCartao(associado, responsavelFinanceiroBanco, transaction, dataExpiracao, nomePlano)
+
+        if (!returnPayment.linkPagamento) {
+          throw new NaoFoiPossivelGerarPagamentoCartaoException();
+        }
+
+        if (responsavelFinanceiroBanco) {
+          this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
+        } else {
+          this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
+        }
       }
     }
+
+    return returnPayment;
   }
 
   async emailConsignado(params: any, associado: TbAssociado) {
@@ -145,32 +200,32 @@ export default class PlanPayment {
     });
   }
 
-  async saveDependentes(params: any, associado: TbAssociado) { //todo promise all
-      params.nome_dependente && await params.nome_dependente.forEach(async resp => {
-        await this.dependenteService.saveDependente(resp, associado)
+  async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract) { //todo promise all
+      params.dependentes && await params.dependentes.forEach(async depen => {
+        await this.dependenteService.saveDependente(depen, associado, transaction)
       });
   }
 
-  async saveResponsavelFinanceiro(params:any, uf: TbUf, associado: TbAssociado) {
+  async saveResponsavelFinanceiro(params:any, uf: TbUf, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     let ufResponsavelFinanceiro = await this.ufService.findUfBySigla(params.responsavelFinanceiro.uf)
 
-    params.chkResp ? 
-      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, uf)
-      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, ufResponsavelFinanceiro.id_uf)
+    return params.chkResp ? 
+      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, uf, transaction)
+      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, ufResponsavelFinanceiro.id_uf, transaction)
   }
 
-  async salvarAssociado(associado: TbAssociado, params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+  async salvarAssociado(associado: TbAssociado, params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
     const dadosAssociado = await this.associadoService.buildAssociado(params, uf, formaPagamento, valorContrato, dataExpiracao, idVendedor);
     
-    await this.associadoService.saveAssociado(associado, dadosAssociado);
+    await this.associadoService.saveAssociado(associado, dadosAssociado, transaction);
   }
 
   calculaPagamentoUnico(valorMensalidade: number, gpPagto: number, pagamentoUnico) {
     return gpPagto == 3 && pagamentoUnico ? valorMensalidade * 12 : valorMensalidade;
   }
 
-  calculaNumeroVidas(quantidadeVidas: number, nome_dependente: []) {
-    return quantidadeVidas + (nome_dependente && nome_dependente.length || 0);
+  calculaNumeroVidas(quantidadeVidas: number, dependentes: []) {
+    return quantidadeVidas + (dependentes && dependentes.length || 0);
   }
 
   calcularDataExpiracao(params: any): DateTime {

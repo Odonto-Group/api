@@ -6,6 +6,7 @@ import TbModProduto from './TbModProduto'
 import TbTipoPreco from './TbTipoPreco'
 import TipoPreco from './TbTipoPreco'
 import TbParceiro from './TbParceiro'
+import TbAssociado from './TbAssociado'
 
 export default class TbProdutoComercial extends BaseModel {
     public static table = 'tb_ProdutoComercial'
@@ -13,7 +14,7 @@ export default class TbProdutoComercial extends BaseModel {
     @column({ isPrimary: true })
     public id_prodcomerc: number;
   
-    @column()
+    @column({columnName: 'nm_prodcomerc'})
     public nm_prodcomerc: string;
   
     @column()

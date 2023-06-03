@@ -1,24 +1,25 @@
+import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import TbAssociado from "App/Models/TbAssociado";
 import TbDependente from "App/Models/TbDependente";
 export default class DependenteService {
 
-  async saveDependente(resp: any, associado: TbAssociado) {
+  async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract) {
     const dependente = new TbDependente();
-    dependente.nm_dependente = resp.nome_dependente;
-    dependente.nu_cpf = resp.cpf_dependente;
-    dependente.nu_rg = resp.rg_dependente;
+    dependente.nm_dependente = novoDependente.nome;
+    dependente.nu_cpf = novoDependente.cpf;
+    dependente.nu_rg = novoDependente.rg;
     dependente.setOrgaoExpedidor(
-        resp.rg_dependente,
-        resp.orgao_expedidor_uf_dependente
+        novoDependente.rg,
+        novoDependente.orgaoExpedidorUf
     );
-    dependente.nu_cns = resp.cns_dependente;
-    dependente.dt_nasc = resp.dt_nasc_dependente;
-    dependente.nm_mae = resp.mae_dependente;
+    dependente.nu_cns = novoDependente.cns;
+    dependente.dt_nasc = novoDependente.dataNascimento;
+    dependente.nm_mae = novoDependente.nomeMae;
     dependente.cd_associado_d = associado.id_associado;
-    dependente.id_sexo_d = resp.sexo_dependente;
-    dependente.id_parentesco_d = resp.parentesco_dependente;
+    dependente.id_sexo_d = novoDependente.sexo;
+    dependente.id_parentesco_d = novoDependente.parentesco;
     dependente.cd_status = 0;
-    await dependente.save();
+    await dependente.useTransaction(transaction).save();
   }
 
 }

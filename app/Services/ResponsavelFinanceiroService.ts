@@ -1,6 +1,7 @@
-import TbResponsavelFinanceiro from "App/Models/TbResponsvelFinanceiro";
+import TbResponsavelFinanceiro from "App/Models/TbResponsavelFinanceiro";
 import TbAssociado from "App/Models/TbAssociado";
 import TbUf from "App/Models/TbUf";
+import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 
 export default class ResponsavelFinanceiroService {
 
@@ -11,14 +12,15 @@ export default class ResponsavelFinanceiroService {
         .first() || new TbResponsavelFinanceiro
   }
 
-  async deleteResponsavelFinanceiroByIdAssociado(id_associado_rf: number) {
+  async deleteResponsavelFinanceiroByIdAssociado(id_associado_rf: number, transaction: TransactionClientContract) {
     await TbResponsavelFinanceiro
         .query()
         .where('id_associado_rf', id_associado_rf)
+        .useTransaction(transaction)
         .delete();
   }
 
-  async saveResponsavelFinanceiroByAssociado(params: any, associado: TbAssociado, uf: TbUf) {
+  async saveResponsavelFinanceiroByAssociado(params: any, associado: TbAssociado, uf: TbUf, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.cpf;
@@ -27,16 +29,16 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.ds_emailRespFin = params.email_titular;
     responsavelFinanceiro.nu_CEP = params.cep;
     responsavelFinanceiro.tx_EndLograd = params.endereco;
-    responsavelFinanceiro.tx_EndNumero = params.numero_casa;
+    responsavelFinanceiro.tx_EndNumero = params.numero_casa;  
     responsavelFinanceiro.tx_EndCompl = params.complemento || "";
     responsavelFinanceiro.tx_EndBairro = params.bairro;
     responsavelFinanceiro.tx_EndCidade = params.cidade;
     responsavelFinanceiro.id_uf_rf = uf.id_uf;
     responsavelFinanceiro.setCelularAttribute(params.telefone_responsavel_financeiro);
-    await responsavelFinanceiro.save();
+    return await responsavelFinanceiro.useTransaction(transaction).save();
   }
 
-  async saveResponsavelFinanceiro(params: any, associado: TbAssociado, ufId: number) {
+  async saveResponsavelFinanceiro(params: any, associado: TbAssociado, ufId: number, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.responsavelFinanceiro.cpf;
@@ -51,6 +53,6 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.tx_EndCidade = params.responsavelFinanceiro.cidade;
     responsavelFinanceiro.id_uf_rf = ufId;
     responsavelFinanceiro.setCelularAttribute(params.responsavelFinanceiro.telefone);
-    await responsavelFinanceiro.save();
+    return await responsavelFinanceiro.useTransaction(transaction).save();
   }
 }

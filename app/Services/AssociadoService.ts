@@ -1,16 +1,24 @@
+import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
+import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import TbUf from 'App/Models/TbUf';
 import { DateTime } from 'luxon';
 
 export default class AssociadoService {
+  async ativarPlanoAssociado(associado: TbAssociado) {
+    await TbAssociado.query()
+      .where("id_associado", associado.id_associado)
+      .update({cd_status: 1})
+  }
 
-  async saveAssociado(associado: TbAssociado, dadosAssociado: TbAssociado) {
+  async saveAssociado(associado: TbAssociado, dadosAssociado: TbAssociado, transaction: TransactionClientContract) {
     if (!associado) {
       associado = new TbAssociado
     }
 
     associado.merge(dadosAssociado);
+    associado.useTransaction(transaction);
 
     await associado.save()
   }
@@ -18,6 +26,7 @@ export default class AssociadoService {
   async findAssociado(cpfAssociado: string): Promise<TbAssociado> {
     const associado = await TbAssociado
     .query()
+    .preload('responsavelFinanceiro')
     .where("nu_cpf", cpfAssociado)
     .first();
 

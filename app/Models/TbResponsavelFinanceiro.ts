@@ -1,13 +1,11 @@
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import TbAssociado from './TbAssociado'
 
 export default class TbResponsavelFinanceiro extends BaseModel {
   public static table = 'tb_RespFinanc' 
 
   @column({ isPrimary: true })
   public id_respfinanc: number
-
-  @column()
-  public id_associado_rf: number
 
   @column({columnName: "nu_CPFRespFin"})
   public nu_CPFRespFin: string
@@ -43,13 +41,22 @@ export default class TbResponsavelFinanceiro extends BaseModel {
   public id_uf_rf: number
 
   @column({columnName: "nu_dddRespFin"})
-  public nu_dddRespFin: number
+  public nu_dddRespFin: string
 
   @column({columnName: "nu_telRespFin"})
-  public nu_telRespFin: number
+  public nu_telRespFin: string
+
+  @column()
+  public id_associado_rf: number
+
+  @belongsTo(() => TbAssociado, {
+    foreignKey: 'id_associado_rf'
+  })
+  public associado: BelongsTo<typeof TbAssociado>
 
   setCelularAttribute(value: string){
-      this.nu_dddRespFin = parseInt(value.substring(0, 2));
-      this.nu_telRespFin = parseInt(value.substring( 2, 10));
+      this.nu_dddRespFin = value.substring(0, 2);
+      this.nu_telRespFin = value.substring( 2, 10);
   }
+
 }

@@ -1,4 +1,4 @@
-import TbAssociado from "App/Models/TbAssociado";
+import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import TbPagamentoBoletoOdontoCob from "App/Models/TbPagamentoBoletoOdontoCob";
 import { DateTime } from "luxon";
 
@@ -10,13 +10,14 @@ export default class PagamentoBoletoOdontoCobService {
         .update({ blAtivo: false });
     }
 
-    async removeByClient(client: string) {
+    async removeByClient(client: number, transaction: TransactionClientContract) {
         await TbPagamentoBoletoOdontoCob.query()
         .where('cd_cliente', client)
+        .useTransaction(transaction)
         .delete();
     }
 
-    async savePagamento(idClient: number, geraOc: any, dataPrimeiroVencimento: string, urlBase: string, tipoPessoa: string, numeroProsposta: string) {
+    async savePagamento(idClient: number, geraOc: any, dataPrimeiroVencimento: string, urlBase: string, tipoPessoa: string, numeroProsposta: string, transaction: TransactionClientContract) {
         const pagamento = new TbPagamentoBoletoOdontoCob
         pagamento.cd_cliente                 = idClient; // PEGAR ID_ASSOCIADO OU ID_CDEMPRESA
         pagamento.dt_emissao                 = DateTime.now().toString()
@@ -33,6 +34,6 @@ export default class PagamentoBoletoOdontoCobService {
         pagamento.nossoNumero                = geraOc.registro.titulo.nossoNumero;
         pagamento.nr_proposta                = numeroProsposta; //PEGAR N° PROPOSTA EMPRESA
         pagamento.blAtivo                    = true;
-        pagamento.save();
+        pagamento.useTransaction(transaction).save();
     }
 }

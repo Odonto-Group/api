@@ -1,4 +1,5 @@
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import TbResponsavelFinanceiro from './TbResponsavelFinanceiro'
 
 export default class TbAssociado extends BaseModel {
   public static table = 'tb_associado'
@@ -144,7 +145,7 @@ export default class TbAssociado extends BaseModel {
   @column({columnName: "tx_EndCidade"})
   public tx_EndCidade: string
 
-  @column()
+  @column({columnName: 'id_UF_a'})
   public id_UF_a: number
 
   @column()
@@ -164,6 +165,12 @@ export default class TbAssociado extends BaseModel {
 
   @column()
   public dt_dataprimvenc: string
+
+  @hasMany(() => TbResponsavelFinanceiro, { 
+    foreignKey: 'id_associado_rf',
+    localKey: 'id_associado'
+  })
+  public responsavelFinanceiro: HasMany<typeof TbResponsavelFinanceiro>
 
   setOrgaoExpedidor(orgao_expedidor: any, orgao_expedidor_uf: any) {
     this.ds_OrgaoExpedidor = orgao_expedidor + '-' + orgao_expedidor_uf
