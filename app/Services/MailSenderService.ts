@@ -8,7 +8,7 @@ export class MailSenderService {
   async sendEmailAdesao(
         to: string,
         subject: string,
-        contentView: any,
+        contentView: AdesaoEmailContent,
       ) {
         const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', `AdesaoTemplate.html`);
         const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', `capa-mulher.png`));

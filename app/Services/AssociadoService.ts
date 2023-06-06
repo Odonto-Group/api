@@ -1,6 +1,7 @@
 import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
+import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import TbUf from 'App/Models/TbUf';
 import { DateTime } from 'luxon';
@@ -34,7 +35,7 @@ export default class AssociadoService {
 
   }
 
-  async buildAssociado(params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number): Promise<TbAssociado> {
+  async buildAssociado(params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number): Promise<TbAssociado> {
     const dadosAssociado = new TbAssociado;
     dadosAssociado.nm_associado = params.nomeTitular
     dadosAssociado.nu_cpf = params.cpf;
@@ -47,7 +48,7 @@ export default class AssociadoService {
     dadosAssociado.id_EstadoCivil_a = params.estadoCivil;
   
     dadosAssociado.setCelularAttribute(params.celular);
-    dadosAssociado.setOrgaoExpedidor(params.orgaoExpedidor, params.orgaoExpedidorUf);
+    dadosAssociado.setOrgaoExpedidor(orgaoExpedidor.sigla, orgaoExpedidor.nm_orgaoexpedidor);
     
     dadosAssociado.id_FontePag_a = params.fontePagadora || null;
     dadosAssociado.id_orgao_a = params.orgao || null;
@@ -64,8 +65,8 @@ export default class AssociadoService {
     dadosAssociado.tx_EndCompl = params.complemento || "";
     dadosAssociado.tx_EndBairro = params.bairro;
     dadosAssociado.tx_EndCidade = params.cidade;
-    dadosAssociado.id_UF_a = uf.id_uf
-    dadosAssociado.id_origemVenda = 99;
+    dadosAssociado.id_UF_a = params.idUf
+    dadosAssociado.id_origemVenda = 99; // TODO 5
     dadosAssociado.id_vendedor_a = idVendedor
     dadosAssociado.cd_CodContratoS4E = formaPagamento.cd_CodContratoS4E
 

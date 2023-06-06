@@ -20,7 +20,7 @@ export default class ResponsavelFinanceiroService {
         .delete();
   }
 
-  async saveResponsavelFinanceiroByAssociado(params: any, associado: TbAssociado, uf: TbUf, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
+  async saveResponsavelFinanceiroByAssociado(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.cpf;
@@ -33,12 +33,12 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.tx_EndCompl = params.complemento || "";
     responsavelFinanceiro.tx_EndBairro = params.bairro;
     responsavelFinanceiro.tx_EndCidade = params.cidade;
-    responsavelFinanceiro.id_uf_rf = uf.id_uf;
+    responsavelFinanceiro.id_uf_rf = params.idUf;
     responsavelFinanceiro.setCelularAttribute(params.telefone_responsavel_financeiro);
     return await responsavelFinanceiro.useTransaction(transaction).save();
   }
 
-  async saveResponsavelFinanceiro(params: any, associado: TbAssociado, ufId: number, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
+  async saveResponsavelFinanceiro(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.responsavelFinanceiro.cpf;
@@ -51,7 +51,7 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.tx_EndCompl = params.responsavelFinanceiro.complemento || "";
     responsavelFinanceiro.tx_EndBairro = params.responsavelFinanceiro.bairro;
     responsavelFinanceiro.tx_EndCidade = params.responsavelFinanceiro.cidade;
-    responsavelFinanceiro.id_uf_rf = ufId;
+    responsavelFinanceiro.id_uf_rf = params.responsavelFinanceiro.idUf;
     responsavelFinanceiro.setCelularAttribute(params.responsavelFinanceiro.telefone);
     return await responsavelFinanceiro.useTransaction(transaction).save();
   }

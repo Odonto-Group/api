@@ -16,7 +16,6 @@ import DependenteService from 'App/Services/DependenteService';
 import DocumentService from 'App/Services/DocumentService';
 import TbAssociado from 'App/Models/TbAssociado';
 import PagamentoDebitoService from 'App/Services/PagamentoDebitoService';
-import OdontoCobService from 'App/Services/OdontoCobService';
 import NaoFoiPossivelGerarBoletoException from 'App/Exceptions/NaoFoiPossivelGerarBoletoException';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import SmsService from 'App/Services/SmsService';
@@ -24,6 +23,13 @@ import { Exception } from '@adonisjs/core/build/standalone';
 import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import { RequestContract } from '@ioc:Adonis/Core/Request';
 import NaoFoiPossivelGerarPagamentoCartaoException from 'App/Exceptions/NaoFoiPossivelGerarPagamentoCartaoException';
+import FluxoPagamentoBoleto from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoleto';
+import FluxoPagamentoCartao from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCartao';
+import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.interface';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
+import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
+import OrgaoExpedidorInvalido from 'App/Exceptions/OrgaoExpedidorInvalido';
 
 @inject()
 export default class PlanPayment {
@@ -36,8 +42,9 @@ export default class PlanPayment {
       , private dependenteService: DependenteService
       , private documentService: DocumentService
       , private pagamentoDebitoService: PagamentoDebitoService
-      , private odontoCobService: OdontoCobService
-      , private smsService: SmsService) {} 
+      , private smsService: SmsService
+      , private fluxoPagamentoBoleto: FluxoPagamentoBoleto
+      , private fluxoPagamentoCartao: FluxoPagamentoCartao) {} 
 
   async index({ request, response }: HttpContextContract) {
     let retorno = {}
@@ -49,7 +56,7 @@ export default class PlanPayment {
         return retorno;
       } catch (error) {
         transaction.rollback();
-        console.log(error);
+        throw error;
       }
     })
     return retorno;
@@ -66,8 +73,6 @@ export default class PlanPayment {
     const tokenParceiro = await this.tokenService.findToken(token);
     const parceiro = tokenParceiro.parceiro
     const produtoComercial = parceiro.produtoComercial
-   
-    //verifica se produto faz parte da assefaz?
 
     const associado = await this.associadoService.findAssociado(params.cpf);
 
@@ -88,14 +93,12 @@ export default class PlanPayment {
     let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes);
     
     const valorContrato = valorMensalidade * quantidadeVidas;
-  
-    const uf = await this.ufService.findUfBySigla(params.uf)
 
-    await this.salvarAssociado(associado, params, uf, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction)
+    await this.salvarAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction)
 
     this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado, transaction)
 
-    const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, uf, associado, transaction);
+    const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, associado, transaction);
 
     await this.saveDependentes(params, associado, transaction);
 
@@ -110,63 +113,67 @@ export default class PlanPayment {
       params: any,
       associado: TbAssociado,
       valorContrato: number,
-      dataExpiracao: string,
-      responsavelFinanceiroBanco: TbResponsavelFinanceiro,
+      dataPrimeiroVencimento: string,
+      responsavelFinanceiro: TbResponsavelFinanceiro,
       transaction: TransactionClientContract,
-      nomePlano: string) {
+      nomePlano: string): Promise<RetornoGeracaoPagamento> {
   
-    let returnPayment: any
-    if(params.formaPagamento.gpPagto == 2) { //Debito
+    let returnPayment = {} as RetornoGeracaoPagamento
+
+    if(params.formaPagamento.gpPagto == 2) { //DEBITO EM CONTA
       await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
-      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataExpiracao, transaction)
+      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataPrimeiroVencimento, transaction)
 
-      if (params.primeiraBoleto) { // Debito com primeira no boleto
-        returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataExpiracao, responsavelFinanceiroBanco, transaction, nomePlano)
-
-        await this.enviaSms(responsavelFinanceiroBanco, associado)
+      if (params.primeiraBoleto) { // PRIMEIRA NO BOLETO
+        return await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
       } else {
-        returnPayment.formaPagamento = "Débito em Conta";
-        returnPayment.agencia = params.agencia;
-        returnPayment.conta = params.conta;
-        returnPayment.linkPagamento = '';
+        await this.criarRetornoSemPrimeiraNoBoleto(returnPayment, params, associado);
 
         await this.associadoService.ativarPlanoAssociado(associado);
       }
     } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
-      throw new Exception("PAGAMENTO CONSIGANDO NAO FOI DESENVOLVIDO");
+      throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
 
-    } else if (params.formaPagamento.gpPagto == 3) {
-      await this.iniciaEnvioBoleto(associado, valorContrato, dataExpiracao, responsavelFinanceiroBanco, transaction, nomePlano)
+    } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
+      await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
 
-      await this.enviaSms(responsavelFinanceiroBanco, associado);
-    } else if (params.formaPagamento.gpPagto == 1)  {//CARTAO
-      returnPayment = await this.odontoCobService.geraCartao(associado, responsavelFinanceiroBanco, transaction, dataExpiracao, nomePlano)
+    } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
+      returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
 
       if (!returnPayment.linkPagamento) {
         throw new NaoFoiPossivelGerarPagamentoCartaoException();
       }
 
-      this.enviaSms(responsavelFinanceiroBanco, associado)
+      this.enviaSms(responsavelFinanceiro, associado)
     } else {
-      // Metodo de pagamento invalido
+      throw new MetodoDePagamentoInvalidoException()
     }
 
     return returnPayment;
   }
 
+  private async criarRetornoSemPrimeiraNoBoleto(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado) {
+    returnPayment.formaPagamento = FormaPagamento.DEBITO_EM_CONTA;
+    returnPayment.agencia = params.agencia;
+    returnPayment.conta = params.conta;
+    returnPayment.linkPagamento = '';
+  }
+
   async iniciaEnvioBoleto(
     associado: TbAssociado,
     valorContrato: number,
-    dataExpiracao: string,
-    responsavelFinanceiroBanco: TbResponsavelFinanceiro,
+    dataPrimeiroVencimento: string,
+    responsavelFinanceiro: TbResponsavelFinanceiro,
     transaction: TransactionClientContract,
-    nomePlano: string) {
-    const returnPayment = await this.odontoCobService.gerarBoleto(associado, responsavelFinanceiroBanco, dataExpiracao, valorContrato, transaction, nomePlano)
+    nomePlano: string): Promise<RetornoGeracaoPagamento> {
+    const returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, valorContrato, transaction, nomePlano})
 
     if (!returnPayment.linkPagamento) {
       throw new NaoFoiPossivelGerarBoletoException();
     }
+
+    await this.enviaSms(responsavelFinanceiro, associado)
 
     return returnPayment;
   }
@@ -227,16 +234,20 @@ export default class PlanPayment {
       });
   }
 
-  async saveResponsavelFinanceiro(params:any, uf: TbUf, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
-    let ufResponsavelFinanceiro = await this.ufService.findUfBySigla(params.responsavelFinanceiro.uf)
-
+  async saveResponsavelFinanceiro(params:any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     return params.chkResp ? 
-      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, uf, transaction)
-      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, ufResponsavelFinanceiro.id_uf, transaction)
+      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, transaction)
+      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, transaction)
   }
 
-  async salvarAssociado(associado: TbAssociado, params: any, uf: TbUf, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
-    const dadosAssociado = await this.associadoService.buildAssociado(params, uf, formaPagamento, valorContrato, dataExpiracao, idVendedor);
+  async salvarAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
+    const orgaoExpedidor = await TbOrgaoExpedidor.query().where('id_oe', params.idOrgaoExpedidor).first();
+
+    if (!orgaoExpedidor || !orgaoExpedidor.sigla) {
+      throw new OrgaoExpedidorInvalido();
+    }
+    
+    const dadosAssociado = await this.associadoService.buildAssociado(params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor);
     
     await this.associadoService.saveAssociado(associado, dadosAssociado, transaction);
   }
