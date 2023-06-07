@@ -74,7 +74,7 @@ export default class PlanPayment {
     const parceiro = tokenParceiro.parceiro
     const produtoComercial = parceiro.produtoComercial
 
-    const associado = await this.associadoService.findAssociado(params.cpf);
+    const associado = await this.associadoService.findAssociadoByCpf(params.cpf);
 
     if (associado.cd_status && associado.cd_status != 0) {
         throw new AssociadoComPlanoJaCadastrado();

@@ -1,6 +1,4 @@
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
-import TbParceiro from 'App/Models/TbParceiro';
-import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 
 export default class FormasPagamentoService {
 

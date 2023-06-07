@@ -2,11 +2,16 @@ import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
-import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
-import TbUf from 'App/Models/TbUf';
 import { DateTime } from 'luxon';
 
 export default class AssociadoService {
+  async updateAssociadoPagamentoEfetuado(associado: TbAssociado) {
+      const dataPagamento = DateTime.now().toFormat("yyyy-MM-dd")
+
+      await TbAssociado.query()
+        .where('id_associado', associado.id_associado)
+        .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
+  }
   async ativarPlanoAssociado(associado: TbAssociado) {
     await TbAssociado.query()
       .where("id_associado", associado.id_associado)
@@ -24,7 +29,7 @@ export default class AssociadoService {
     await associado.save()
   }
 
-  async findAssociado(cpfAssociado: string): Promise<TbAssociado> {
+  async findAssociadoByCpf(cpfAssociado: string): Promise<TbAssociado> {
     const associado = await TbAssociado
     .query()
     .preload('responsavelFinanceiro')
@@ -34,6 +39,17 @@ export default class AssociadoService {
     return associado || new TbAssociado;
 
   }
+
+  async findAssociadoById(idAssociado: number): Promise<TbAssociado> {
+    const associado = await TbAssociado
+    .query()
+    .preload('responsavelFinanceiro')
+    .where('id_associado', idAssociado)
+    .first();
+
+    return associado || new TbAssociado;
+  }
+
 
   async buildAssociado(params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number): Promise<TbAssociado> {
     const dadosAssociado = new TbAssociado;
