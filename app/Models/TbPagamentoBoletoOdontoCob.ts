@@ -50,7 +50,7 @@ export default class TbPagamentoBoletoOdontoCob extends BaseModel {
 
     @column()
     public tipo_cliente: string;
-
+s
     @column({columnName: "nossoNumero"})
     public nossoNumero: string;
 

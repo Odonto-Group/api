@@ -18,8 +18,6 @@ export default class FormasPagamentoService {
       .query()
       .preload('produtoComercial')
       .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_formaspgtoIF.id_prodcomerc_if')
-      .innerJoin('tb_formabco', 'tb_formabco.id_formaspgtoIF_fb', 'tb_formaspgtoIF.id_formaspgtoIF')
-      .innerJoin('tb_banco', 'tb_banco.id_banco', 'tb_formabco.id_banco_fb')
       .where('tb_formaspgtoIF.id_prodcomerc_if', idProdutoComercial)
       .where('tb_formaspgtoIF.id_meiopagto_if', formaPagamento.idPagto)
       .first();

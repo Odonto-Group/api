@@ -5,6 +5,7 @@ import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import { DateTime } from 'luxon';
 
 export default class AssociadoService {
+  
   async updateAssociadoPagamentoEfetuado(associado: TbAssociado) {
       const dataPagamento = DateTime.now().toFormat("yyyy-MM-dd")
 
@@ -12,6 +13,7 @@ export default class AssociadoService {
         .where('id_associado', associado.id_associado)
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
+
   async ativarPlanoAssociado(associado: TbAssociado) {
     await TbAssociado.query()
       .where("id_associado", associado.id_associado)
@@ -45,6 +47,17 @@ export default class AssociadoService {
     .query()
     .preload('responsavelFinanceiro')
     .where('id_associado', idAssociado)
+    .first();
+
+    return associado || new TbAssociado;
+  }
+
+  async findAssociadoByNossoNumeroBoleto(nossoNumero: number): Promise<TbAssociado> {
+    const associado = await TbAssociado
+    .query()
+    .preload('responsavelFinanceiro')
+    .innerJoin('tb_pgtoboletoOdontocob', 'tb_pgtoboletoOdontocob.cd_cliente', 'tb_associado.id_associado')
+    .where('tb_pgtoboletoOdontocob.nossoNumero', nossoNumero)
     .first();
 
     return associado || new TbAssociado;

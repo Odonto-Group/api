@@ -7,6 +7,7 @@ import PagamentoBoletoService from 'App/Services/PagamentoBoletoService';
 import AssociadoService from 'App/Services/AssociadoService';
 import PagamentoCartaoOdontoCobService from 'App/Services/PagamentoCartaoOdontoCobService';
 import { DateTime } from 'luxon';
+import PagamentoBoletoOdontoCobService from 'App/Services/PagamentoBoletoOdontoCobService';
 
 @inject()
 export default class PlanPayment {
@@ -15,7 +16,8 @@ export default class PlanPayment {
     private pagamentoCartaoService: PagamentoCartaoService,
     private pagamentoBoletoService: PagamentoBoletoService,
     private associadoService: AssociadoService,
-    private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService
+    private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
+    private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService
 
   ) {} 
 
@@ -27,15 +29,31 @@ export default class PlanPayment {
     const params = request.all()
 
     await Database.transaction(async (transaction) => {
-        try {
-          await this.pagamentoBoletoService.inserePagamentoEfetuado(params, transaction);
+    try {
+        const associado = await this.associadoService.findAssociadoByNossoNumeroBoleto(params.nossoNumero);
 
-          transaction.commit();
-        } catch (error) {
-          transaction.rollback();
-          throw error;
+        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
+
+            await this.pagamentoBoletoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
+
+            await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+
+            await this.pagamentoBoletoService.savePagamentoEfetuado(associado, params, transaction);
+
+            // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
+            // TO DO INSERIR ENVIO DE SMS
+        } else {
+            // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
         }
-      })
+
+        await this.pagamentoCartaoService.inserePagamentoEfetuado(params, transaction);
+
+        transaction.commit();
+    } catch (error) {
+        transaction.rollback();
+        throw error;
+    }
+    })
   }
 
   async creditCardPayment({ request }: HttpContextContract) {

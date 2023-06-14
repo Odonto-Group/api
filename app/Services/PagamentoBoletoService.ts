@@ -1,14 +1,16 @@
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
+import TbAssociado from "App/Models/TbAssociado";
 import TbPagamentoBoleto from "App/Models/TbPagamentoBoleto";
 
 export default class PagamentoBoletoService {
 
-    async inserePagamentoEfetuado(params: Record<string, any>, transaction: TransactionClientContract) {
-        const pagamento = new TbPagamentoBoleto;
+    async savePagamentoEfetuado(associado: TbAssociado, params: Record<string, any>, transaction: TransactionClientContract) {
+        const tbPagamentoBoleto = new TbPagamentoBoleto
 
-        
+        tbPagamentoBoleto.cd_associado_pb = associado.id_associado
+        tbPagamentoBoleto.id_banco_pb = associado.
 
-        await pagamento.useTransaction(transaction).save();
+        await tbPagamentoBoleto.useTransaction(transaction).save();
     }
   
 }

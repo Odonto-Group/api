@@ -1,9 +1,27 @@
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
+import TbAssociado from "App/Models/TbAssociado";
 import TbPagamentoBoletoOdontoCob from "App/Models/TbPagamentoBoletoOdontoCob";
 import { DateTime } from "luxon";
 
 
 export default class PagamentoBoletoOdontoCobService {
+
+    async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: Record<string, any>, transaction: TransactionClientContract) {
+        let pagamentoBoletoOdontoCob = await this.findByNossoNumero(associado.id_associado);
+
+        pagamentoBoletoOdontoCob.dt_pagamento = params.data
+        pagamentoBoletoOdontoCob.vl_valorpago = pagamentoBoletoOdontoCob.nu_valoremissao
+        pagamentoBoletoOdontoCob.nu_statusboleto = 1
+
+        pagamentoBoletoOdontoCob.useTransaction(transaction).save();
+    }
+
+    async findByNossoNumero(nossoNumero: number) {
+        return await TbPagamentoBoletoOdontoCob.query()
+        .where('nossoNumero', nossoNumero)
+        .first() || new TbPagamentoBoletoOdontoCob
+    }
+
     async blAtivoFalseByCliente(idAssociado: string) {
         await TbPagamentoBoletoOdontoCob.query()
         .where('cd_cliente', idAssociado)
