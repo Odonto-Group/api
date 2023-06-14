@@ -136,7 +136,7 @@ export default class PlanPayment {
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
 
     } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
-      await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
+      returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
 
     } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
