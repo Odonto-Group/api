@@ -130,9 +130,12 @@ export default class PlanPayment {
       
         returnPayment.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO
       } else {
-        await this.criarRetornoSemPrimeiraNoBoleto(returnPayment, params, associado);
+        returnPayment.formaPagamento = FormaPagamento.DEBITO_EM_CONTA;
+        returnPayment.agencia = params.agencia;
+        returnPayment.conta = params.conta;
+        returnPayment.linkPagamento = '';
 
-        await this.associadoService.ativarPlanoAssociado(associado);
+        await this.associadoService.ativarPlanoAssociado(associado, transaction);
       }
     } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
@@ -152,14 +155,17 @@ export default class PlanPayment {
       throw new MetodoDePagamentoInvalidoException()
     }
 
-    return returnPayment;
+    return this.criarRetornoPagamento(returnPayment, params, associado);
   }
 
-  private async criarRetornoSemPrimeiraNoBoleto(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado) {
-    returnPayment.formaPagamento = FormaPagamento.DEBITO_EM_CONTA;
-    returnPayment.agencia = params.agencia;
-    returnPayment.conta = params.conta;
-    returnPayment.linkPagamento = '';
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado) {
+    returnPayment.idAssociado = associado.id_associado
+    returnPayment.dataCadastro = associado.dt_Cadastro
+    returnPayment.email = associado.ds_email
+    returnPayment.numeroProposta = associado.nr_proposta
+    returnPayment.nome = associado.nm_associado
+
+    return returnPayment;
   }
 
   async iniciaEnvioBoleto(
@@ -249,9 +255,9 @@ export default class PlanPayment {
       throw new OrgaoExpedidorInvalido();
     }
     
-    const dadosAssociado = await this.associadoService.buildAssociado(params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor);
+    await this.associadoService.buildAssociado(params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor, associado);
     
-    await this.associadoService.saveAssociado(associado, dadosAssociado, transaction);
+    await this.associadoService.saveAssociado(associado, transaction);
   }
 
   calculaValorMensalidade(valorMensalidade: number, gpPagto: number, pagamentoUnico) {

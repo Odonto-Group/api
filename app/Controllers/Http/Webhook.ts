@@ -9,9 +9,16 @@ import PagamentoCartaoOdontoCobService from 'App/Services/PagamentoCartaoOdontoC
 import PagamentoBoletoOdontoCobService from 'App/Services/PagamentoBoletoOdontoCobService';
 import PagamentoPixOdontoCobService from 'App/Services/PagamentoPixOdontoCobService';
 import PagamentoPixService from 'App/Services/PagamentoPixService';
+import { MailSenderService } from 'App/Services/MailSenderService';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
+import Env from '@ioc:Adonis/Core/Env'
 
 @inject()
 export default class PlanPayment {
+
+  private emailSuporteOdontoGroup = Env.get('EMAIL_ODONTO_GROUP_SUPORTE')
+  private emailDefaultTeste = Env.get('EMAIL_ENVIO_DEFAULT')
 
   constructor(
     private pagamentoCartaoService: PagamentoCartaoService,
@@ -21,6 +28,7 @@ export default class PlanPayment {
     private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
     private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
     private pagamentoPixOdontoCobService: PagamentoPixOdontoCobService,
+    private mailSenderService: MailSenderService
   ) {} 
 
   async index({ request }: HttpContextContract) {
@@ -45,7 +53,12 @@ export default class PlanPayment {
                 // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
                 // TO DO INSERIR ENVIO DE SMS
             } else {
-                // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
+                const planoContent = {
+                  NOMECLIENTE: associado.nm_associado,
+                  TIPO_PAGAMENTO: FormaPagamento.BOLETO
+                } as ErroEmailContent;
+      
+                await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
             }
 
             transaction.commit();
@@ -74,7 +87,12 @@ export default class PlanPayment {
             // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
             // TO DO INSERIR ENVIO DE SMS
           } else {
-            // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
+            const planoContent = {
+              NOMECLIENTE: associado.nm_associado,
+              TIPO_PAGAMENTO: FormaPagamento.CARTAO_CREDITO
+            } as ErroEmailContent;
+  
+            await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
           }
 
           transaction.commit();
@@ -86,8 +104,6 @@ export default class PlanPayment {
   }
 
   async pixPayment({ request }: HttpContextContract) {
-    //fluxo mesmo do boleto
-    
     const params = request.all()
 
     await Database.transaction(async (transaction) => {
@@ -105,7 +121,12 @@ export default class PlanPayment {
           // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
           // TO DO INSERIR ENVIO DE SMS
         } else {
-          // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
+          const planoContent = {
+            NOMECLIENTE: associado.nm_associado,
+            TIPO_PAGAMENTO: FormaPagamento.PIX
+          } as ErroEmailContent;
+
+          await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
         }
 
         transaction.commit();

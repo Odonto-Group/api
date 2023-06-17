@@ -12,9 +12,13 @@ import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import P4XService from "App/Services/P4XService";
 import { TipoTransacao } from "App/Enums/TipoTransacao";
+import Env from '@ioc:Adonis/Core/Env'
 
 @inject()
 export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
+
+    private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
+    private urlP4xLinkPagamento = Env.get('URL_P4X_PAGAMENTO_CARTAO') as string
 
     constructor(
         private ufService: UfService,
@@ -37,7 +41,7 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
         if (pagamento) {
             const dataD7 = DateTime.local().plus({ days: 7 }).toFormat('yyyy-MM-dd')
 
-            const linkPagamento = `https://p4x.srv.br/pagamentos/?token=${pagamento.pagamentoId}`
+            const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.pagamentoId)
     
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
     
@@ -48,7 +52,7 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
                 LINKPAGAMENTO: linkPagamento
             } as AdesaoEmailContent;
     
-            await this.mailSenderService.sendEmailAdesao('gui.henmelo@gmail.com', 'Bem-vindo à OdontoGroup.', planoContent)
+            await this.mailSenderService.sendEmailAdesao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
     
             retorno.linkPagamento = linkPagamento
         } else {
@@ -61,9 +65,8 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
     private async buildBodyRequest(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro) {
         const uf = await this.ufService.findUfById(associado.id_UF_a);
 
-        const dataExpiracao = DateTime.local().plus({ days: 7 }).toFormat('yyyy/mm/dd')
-
         const nomeLista = responsavelFinanceiro.nm_RespFinanc.split(" ");
+        
         return {
             "id": associado.nr_proposta,
             "valor": associado.nu_vl_mensalidade,
@@ -98,26 +101,6 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
             "convenioId": "ecf1e024-e1a5-4efa-8399-a081a13bf3d8",
             "gerarLinkPagamento": true
           }
-
-    //     return {
-    //     "dataExpiracao": dataExpiracao,
-    //     "compraId": associado.nr_proposta,
-    //     "compradorId": associado.id_associado,
-    //     "descricao": "ADESÃO PLANO ODONTOLÓGICO - ODONTOGROUP",
-    //     "valor": associado.nu_vl_mensalidade,
-    //     "compradorNomeCompleto": responsavelFinanceiro.nm_RespFinanc,
-    //     "compradorDocumentoTipo": "PF",
-    //     "compradorDocumentoNumero": responsavelFinanceiro.nu_CPFRespFin,
-    //     "compradorEmail": responsavelFinanceiro.ds_emailRespFin,
-    //     "compradorTelefone": responsavelFinanceiro.nu_dddRespFin + responsavelFinanceiro.nu_telRespFin,
-    //     "compradorEnderecoLogradouro": responsavelFinanceiro.tx_EndLograd,
-    //     "compradorEnderecoNumero": responsavelFinanceiro.tx_EndNumero,
-    //     "compradorEnderecoComplemento": responsavelFinanceiro.tx_EndCompl,
-    //     "compradorEnderecoCep": responsavelFinanceiro.nu_CEP,
-    //     "compradorEnderecoCidade": responsavelFinanceiro.tx_EndCidade,
-    //     "compradorEnderecoEstado": uf.sigla,
-    //     "salvarCartao": true
-    // };
     }
 
 }

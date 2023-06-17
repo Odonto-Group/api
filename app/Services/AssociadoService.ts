@@ -14,21 +14,15 @@ export default class AssociadoService {
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 
-  async ativarPlanoAssociado(associado: TbAssociado) {
+  async ativarPlanoAssociado(associado: TbAssociado, transaction: TransactionClientContract) {
     await TbAssociado.query()
       .where("id_associado", associado.id_associado)
+      .useTransaction(transaction)
       .update({cd_status: 1})
   }
 
-  async saveAssociado(associado: TbAssociado, dadosAssociado: TbAssociado, transaction: TransactionClientContract) {
-    if (!associado) {
-      associado = new TbAssociado
-    }
-
-    associado.merge(dadosAssociado);
-    associado.useTransaction(transaction);
-
-    await associado.save()
+  async saveAssociado(associado: TbAssociado, transaction: TransactionClientContract) {
+    await associado.useTransaction(transaction).save()
   }
 
   async findAssociadoByCpf(cpfAssociado: string): Promise<TbAssociado> {
@@ -64,54 +58,62 @@ export default class AssociadoService {
   }
 
 
-  async buildAssociado(params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number): Promise<TbAssociado> {
-    const dadosAssociado = new TbAssociado;
-    dadosAssociado.nm_associado = params.nomeTitular
-    dadosAssociado.nu_cpf = params.cpf;
-    dadosAssociado.nm_mae = params.nomeMae;
-    dadosAssociado.nu_cns = params.cns;
-    dadosAssociado.nu_rg = params.rg;
-    dadosAssociado.dt_nasc = params.dataNascimento;
-    dadosAssociado.ds_email = params.emailTitular;
-    dadosAssociado.id_sexo_a = params.idSexo;
-    dadosAssociado.id_EstadoCivil_a = params.estadoCivil;
+  async buildAssociado(associado: TbAssociado, params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+    associado.nm_associado = params.nomeTitular
+    associado.nu_cpf = params.cpf;
+    associado.nm_mae = params.nomeMae;
+    associado.nu_cns = params.cns;
+    associado.nu_rg = params.rg;
+    associado.dt_nasc = params.dataNascimento;
+    associado.ds_email = params.emailTitular;
+    associado.id_sexo_a = params.idSexo;
+    associado.id_EstadoCivil_a = params.estadoCivil;
   
-    dadosAssociado.setCelularAttribute(params.celular);
-    dadosAssociado.setOrgaoExpedidor(orgaoExpedidor.sigla, orgaoExpedidor.nm_orgaoexpedidor);
+    associado.setCelularAttribute(params.celular);
+    associado.setOrgaoExpedidor(orgaoExpedidor.sigla, orgaoExpedidor.nm_orgaoexpedidor);
     
-    dadosAssociado.id_FontePag_a = params.fontePagadora || null;
-    dadosAssociado.id_orgao_a = params.orgao || null;
-    dadosAssociado.cd_perfil = params.perfil || null;
-    dadosAssociado.nu_MatriculaFuncional = params.matricula || null;
-    dadosAssociado.tx_Cargo = params.cargo || null;
-    dadosAssociado.dt_operacao = DateTime.local().toFormat('f');
-    dadosAssociado.dt_Cadastro = DateTime.local().toFormat('f');
-    dadosAssociado.dt_alteraStatus = DateTime.local().toFormat('yyyy/MM/dd');
-    dadosAssociado.id_parentesco_a = 1;
-    dadosAssociado.nu_CEP = params.cep;
-    dadosAssociado.tx_EndLograd = params.endereco;
-    dadosAssociado.nu_EndNumero = params.numeroCasa;
-    dadosAssociado.tx_EndCompl = params.complemento || "";
-    dadosAssociado.tx_EndBairro = params.bairro;
-    dadosAssociado.tx_EndCidade = params.cidade;
-    dadosAssociado.id_UF_a = params.idUf
-    dadosAssociado.id_origemVenda = 99; // TODO 5
-    dadosAssociado.id_vendedor_a = idVendedor
-    dadosAssociado.cd_CodContratoS4E = formaPagamento.cd_CodContratoS4E
+    associado.id_FontePag_a = params.fontePagadora || null;
+    associado.id_orgao_a = params.orgao || null;
+    associado.cd_perfil = params.perfil || null;
+    associado.nu_MatriculaFuncional = params.matricula || null;
+    associado.tx_Cargo = params.cargo || null;
+    associado.dt_operacao = DateTime.local().toFormat('f');
+    associado.dt_Cadastro = DateTime.local().toFormat('f');
+    associado.dt_alteraStatus = DateTime.local().toFormat('yyyy/MM/dd');
+    associado.id_parentesco_a = 1;
+    associado.nu_CEP = params.cep;
+    associado.tx_EndLograd = params.endereco;
+    associado.nu_EndNumero = params.numeroCasa;
+    associado.tx_EndCompl = params.complemento || "";
+    associado.tx_EndBairro = params.bairro;
+    associado.tx_EndCidade = params.cidade;
+    associado.id_UF_a = params.idUf
+    associado.id_origemVenda = 99; // TODO 5
+    associado.id_vendedor_a = idVendedor
+    associado.cd_CodContratoS4E = formaPagamento.cd_CodContratoS4E
 
-    dadosAssociado.dt_dia_vencto = DateTime.local().day;
-    dadosAssociado.nu_vl_mensalidade = valorContrato;
+    associado.dt_dia_vencto = DateTime.local().day;
+    associado.nu_vl_mensalidade = valorContrato;
 
-    dadosAssociado.id_meiopagto_a = params.formaPagamento.gpPagto;
-    dadosAssociado.dt_dataprimvenc = dataExpiracao.toFormat('yyyy/MM/dd');
-    dadosAssociado.dt_inicio_vigencia = DateTime.local().toFormat('yyyy/MM/dd');
-    dadosAssociado.cd_status = 0;
-    dadosAssociado.st_mail = 0;
+    associado.id_meiopagto_a = params.formaPagamento.gpPagto;
+    associado.dt_dataprimvenc = dataExpiracao.toFormat('yyyy/MM/dd');
+    associado.dt_inicio_vigencia = DateTime.local().toFormat('yyyy/MM/dd');
+    associado.cd_status = 0;
+    associado.st_mail = 0;
 
-    dadosAssociado.nr_proposta = Math.random().toString();
-    dadosAssociado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
-
-    return dadosAssociado
+    associado.nr_proposta = this.gerarNumeroProposta()
+    associado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
   }
   
+
+  private gerarNumeroProposta() {
+    const now = DateTime.local();
+    
+    const year = now.toFormat('yyyy');
+    const month = now.toFormat('MM');
+    
+    const timestamp = Math.floor(now.toMillis() / 1000);
+    
+    return `${year}${month}${timestamp}`;
+  }
 }

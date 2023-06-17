@@ -20,6 +20,8 @@ import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobServ
 export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
 
     private urlBaseP4x = Env.get('URL_BASE_P4X')
+    private urlP4xLinkPagamento = Env.get('URL_P4X_PAGAMENTO_BOLETO') as string
+    private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
 
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
@@ -47,7 +49,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
 
         if (pagamento) {
             
-            const linkPagamento = `https://p4x.srv.br/api/v1.0/boletos/${pagamento.id}/imprimir`
+            const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
             await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
 
@@ -58,14 +60,11 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             const planoContent = { 
                 NOMEPLANO: nomePlano,
                 DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
-                NOMECLIENTE: associado.nm_associado,
+                NOMECLIENTE: associado.nm_associado,    
                 LINKPAGAMENTO: linkPagamento
             } as AdesaoEmailContent;
     
-            await this.mailSenderService.sendEmailAdesao("gui.henmelo@gmail.com", 'Bem-vindo à OdontoGroup.', planoContent)
-    
-            retorno.linkPagamento = linkPagamento;
-            retorno.formaPagamento = FormaPagamento.BOLETO
+            await this.mailSenderService.sendEmailAdesao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             
             const pix = {
                 copiaCola: pagamento.pix.copiaCola,
@@ -73,6 +72,8 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             } as Pix
 
             retorno.pix = pix
+            retorno.linkPagamento = linkPagamento;
+            retorno.formaPagamento = FormaPagamento.BOLETO
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }

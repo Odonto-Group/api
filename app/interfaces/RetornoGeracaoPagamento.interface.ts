@@ -5,5 +5,11 @@ export default interface RetornoGeracaoPagamento {
     formaPagamento: FormaPagamento,
     agencia: string,
     conta: string,
-    pix?: Pix
+    pix?: Pix,
+    dataCadastro: string,
+    numeroProposta: string,
+    nome: string,
+    email: string,
+    idAssociado: number,
+    valorPagamento: number
 }
