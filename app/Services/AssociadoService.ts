@@ -57,7 +57,7 @@ export default class AssociadoService {
     return associado || new TbAssociado;
   }
 
-
+ 
   async buildAssociado(associado: TbAssociado, params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
     associado.nm_associado = params.nomeTitular
     associado.nu_cpf = params.cpf;

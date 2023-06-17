@@ -255,7 +255,7 @@ export default class PlanPayment {
       throw new OrgaoExpedidorInvalido();
     }
     
-    await this.associadoService.buildAssociado(params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor, associado);
+    await this.associadoService.buildAssociado(associado, params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor);
     
     await this.associadoService.saveAssociado(associado, transaction);
   }
