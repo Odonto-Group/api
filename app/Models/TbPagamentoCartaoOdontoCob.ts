@@ -27,21 +27,21 @@ export default class TbPagamentoCartaoOdontoCob extends BaseModel {
   @column()
   public dt_pagamento: string
 
-  @column()
-  public pagamento_id: string
+  @column({columnName: "pagamentoId"})
+  public pagamentoId: string
 
   @column()
   public nsu: string
 
-  @column()
-  public autorizacao_codigo: string
+  @column({columnName: "autorizacaoCodigo"})
+  public autorizacaoCodigo: string
 
-  @column()
-  public cartao_id: string
+  @column({columnName: "cartaoId"})
+  public cartaoId: string
 
-  @column()
-  public bl_ativo: boolean
+  @column({columnName: "blAtivo"})
+  public blAtivo: number
 
-  @column()
-  public link_pgto: string
+  @column({columnName: "linkPgto"})
+  public linkPgto: string
 }

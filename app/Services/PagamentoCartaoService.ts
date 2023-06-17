@@ -18,13 +18,5 @@ export default class PagamentoCartaoService {
 
         await tbPagamentoCartao.useTransaction(transaction).save();
     }
-
-    async inserePagamentoEfetuado(params: Record<string, any>, transaction: TransactionClientContract) {
-        const pagamento = new TbPagamentoCartao;
-
-        
-
-        await pagamento.useTransaction(transaction).save();
-    }
   
 }

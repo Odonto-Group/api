@@ -36,7 +36,9 @@ export default class P4XService {
         try {
             const token = await this.geraToken();
 
-            const response = await axios.post(`${this.urlBaseP4x}/sacadores/pagamentos/token`, body, {
+            const linkPagamentoCartao = `${this.urlBaseP4x}/pagamentos/cartaocredito`
+            
+            const response = await axios.post(linkPagamentoCartao, body, {
                 headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -49,6 +51,8 @@ export default class P4XService {
                 return false;
             }
         } catch (erro) {
+            console.log(erro);
+            
             return false
         }
         

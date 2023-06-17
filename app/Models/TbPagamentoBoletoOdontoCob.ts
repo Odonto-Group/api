@@ -10,7 +10,7 @@ export default class TbPagamentoBoletoOdontoCob extends BaseModel {
     public cd_cliente: number;
 
     @column()
-    public dt_gerado: Date;
+    public dt_gerado: string;
 
     @column()
     public id_banco_pbo: number;
@@ -28,7 +28,7 @@ export default class TbPagamentoBoletoOdontoCob extends BaseModel {
     public dt_emissao: string;
 
     @column()
-    public dt_pagamento: Date;
+    public dt_pagamento: string;
 
     @column()
     public vl_valorpago: number;

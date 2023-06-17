@@ -22,13 +22,13 @@ export default class PagamentoBoleto extends BaseModel {
   public nu_valoremissao: number
 
   @column()
-  public dt_vencimento: Date
+  public dt_vencimento: string
 
   @column()
-  public dt_emissao: Date
+  public dt_emissao: string
 
   @column()
-  public dt_pagamento: Date
+  public dt_pagamento: string
 
   @column()
   public vl_valorpago: number

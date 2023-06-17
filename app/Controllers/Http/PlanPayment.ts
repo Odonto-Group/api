@@ -126,7 +126,9 @@ export default class PlanPayment {
       await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataPrimeiroVencimento, transaction)
 
       if (params.primeiraBoleto) { // PRIMEIRA NO BOLETO
-        return await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
+        returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
+      
+        returnPayment.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO
       } else {
         await this.criarRetornoSemPrimeiraNoBoleto(returnPayment, params, associado);
 

@@ -14,6 +14,7 @@ import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import P4XService from "App/Services/P4XService";
 import Env from '@ioc:Adonis/Core/Env'
+import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
 
 @inject()
 export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
@@ -22,6 +23,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
 
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
+        private pagamentoPixOdontoCobService: PagamentoPixOdontoCobService,
         private ufService: UfService,
         private empresaService: EmpresaService,
         private mailSenderService: MailSenderService,
@@ -51,6 +53,8 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
 
             await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento, dataPrimeiroVencimento, this.urlBaseP4x, tipoPessoa.tipoPessoa, tipoPessoa.numeroProsposta, transaction);
 
+            await this.pagamentoPixOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento.pix.id, transaction);
+            
             const planoContent = { 
                 NOMEPLANO: nomePlano,
                 DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
@@ -62,6 +66,13 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
     
             retorno.linkPagamento = linkPagamento;
             retorno.formaPagamento = FormaPagamento.BOLETO
+            
+            const pix = {
+                copiaCola: pagamento.pix.copiaCola,
+                qrCode: pagamento.pix.base64
+            } as Pix
+
+            retorno.pix = pix
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }

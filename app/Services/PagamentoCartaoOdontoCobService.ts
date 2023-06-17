@@ -11,16 +11,16 @@ export default class PagamentoCartaoOdontoCobService {
            .first() || new TbPagamentoCartaoOdontoCob
     }
 
-    async savePagamento(associado: TbAssociado, geraOC: any, dataVencimento: string, linkPagamento: string, transaction: TransactionClientContract) {
+    async savePagamento(associado: TbAssociado, pagamentoGerado: any, dataVencimento: string, linkPagamento: string, transaction: TransactionClientContract) {
         const pagamento = new TbPagamentoCartaoOdontoCob
           pagamento.cd_associado_pco = associado.id_associado,
-          pagamento.tx_token = geraOC.data.dados.id,
-          pagamento.vl_valor = geraOC.data.dados.valor,
+          pagamento.tx_token = pagamentoGerado.cartaoId,
+          pagamento.vl_valor = pagamentoGerado.compraValor,
           pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd'),
           pagamento.dt_vencimento = dataVencimento,
-          pagamento.nr_proposta = geraOC.data.dados.compraId,
-          pagamento.bl_ativo = true,
-          pagamento.link_pgto = linkPagamento
+          pagamento.nr_proposta = pagamentoGerado.compraId,
+          pagamento.blAtivo = 1,
+          pagamento.linkPgto = linkPagamento
           
           pagamento.useTransaction(transaction).save();
     }
@@ -33,11 +33,11 @@ export default class PagamentoCartaoOdontoCobService {
         pagamentoCartaoOdontoCob.nr_proposta = params.compraId
         pagamentoCartaoOdontoCob.tx_token = pagamentoCartaoOdontoCob.tx_token || "0"
         pagamentoCartaoOdontoCob.dt_vencimento = pagamentoCartaoOdontoCob.dt_vencimento || associado.dt_inicio_vigencia
-        pagamentoCartaoOdontoCob.pagamento_id = params.pagamentoId
+        pagamentoCartaoOdontoCob.pagamentoId = params.pagamentoId
         pagamentoCartaoOdontoCob.dt_pagamento = DateTime.now().toFormat("yyyy-MM-dd")
         pagamentoCartaoOdontoCob.nsu = params.nsu
-        pagamentoCartaoOdontoCob.autorizacao_codigo = params.autorizacaoCodigo || params.autorizacao
-        pagamentoCartaoOdontoCob.cartao_id = params.nsu
+        pagamentoCartaoOdontoCob.autorizacaoCodigo = params.autorizacaoCodigo || params.autorizacao
+        pagamentoCartaoOdontoCob.cartaoId = params.nsu
 
         pagamentoCartaoOdontoCob.useTransaction(transaction).save();
     }

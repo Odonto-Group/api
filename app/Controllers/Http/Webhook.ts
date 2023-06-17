@@ -6,8 +6,9 @@ import Database from '@ioc:Adonis/Lucid/Database';
 import PagamentoBoletoService from 'App/Services/PagamentoBoletoService';
 import AssociadoService from 'App/Services/AssociadoService';
 import PagamentoCartaoOdontoCobService from 'App/Services/PagamentoCartaoOdontoCobService';
-import { DateTime } from 'luxon';
 import PagamentoBoletoOdontoCobService from 'App/Services/PagamentoBoletoOdontoCobService';
+import PagamentoPixOdontoCobService from 'App/Services/PagamentoPixOdontoCobService';
+import PagamentoPixService from 'App/Services/PagamentoPixService';
 
 @inject()
 export default class PlanPayment {
@@ -15,10 +16,11 @@ export default class PlanPayment {
   constructor(
     private pagamentoCartaoService: PagamentoCartaoService,
     private pagamentoBoletoService: PagamentoBoletoService,
+    private pagamentoPixService: PagamentoPixService,
     private associadoService: AssociadoService,
     private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
-    private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService
-
+    private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
+    private pagamentoPixOdontoCobService: PagamentoPixOdontoCobService,
   ) {} 
 
   async index({ request }: HttpContextContract) {
@@ -29,31 +31,29 @@ export default class PlanPayment {
     const params = request.all()
 
     await Database.transaction(async (transaction) => {
-    try {
-        const associado = await this.associadoService.findAssociadoByNossoNumeroBoleto(params.nossoNumero);
+        try {
+            const associado = await this.associadoService.findAssociadoByNossoNumeroBoleto(params.nossoNumero);
 
-        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
+            if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
 
-            await this.pagamentoBoletoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
+                const pagamentoOdontoCob = await this.pagamentoBoletoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
 
-            await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+                await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
 
-            await this.pagamentoBoletoService.savePagamentoEfetuado(associado, params, transaction);
+                await this.pagamentoBoletoService.savePagamentoEfetuado(associado, params, pagamentoOdontoCob, transaction);
 
-            // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
-            // TO DO INSERIR ENVIO DE SMS
-        } else {
-            // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
+                // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
+                // TO DO INSERIR ENVIO DE SMS
+            } else {
+                // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
+            }
+
+            transaction.commit();
+        } catch (error) {
+            transaction.rollback();
+            throw error;
         }
-
-        await this.pagamentoCartaoService.inserePagamentoEfetuado(params, transaction);
-
-        transaction.commit();
-    } catch (error) {
-        transaction.rollback();
-        throw error;
-    }
-    })
+        })
   }
 
   async creditCardPayment({ request }: HttpContextContract) {
@@ -77,9 +77,6 @@ export default class PlanPayment {
             // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
           }
 
-          await this.pagamentoCartaoService.inserePagamentoEfetuado(params, transaction);
-
-
           transaction.commit();
         } catch (error) {
           transaction.rollback();
@@ -94,15 +91,29 @@ export default class PlanPayment {
     const params = request.all()
 
     await Database.transaction(async (transaction) => {
-        try {
-          
+      try {
+        const associado = await this.associadoService.findAssociadoByCpf(params.pagadorCpfCnpj);
 
-          transaction.commit();
-        } catch (error) {
-          transaction.rollback();
-          throw error;
+        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
+
+          const pix = await this.pagamentoPixOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
+
+          await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+
+          await this.pagamentoPixService.savePagamentoEfetuado(associado, params, pix, transaction);
+
+          // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
+          // TO DO INSERIR ENVIO DE SMS
+        } else {
+          // TO DO ENVIAR EMAIL PARA SUPORTE CASO DE ERRO
         }
-      })
+
+        transaction.commit();
+      } catch (error) {
+        transaction.rollback();
+        throw error;
+      }
+    })
 
   }
 
