@@ -13,6 +13,8 @@ import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPa
 import P4XService from "App/Services/P4XService";
 import { TipoTransacao } from "App/Enums/TipoTransacao";
 import Env from '@ioc:Adonis/Core/Env'
+import { SituacaoRetornoCartao } from "App/Enums/SituacaoRetornoCartao";
+import creditCardType from 'credit-card-type';
 
 @inject()
 export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
@@ -27,10 +29,10 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
         private mailSenderService: MailSenderService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
-        const body = await this.buildBodyRequest(associado, responsavelFinanceiro)
+        const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
     
         const retorno = {
             formaPagamento: FormaPagamento.CARTAO_CREDITO
@@ -44,15 +46,28 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.pagamentoId)
     
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
-    
-            const planoContent = { 
-                NOMEPLANO: nomePlano,
-                DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
-                NOMECLIENTE: associado.nm_associado,
-                LINKPAGAMENTO: linkPagamento
-            } as AdesaoEmailContent;
-    
-            await this.mailSenderService.sendEmailAdesao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+
+            if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
+
+                const planoContent = {
+                    NOMECLIENTE: associado.nm_associado
+                } as PagamentoEmailContent;
+
+                await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+            } else if (pagamento.situacao == SituacaoRetornoCartao.NAO_APROVADA) {
+
+                const planoContent = { 
+                    NOMEPLANO: nomePlano,
+                    DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
+                    NOMECLIENTE: associado.nm_associado,    
+                    LINKPAGAMENTO: linkPagamento,
+                    VALORPLANO: associado.nu_vl_mensalidade
+                } as AdesaoEmailContent;
+
+                await this.mailSenderService.sendEmailAdesaoCartao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+            } else {
+                // TODO ERRO SITUACAO DESCONHECIDA
+            }
     
             retorno.linkPagamento = linkPagamento
         } else {
@@ -62,11 +77,14 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
         return retorno;
     }
 
-    private async buildBodyRequest(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro) {
+    private async buildBodyRequest(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, params: any) {
         const uf = await this.ufService.findUfById(associado.id_UF_a);
 
         const nomeLista = responsavelFinanceiro.nm_RespFinanc.split(" ");
-        
+
+        const expiracaoCartao = params.cartaoCredito.expiracao.split("/");
+
+        const cartaoNumeroFormatado = params.cartaoCredito.numero.replaceAll(" ", "");
         return {
             "id": associado.nr_proposta,
             "valor": associado.nu_vl_mensalidade,
@@ -88,12 +106,12 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
               "telefone": responsavelFinanceiro.nu_telRespFin
             },
             "cartao": {
-              "numero": "1111111111111111", // params.cartao.numero
-              "codigoSeguranca": "818", // params.cartao.codigoSeguranca
-              "nome": "string",
-              "expiracaoAno": "25",
-              "expiracaoMes": "1",
-              "bandeira": "mastercard",
+              "numero": cartaoNumeroFormatado,
+              "codigoSeguranca": params.cartaoCredito.codigoSeguranca,
+              "nome": params.cartaoCredito.nome, 
+              "expiracaoMes": expiracaoCartao[0],
+              "expiracaoAno": expiracaoCartao[1],
+              "bandeira": this.getBandeiraCartao(cartaoNumeroFormatado),
               "incluirCofre": true
             },
             "tipoTransacao": TipoTransacao.A_VISTA,
@@ -101,6 +119,16 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
             "convenioId": "ecf1e024-e1a5-4efa-8399-a081a13bf3d8",
             "gerarLinkPagamento": true
           }
+    }
+
+    getBandeiraCartao(number) {
+        const cardTypes = creditCardType(number);
+        
+        if (cardTypes && cardTypes.length > 0) {
+            return cardTypes[0].type;
+        }
+    
+        return 'Unknown';
     }
 
 }

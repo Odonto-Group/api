@@ -1,0 +1,3 @@
+interface PagamentoEmailContent {
+    NOMECLIENTE: string
+}

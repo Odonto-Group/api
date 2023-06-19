@@ -58,37 +58,39 @@ export default class AssociadoService {
   }
 
  
-  async buildAssociado(associado: TbAssociado, params: any, orgaoExpedidor: TbOrgaoExpedidor, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+    const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
+    
     associado.nm_associado = params.nomeTitular
-    associado.nu_cpf = params.cpf;
+    associado.nu_cpf = params.cpf ? params.cpf.replace(/\D/g, "") : "";
     associado.nm_mae = params.nomeMae;
     associado.nu_cns = params.cns;
     associado.nu_rg = params.rg;
     associado.dt_nasc = params.dataNascimento;
     associado.ds_email = params.emailTitular;
     associado.id_sexo_a = params.idSexo;
-    associado.id_EstadoCivil_a = params.estadoCivil;
+    associado.id_EstadoCivil_a = params.idEstadoCivil;
   
     associado.setCelularAttribute(params.celular);
     associado.setOrgaoExpedidor(orgaoExpedidor.sigla, orgaoExpedidor.nm_orgaoexpedidor);
     
-    associado.id_FontePag_a = params.fontePagadora || null;
+    associado.id_FontePag_a = params.idFontePagadora || null;
     associado.id_orgao_a = params.orgao || null;
     associado.cd_perfil = params.perfil || null;
     associado.nu_MatriculaFuncional = params.matricula || null;
     associado.tx_Cargo = params.cargo || null;
-    associado.dt_operacao = DateTime.local().toFormat('f');
-    associado.dt_Cadastro = DateTime.local().toFormat('f');
+    associado.dt_operacao = DateTime.now().toFormat('yyyy/MM/dd');
+    associado.dt_Cadastro = DateTime.now().toFormat('yyyy/MM/dd');
     associado.dt_alteraStatus = DateTime.local().toFormat('yyyy/MM/dd');
-    associado.id_parentesco_a = 1;
-    associado.nu_CEP = params.cep;
+    associado.id_parentesco_a = params.idParentesco;
+    associado.nu_CEP = params.cep ? params.cep.replace(/\D/g, "") : "";
     associado.tx_EndLograd = params.endereco;
     associado.nu_EndNumero = params.numeroCasa;
     associado.tx_EndCompl = params.complemento || "";
     associado.tx_EndBairro = params.bairro;
     associado.tx_EndCidade = params.cidade;
     associado.id_UF_a = params.idUf
-    associado.id_origemVenda = 99; // TODO 5
+    associado.id_origemVenda = 5;
     associado.id_vendedor_a = idVendedor
     associado.cd_CodContratoS4E = formaPagamento.cd_CodContratoS4E
 

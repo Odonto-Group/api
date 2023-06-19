@@ -30,6 +30,7 @@ import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import OrgaoExpedidorInvalido from 'App/Exceptions/OrgaoExpedidorInvalido';
+import TbDependente from 'App/Models/TbDependente';
 
 @inject()
 export default class PlanPayment {
@@ -95,7 +96,7 @@ export default class PlanPayment {
     const valorContrato = valorMensalidade * quantidadeVidas;
 
     await this.salvarAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction)
-
+    
     this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado, transaction)
 
     const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, associado, transaction);
@@ -106,7 +107,9 @@ export default class PlanPayment {
 
     //await this.emailConsignado(params, associado)
 
-    return await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+    const returnPayment =  await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+  
+    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome);
   }
 
   async executaPagamento(
@@ -144,7 +147,7 @@ export default class PlanPayment {
       returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
 
     } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
-      returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
+      returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
 
       if (!returnPayment.linkPagamento) {
         throw new NaoFoiPossivelGerarPagamentoCartaoException();
@@ -155,15 +158,21 @@ export default class PlanPayment {
       throw new MetodoDePagamentoInvalidoException()
     }
 
-    return this.criarRetornoPagamento(returnPayment, params, associado);
+    return returnPayment;
   }
 
-  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado) {
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string) {
     returnPayment.idAssociado = associado.id_associado
     returnPayment.dataCadastro = associado.dt_Cadastro
     returnPayment.email = associado.ds_email
     returnPayment.numeroProposta = associado.nr_proposta
     returnPayment.nome = associado.nm_associado
+    returnPayment.quantidadeVidas = quantidadeVidas;
+    returnPayment.valorPagamento = valorMensalidade
+    returnPayment.nomePlano = nomePlano;
+    returnPayment.telefone = associado.nu_Celular
+    returnPayment.nomeVendedor = nomeVendedor
+    returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
 
     return returnPayment;
   }
@@ -236,10 +245,19 @@ export default class PlanPayment {
     });
   }
 
-  async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract) { //todo promise all
-      params.dependentes && await params.dependentes.forEach(async depen => {
-        await this.dependenteService.saveDependente(depen, associado, transaction)
-      });
+  async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract) {
+    if (params.dependentes) {
+      await TbDependente
+        .query()
+        .where('cd_associado_d', associado.id_associado)
+        .useTransaction(transaction).delete()
+
+      const dependentePromises = params.dependentes.map((depen) => 
+          this.dependenteService.saveDependente(depen, associado, transaction)
+      );
+
+      await Promise.all(dependentePromises);
+    }
   }
 
   async saveResponsavelFinanceiro(params:any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
@@ -249,13 +267,7 @@ export default class PlanPayment {
   }
 
   async salvarAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
-    const orgaoExpedidor = await TbOrgaoExpedidor.query().where('id_oe', params.idOrgaoExpedidor).first();
-
-    if (!orgaoExpedidor || !orgaoExpedidor.sigla) {
-      throw new OrgaoExpedidorInvalido();
-    }
-    
-    await this.associadoService.buildAssociado(associado, params, orgaoExpedidor, formaPagamento, valorContrato, dataExpiracao, idVendedor);
+    await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, idVendedor);
     
     await this.associadoService.saveAssociado(associado, transaction);
   }
@@ -271,11 +283,10 @@ export default class PlanPayment {
   calcularDataExpiracao(params: any): DateTime {
     switch(params.formaPagamento.gpPagto) {
       case 1: 
-        return DateTime.local().plus({ days: 7 })
-
+        return DateTime.now().plus({ days: 7 })
       case 2:
         if (params.chkPrimeiraBoleto) {
-          return DateTime.local();
+          return DateTime.now();
         } else {
           return DateTime.fromFormat(params.vencimentoDebito ? params.vencimentoDebito : params.vencimentoBoleto, "yyyy/mm/dd")
         }

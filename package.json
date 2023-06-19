@@ -65,6 +65,7 @@
     "@types/nodemailer": "^6.4.8",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
+    "credit-card-type": "^9.1.0",
     "infobip-nodejs": "^0.1.1",
     "luxon": "^3.2.1",
     "mysql2": "^3.1.2",

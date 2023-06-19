@@ -1,6 +1,12 @@
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 
 export default interface RetornoGeracaoPagamento {
+    linkProposta: string;
+    nomeVendedor: string;
+    telefone: string;
+    quantidadeVidas: number;
+    nomePlano: string;
+    dataVencimento: string;
     linkPagamento: string,
     formaPagamento: FormaPagamento,
     agencia: string,

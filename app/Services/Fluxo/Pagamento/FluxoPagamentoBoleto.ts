@@ -61,10 +61,11 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
                 NOMEPLANO: nomePlano,
                 DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
                 NOMECLIENTE: associado.nm_associado,    
-                LINKPAGAMENTO: linkPagamento
+                LINKPAGAMENTO: linkPagamento,
+                VALORPLANO: associado.nu_vl_mensalidade
             } as AdesaoEmailContent;
     
-            await this.mailSenderService.sendEmailAdesao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+            await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             
             const pix = {
                 copiaCola: pagamento.pix.copiaCola,
@@ -74,6 +75,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             retorno.pix = pix
             retorno.linkPagamento = linkPagamento;
             retorno.formaPagamento = FormaPagamento.BOLETO
+            retorno.dataVencimento = dataPrimeiroVencimento
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }

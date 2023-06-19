@@ -208,7 +208,7 @@ export default class PlanController {
      TbUf.query(),
      TbSexo.query(),
      TbBanco.query(),
-     TbParentesco.query(),
+     TbParentesco.query().where('nu_UsoTipoPlan', 2),
      TbEstadoCivil.query(),
      TbOrgaoExpedidor.query()
     ])
