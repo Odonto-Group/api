@@ -178,7 +178,7 @@ export default class PlanPayment {
     returnPayment.telefone = associado.nu_dddCel + associado.nu_Celular
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
-    returnPayment.dataVencimento = dataPrimeiroVencimento
+    returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
 
     return returnPayment;
   }
