@@ -112,7 +112,7 @@ export default class PlanPayment {
 
     const returnPayment =  await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   
-    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome);
+    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
   }
 
   async executaPagamento(
@@ -166,7 +166,7 @@ export default class PlanPayment {
     return returnPayment;
   }
 
-  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string) {
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
     returnPayment.idAssociado = associado.id_associado
     returnPayment.dataCadastro = associado.dt_Cadastro
     returnPayment.email = associado.ds_email
@@ -178,6 +178,7 @@ export default class PlanPayment {
     returnPayment.telefone = associado.nu_dddCel + associado.nu_Celular
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
+    returnPayment.dataVencimento = dataPrimeiroVencimento
 
     return returnPayment;
   }

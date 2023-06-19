@@ -75,7 +75,6 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
             }
     
             retorno.linkPagamento = linkPagamento
-            retorno.dataVencimento = dataPrimeiroVencimento
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }

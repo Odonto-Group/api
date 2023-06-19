@@ -75,7 +75,6 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             retorno.pix = pix
             retorno.linkPagamento = linkPagamento;
             retorno.formaPagamento = FormaPagamento.BOLETO
-            retorno.dataVencimento = dataPrimeiroVencimento
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }
