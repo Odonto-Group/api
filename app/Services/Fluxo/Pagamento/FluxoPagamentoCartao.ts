@@ -15,6 +15,7 @@ import { TipoTransacao } from "App/Enums/TipoTransacao";
 import Env from '@ioc:Adonis/Core/Env'
 import { SituacaoRetornoCartao } from "App/Enums/SituacaoRetornoCartao";
 import creditCardType from 'credit-card-type';
+import AssociadoService from "App/Services/AssociadoService";
 
 @inject()
 export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
@@ -28,7 +29,8 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
         private ufService: UfService,
         private p4XService: P4XService,
         private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
-        private mailSenderService: MailSenderService
+        private mailSenderService: MailSenderService,
+        private associadoService: AssociadoService
     ){}
 
     async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
@@ -50,6 +52,7 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
 
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
+                await this.associadoService.ativarPlanoAssociado(associado, transaction, 2);
 
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado

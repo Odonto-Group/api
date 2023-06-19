@@ -13,16 +13,16 @@ export default class PagamentoCartaoOdontoCobService {
 
     async savePagamento(associado: TbAssociado, pagamentoGerado: any, dataVencimento: string, linkPagamento: string, transaction: TransactionClientContract) {
         const pagamento = new TbPagamentoCartaoOdontoCob
-          pagamento.cd_associado_pco = associado.id_associado
-          pagamento.tx_token = pagamentoGerado.cartaoId
-          pagamento.vl_valor = pagamentoGerado.compraValor
-          pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/MM/dd')
-          pagamento.dt_vencimento = dataVencimento
-          pagamento.nr_proposta = pagamentoGerado.compraId
-          pagamento.blAtivo = 1
-          pagamento.linkPgto = linkPagamento
-          
-          pagamento.useTransaction(transaction).save();
+        pagamento.cd_associado_pco = associado.id_associado
+        pagamento.tx_token = pagamentoGerado.cartaoId
+        pagamento.vl_valor = pagamentoGerado.compraValor
+        pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/MM/dd')
+        pagamento.dt_vencimento = dataVencimento
+        pagamento.nr_proposta = pagamentoGerado.compraId
+        pagamento.blAtivo = 1
+        pagamento.linkPgto = linkPagamento
+        
+        await pagamento.useTransaction(transaction).save();
     }
 
     async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: any, transaction: TransactionClientContract) {

@@ -29,6 +29,7 @@ import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.inte
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbDependente from 'App/Models/TbDependente';
+import DataExpiracaoInvalida from 'App/Exceptions/DataExpiracaoInvalida';
 
 @inject()
 export default class PlanPayment {
@@ -86,6 +87,10 @@ export default class PlanPayment {
     }
 
     let dataExpiracao = this.calcularDataExpiracao(params);
+
+    if (DateTime.now() > dataExpiracao) {
+      throw new DataExpiracaoInvalida();
+    }
 
     let valorMensalidade = this.calculaValorMensalidade(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 

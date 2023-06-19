@@ -81,9 +81,9 @@ export default class AssociadoService {
     associado.cd_perfil = params.perfil || null;
     associado.nu_MatriculaFuncional = params.matricula || null;
     associado.tx_Cargo = params.cargo || null;
-    associado.dt_operacao = DateTime.now().toFormat('yyyy/MM/dd');
-    associado.dt_Cadastro = DateTime.now().toFormat('yyyy/MM/dd');
-    associado.dt_alteraStatus = DateTime.local().toFormat('yyyy/MM/dd');
+    associado.dt_operacao = DateTime.now().toString();
+    associado.dt_Cadastro = DateTime.now().toString()
+    associado.dt_alteraStatus = DateTime.local().toString()
     associado.id_parentesco_a = params.idParentesco;
     associado.nu_CEP = params.cep ? params.cep.replace(/\D/g, "") : "";
     associado.tx_EndLograd = params.endereco;
@@ -100,8 +100,8 @@ export default class AssociadoService {
     associado.nu_vl_mensalidade = valorContrato;
 
     associado.id_meiopagto_a = params.formaPagamento.gpPagto;
-    associado.dt_dataprimvenc = dataExpiracao.toFormat('yyyy/MM/dd');
-    associado.dt_inicio_vigencia = DateTime.local().toFormat('yyyy/MM/dd');
+    associado.dt_dataprimvenc = dataExpiracao.toString()
+    associado.dt_inicio_vigencia = DateTime.local().toString()
     associado.cd_status = 0;
     associado.st_mail = 0;
 

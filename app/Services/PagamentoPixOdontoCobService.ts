@@ -18,7 +18,7 @@ export default class PagamentoPixOdontoCobService {
         pagamento.dtCadastro = DateTime.local().toFormat('yyyy/mm/dd')
         pagamento.idPixOdontocob = pixId
         
-        pagamento.useTransaction(transaction).save();
+        await pagamento.useTransaction(transaction).save();
     }
 
     async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: any, transaction: TransactionClientContract): Promise<TbPagamentoPixOdontoCob> {

@@ -51,7 +51,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
-            await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
+            //await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
 
             await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento, dataPrimeiroVencimento, this.urlBaseP4x, tipoPessoa.tipoPessoa, tipoPessoa.numeroProsposta, transaction);
 
