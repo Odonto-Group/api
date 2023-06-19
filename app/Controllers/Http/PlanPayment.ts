@@ -291,19 +291,19 @@ export default class PlanPayment {
         return DateTime.now().plus({ days: 7 })
       case 2:
         if (params.chkPrimeiraBoleto) {
-          return DateTime.fromFormat(params.vencimentoBoleto, "yyyy/MM/dd")
+          return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy")
         } else {
-          return DateTime.fromFormat(params.vencimentoDebito, "yyyy/MM/dd")
+          return DateTime.fromFormat(params.vencimentoDebito, "dd/MM/yyyy")
         }
 
       case 3:
-        return DateTime.fromFormat(params.vencimentoBoleto, "yyyy/MM/dd");
+        return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy");
         
       case 4: 
         if (params.chkPrimeiraBoleto) {
-          return DateTime.fromFormat(params.vencimentoBoleto, "yyyy/MM/dd");
+          return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy");
         } else {
-          return DateTime.fromFormat(params.vencimentoConsignado, "yyyy/MM/dd");
+          return DateTime.fromFormat(params.vencimentoConsignado, "dd/MM/yyyy");
         }
 
       default:
