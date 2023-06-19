@@ -68,7 +68,7 @@ export default class AssociadoService {
     associado.nm_mae = params.nomeMae ? params.nomeMae.toUpperCase() : "";
     associado.nu_cns = params.cns;
     associado.nu_rg = params.rg;
-    associado.dt_nasc = params.dataNascimento;
+    associado.dt_nasc = DateTime.fromFormat(params.dataNascimento, "dd/MM/yyyy").toString();
     associado.ds_email = params.emailTitular ? params.emailTitular.toUpperCase() : "";
     associado.id_sexo_a = params.idSexo;
     associado.id_EstadoCivil_a = params.idEstadoCivil;

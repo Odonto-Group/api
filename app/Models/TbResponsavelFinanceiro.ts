@@ -14,7 +14,7 @@ export default class TbResponsavelFinanceiro extends BaseModel {
   public nm_RespFinanc: string
 
   @column({columnName: "dt_NascRespFin"})
-  public dt_NascRespFin: Date
+  public dt_NascRespFin: string
 
   @column({columnName: "ds_emailRespFin"})
   public ds_emailRespFin: string

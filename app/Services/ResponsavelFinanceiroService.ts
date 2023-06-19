@@ -2,6 +2,7 @@ import TbResponsavelFinanceiro from "App/Models/TbResponsavelFinanceiro";
 import TbAssociado from "App/Models/TbAssociado";
 import TbUf from "App/Models/TbUf";
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
+import { DateTime } from "luxon";
 
 export default class ResponsavelFinanceiroService {
 
@@ -20,32 +21,14 @@ export default class ResponsavelFinanceiroService {
         .delete();
   }
 
-  async saveResponsavelFinanceiroByAssociado(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
-    const responsavelFinanceiro =  new TbResponsavelFinanceiro;
-    responsavelFinanceiro.id_associado_rf = associado.id_associado;
-    responsavelFinanceiro.nu_CPFRespFin = params.cpf;
-    responsavelFinanceiro.nm_RespFinanc = params.nome_titular ? params.nome_titular.toUpperCase() : "";
-    responsavelFinanceiro.dt_NascRespFin =params.data_nascimento;
-    responsavelFinanceiro.ds_emailRespFin = params.email_titular ? params.email_titular.toUpperCase() : "";
-    responsavelFinanceiro.nu_CEP = params.cep;
-    responsavelFinanceiro.tx_EndLograd = params.endereco;
-    responsavelFinanceiro.tx_EndNumero = params.numero_casa;  
-    responsavelFinanceiro.tx_EndCompl = params.complemento || "";
-    responsavelFinanceiro.tx_EndBairro = params.bairro;
-    responsavelFinanceiro.tx_EndCidade = params.cidade;
-    responsavelFinanceiro.id_uf_rf = params.idUf;
-    responsavelFinanceiro.setCelularAttribute(params.telefone_responsavel_financeiro);
-    return await responsavelFinanceiro.useTransaction(transaction).save();
-  }
-
   async saveResponsavelFinanceiro(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.responsavelFinanceiro.cpf;
     responsavelFinanceiro.nm_RespFinanc = params.responsavelFinanceiro.nome ? params.responsavelFinanceiro.nome.toUpperCase() : "";
-    responsavelFinanceiro.dt_NascRespFin = params.responsavelFinanceiro.dataNascimento;
+    responsavelFinanceiro.dt_NascRespFin = DateTime.fromFormat(params.responsavelFinanceiro.dataNascimento, "dd/MM/yyyy").toString();
     responsavelFinanceiro.ds_emailRespFin = params.responsavelFinanceiro.email ? params.responsavelFinanceiro.email.toUpperCase() : "";
-    responsavelFinanceiro.nu_CEP = params.responsavelFinanceiro.cep;
+    responsavelFinanceiro.nu_CEP = params.responsavelFinanceiro.cep ? params.responsavelFinanceiro.cep.replace(/\D/g, "") : "00000000";
     responsavelFinanceiro.tx_EndLograd = params.responsavelFinanceiro.enderenco;
     responsavelFinanceiro.tx_EndNumero = params.responsavelFinanceiro.numero;
     responsavelFinanceiro.tx_EndCompl = params.responsavelFinanceiro.complemento || "";

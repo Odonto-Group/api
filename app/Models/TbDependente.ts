@@ -22,8 +22,8 @@ export default class Dependente extends BaseModel {
   @column()
   public nu_cns: string
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public dt_nasc: DateTime
+  @column()
+  public dt_nasc: string
 
   @column()
   public nm_mae: string

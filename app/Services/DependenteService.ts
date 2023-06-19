@@ -3,6 +3,7 @@ import TbAssociado from "App/Models/TbAssociado";
 import TbDependente from "App/Models/TbDependente";
 import TbOrgaoExpedidor from "App/Models/TbOrgaoExpedidor";
 import TbUf from "App/Models/TbUf";
+import { DateTime } from "luxon";
 export default class DependenteService {
 
   async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract) {
@@ -18,7 +19,7 @@ export default class DependenteService {
         uf.sigla || "",
     );
     dependente.nu_cns = novoDependente.cns;
-    dependente.dt_nasc = novoDependente.dataNascimento;
+    dependente.dt_nasc = DateTime.fromFormat(novoDependente.dataNascimento, "dd/MM/yyyy").toString();
     dependente.nm_mae = novoDependente.nomeMae ? novoDependente.nomeMae.toUpperCase() : "";
     dependente.cd_associado_d = associado.id_associado;
     dependente.id_sexo_d = novoDependente.idSexo || 0;
