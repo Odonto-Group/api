@@ -84,7 +84,7 @@ export default class AssociadoService {
     associado.dt_operacao = DateTime.now().toString();
     associado.dt_Cadastro = DateTime.now().toString()
     associado.dt_alteraStatus = DateTime.local().toString()
-    associado.id_parentesco_a = params.idParentesco;
+    associado.id_parentesco_a = 1;
     associado.nu_CEP = params.cep ? params.cep.replace(/\D/g, "") : "";
     associado.tx_EndLograd = params.endereco;
     associado.nu_EndNumero = params.numeroCasa;
