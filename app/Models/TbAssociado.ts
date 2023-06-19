@@ -179,6 +179,6 @@ export default class TbAssociado extends BaseModel {
   setCelularAttribute(value: string) {
     value = value ? value.replace(/\D/g, "") : "00000000000"
     this.nu_dddCel = value.substring(0, 2);
-    this.nu_Celular = value.substring(2, 10);
+    this.nu_Celular = value.substring(2, 11);
   }
 }

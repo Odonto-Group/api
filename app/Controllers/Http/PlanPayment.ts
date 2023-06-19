@@ -28,8 +28,6 @@ import FluxoPagamentoCartao from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCar
 import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.interface';
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
-import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
-import OrgaoExpedidorInvalido from 'App/Exceptions/OrgaoExpedidorInvalido';
 import TbDependente from 'App/Models/TbDependente';
 
 @inject()
@@ -123,6 +121,8 @@ export default class PlanPayment {
   
     let returnPayment = {} as RetornoGeracaoPagamento
 
+    //melhorar logica para organizacao do debito
+    //todo está em 2 locais ativarPlanoAssociado distintos
     if(params.formaPagamento.gpPagto == 2) { //DEBITO EM CONTA
       await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
@@ -138,7 +138,7 @@ export default class PlanPayment {
         returnPayment.conta = params.conta;
         returnPayment.linkPagamento = '';
 
-        await this.associadoService.ativarPlanoAssociado(associado, transaction);
+        await this.associadoService.ativarPlanoAssociado(associado, transaction, 1);
       }
     } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");

@@ -10,7 +10,7 @@ export default class DependenteService {
     const uf = await TbUf.findOrFail(novoDependente.idUf)
 
     const dependente = new TbDependente();
-    dependente.nm_dependente = novoDependente.nome;
+    dependente.nm_dependente = novoDependente.nome ? novoDependente.nome.toUpperCase() : "";
     dependente.nu_cpf = novoDependente.cpf;
     dependente.nu_rg = novoDependente.rg;
     dependente.setOrgaoExpedidor(
@@ -19,7 +19,7 @@ export default class DependenteService {
     );
     dependente.nu_cns = novoDependente.cns;
     dependente.dt_nasc = novoDependente.dataNascimento;
-    dependente.nm_mae = novoDependente.nomeMae;
+    dependente.nm_mae = novoDependente.nomeMae ? novoDependente.nomeMae.toUpperCase() : "";
     dependente.cd_associado_d = associado.id_associado;
     dependente.id_sexo_d = novoDependente.idSexo || 0;
     dependente.id_parentesco_d = novoDependente.idParentesco || 14;

@@ -24,9 +24,9 @@ export default class ResponsavelFinanceiroService {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.cpf;
-    responsavelFinanceiro.nm_RespFinanc = params.nome_titular;
+    responsavelFinanceiro.nm_RespFinanc = params.nome_titular ? params.nome_titular.toUpperCase() : "";
     responsavelFinanceiro.dt_NascRespFin =params.data_nascimento;
-    responsavelFinanceiro.ds_emailRespFin = params.email_titular;
+    responsavelFinanceiro.ds_emailRespFin = params.email_titular ? params.email_titular.toUpperCase() : "";
     responsavelFinanceiro.nu_CEP = params.cep;
     responsavelFinanceiro.tx_EndLograd = params.endereco;
     responsavelFinanceiro.tx_EndNumero = params.numero_casa;  
@@ -42,9 +42,9 @@ export default class ResponsavelFinanceiroService {
     const responsavelFinanceiro =  new TbResponsavelFinanceiro;
     responsavelFinanceiro.id_associado_rf = associado.id_associado;
     responsavelFinanceiro.nu_CPFRespFin = params.responsavelFinanceiro.cpf;
-    responsavelFinanceiro.nm_RespFinanc = params.responsavelFinanceiro.nome;
+    responsavelFinanceiro.nm_RespFinanc = params.responsavelFinanceiro.nome ? params.responsavelFinanceiro.nome.toUpperCase() : "";
     responsavelFinanceiro.dt_NascRespFin = params.responsavelFinanceiro.dataNascimento;
-    responsavelFinanceiro.ds_emailRespFin = params.responsavelFinanceiro.email;
+    responsavelFinanceiro.ds_emailRespFin = params.responsavelFinanceiro.email ? params.responsavelFinanceiro.email.toUpperCase() : "";
     responsavelFinanceiro.nu_CEP = params.responsavelFinanceiro.cep;
     responsavelFinanceiro.tx_EndLograd = params.responsavelFinanceiro.enderenco;
     responsavelFinanceiro.tx_EndNumero = params.responsavelFinanceiro.numero;

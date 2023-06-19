@@ -14,11 +14,11 @@ export default class AssociadoService {
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 
-  async ativarPlanoAssociado(associado: TbAssociado, transaction: TransactionClientContract) {
+  async ativarPlanoAssociado(associado: TbAssociado, transaction: TransactionClientContract, cdStatus: number) {
     await TbAssociado.query()
       .where("id_associado", associado.id_associado)
       .useTransaction(transaction)
-      .update({cd_status: 1})
+      .update({cd_status: cdStatus})
   }
 
   async saveAssociado(associado: TbAssociado, transaction: TransactionClientContract) {
@@ -61,13 +61,13 @@ export default class AssociadoService {
   async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
     
-    associado.nm_associado = params.nomeTitular
+    associado.nm_associado = params.nomeTitular ? params.nomeTitular.toUpperCase() : "";
     associado.nu_cpf = params.cpf ? params.cpf.replace(/\D/g, "") : "";
-    associado.nm_mae = params.nomeMae;
+    associado.nm_mae = params.nomeMae ? params.nomeMae.toUpperCase() : "";
     associado.nu_cns = params.cns;
     associado.nu_rg = params.rg;
     associado.dt_nasc = params.dataNascimento;
-    associado.ds_email = params.emailTitular;
+    associado.ds_email = params.emailTitular ? params.emailTitular.toUpperCase() : "";
     associado.id_sexo_a = params.idSexo;
     associado.id_EstadoCivil_a = params.idEstadoCivil;
   

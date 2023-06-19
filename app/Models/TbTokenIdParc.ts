@@ -47,7 +47,8 @@ export default class TbTokenIdParc extends BaseModel {
   public corretora: BelongsTo<typeof TbCorretora>
 
   @belongsTo(() => TbVendedor, {
-      foreignKey: 'nu_cdVendedor4E_tk'
+      foreignKey: 'nu_cdVendedor4E_tk',
+      localKey: 'nu_cdVendedorS4E'
   })
   public vendedor: BelongsTo<typeof TbVendedor>
 

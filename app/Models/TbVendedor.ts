@@ -16,7 +16,7 @@ export default class TbVendedor extends BaseModel {
     @column()
     public nu_cdVendedorEasy: number;
 
-    @column()
+    @column({columnName: "nu_cdVendedorS4E"})
     public nu_cdVendedorS4E: number;
 
     @column()
