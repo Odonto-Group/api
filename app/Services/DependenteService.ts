@@ -7,7 +7,7 @@ export default class DependenteService {
 
   async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(novoDependente.idOrgaoExpedidor)
-    const uf = await TbUf.findOrFail(novoDependente.idUf)
+    const uf = await TbUf.findOrFail(novoDependente.idOrgaoExpedidorUf)
 
     const dependente = new TbDependente();
     dependente.nm_dependente = novoDependente.nome ? novoDependente.nome.toUpperCase() : "";

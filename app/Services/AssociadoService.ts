@@ -2,6 +2,7 @@ import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbFormasPagamento from 'App/Models/TbFormasPagamento';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
+import TbUf from 'App/Models/TbUf';
 import { DateTime } from 'luxon';
 
 export default class AssociadoService {
@@ -60,6 +61,7 @@ export default class AssociadoService {
  
   async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
+    const uf = await TbUf.findOrFail(params.idOrgaoExpedidor)
     
     associado.nm_associado = params.nomeTitular ? params.nomeTitular.toUpperCase() : "";
     associado.nu_cpf = params.cpf ? params.cpf.replace(/\D/g, "") : "";
@@ -72,7 +74,7 @@ export default class AssociadoService {
     associado.id_EstadoCivil_a = params.idEstadoCivil;
   
     associado.setCelularAttribute(params.celular);
-    associado.setOrgaoExpedidor(orgaoExpedidor.sigla, orgaoExpedidor.nm_orgaoexpedidor);
+    associado.setOrgaoExpedidor(orgaoExpedidor.sigla, uf.sigla);
     
     associado.id_FontePag_a = params.idFontePagadora || null;
     associado.id_orgao_a = params.orgao || null;
