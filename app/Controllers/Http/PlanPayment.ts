@@ -170,7 +170,7 @@ export default class PlanPayment {
     returnPayment.quantidadeVidas = quantidadeVidas;
     returnPayment.valorPagamento = valorMensalidade
     returnPayment.nomePlano = nomePlano;
-    returnPayment.telefone = associado.nu_Celular
+    returnPayment.telefone = associado.nu_dddCel + associado.nu_Celular
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
 
@@ -286,9 +286,9 @@ export default class PlanPayment {
         return DateTime.now().plus({ days: 7 })
       case 2:
         if (params.chkPrimeiraBoleto) {
-          return DateTime.now();
+          return DateTime.fromFormat(params.vencimentoBoleto, "yyyy/mm/dd")
         } else {
-          return DateTime.fromFormat(params.vencimentoDebito ? params.vencimentoDebito : params.vencimentoBoleto, "yyyy/mm/dd")
+          return DateTime.fromFormat(params.vencimentoDebito, "yyyy/mm/dd")
         }
 
       case 3:
@@ -297,8 +297,7 @@ export default class PlanPayment {
       case 4: 
         if (params.chkPrimeiraBoleto) {
           return DateTime.fromFormat(params.vencimentoBoleto, "yyyy/mm/dd");
-        }
-        else {
+        } else {
           return DateTime.fromFormat(params.vencimentoConsignado, "yyyy/mm/dd");
         }
 
