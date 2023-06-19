@@ -54,6 +54,6 @@ export default class PagamentoBoletoOdontoCobService {
         pagamento.nossoNumero                = geraOc.registro.titulo.nossoNumero;
         pagamento.nr_proposta                = numeroProsposta; //PEGAR N° PROPOSTA EMPRESA
         pagamento.blAtivo                    = true;
-        pagamento.useTransaction(transaction).save();
+        await pagamento.useTransaction(transaction).save();
     }
 }

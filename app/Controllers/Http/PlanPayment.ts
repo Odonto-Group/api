@@ -163,7 +163,7 @@ export default class PlanPayment {
 
   private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string) {
     returnPayment.idAssociado = associado.id_associado
-    returnPayment.dataCadastro = associado.dt_Cadastro
+    returnPayment.dataCadastro = DateTime.fromFormat(associado.dt_Cadastro, "yyyy/MM/dd").toFormat("dd/MM/yyyy")
     returnPayment.email = associado.ds_email
     returnPayment.numeroProposta = associado.nr_proposta
     returnPayment.nome = associado.nm_associado
