@@ -1,6 +1,5 @@
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import TbAssociado from "App/Models/TbAssociado";
-import TbPagamentoBoletoOdontoCob from "App/Models/TbPagamentoBoletoOdontoCob";
 import TbPagamentoCartaoOdontoCob from "App/Models/TbPagamentoCartaoOdontoCob";
 import { DateTime } from "luxon";
 
@@ -16,7 +15,7 @@ export default class PagamentoCartaoOdontoCobService {
         pagamento.cd_associado_pco = associado.id_associado
         pagamento.tx_token = pagamentoGerado.cartaoId
         pagamento.vl_valor = pagamentoGerado.compraValor
-        pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/MM/dd')
+        pagamento.dt_cadastro = DateTime.now().toString()
         pagamento.dt_vencimento = dataVencimento
         pagamento.nr_proposta = pagamentoGerado.compraId
         pagamento.blAtivo = 1
@@ -34,7 +33,7 @@ export default class PagamentoCartaoOdontoCobService {
         pagamentoCartaoOdontoCob.tx_token = pagamentoCartaoOdontoCob.tx_token || "0"
         pagamentoCartaoOdontoCob.dt_vencimento = pagamentoCartaoOdontoCob.dt_vencimento || associado.dt_inicio_vigencia
         pagamentoCartaoOdontoCob.pagamentoId = params.pagamentoId
-        pagamentoCartaoOdontoCob.dt_pagamento = DateTime.now().toFormat("yyyy-MM-dd")
+        pagamentoCartaoOdontoCob.dt_pagamento = DateTime.now().toString()
         pagamentoCartaoOdontoCob.nsu = params.nsu
         pagamentoCartaoOdontoCob.autorizacaoCodigo = params.autorizacaoCodigo || params.autorizacao
         pagamentoCartaoOdontoCob.cartaoId = params.nsu

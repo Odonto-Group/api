@@ -8,7 +8,7 @@ import { DateTime } from 'luxon';
 export default class AssociadoService {
   
   async updateAssociadoPagamentoEfetuado(associado: TbAssociado) {
-      const dataPagamento = DateTime.now().toFormat("yyyy-MM-dd")
+      const dataPagamento = DateTime.now().toString()
 
       await TbAssociado.query()
         .where('id_associado', associado.id_associado)
@@ -101,7 +101,7 @@ export default class AssociadoService {
 
     associado.id_meiopagto_a = params.formaPagamento.gpPagto;
     associado.dt_dataprimvenc = dataExpiracao.toString()
-    associado.dt_inicio_vigencia = DateTime.local().toString()
+    associado.dt_inicio_vigencia = DateTime.now().toString()
     associado.cd_status = 0;
     associado.st_mail = 0;
 
