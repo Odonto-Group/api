@@ -34,7 +34,7 @@ export default class TbAssociado extends BaseModel {
   @column()
   public id_sexo_a: number
 
-  @column({columnName: "ds_OrgaoExpedidor"})
+  @column({columnName: "id_EstadoCivil_a"})
   public id_EstadoCivil_a: number
 
   @column({columnName: "nu_codprodutoS4E"})

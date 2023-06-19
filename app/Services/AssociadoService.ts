@@ -94,7 +94,7 @@ export default class AssociadoService {
     associado.id_vendedor_a = idVendedor
     associado.cd_CodContratoS4E = formaPagamento.cd_CodContratoS4E
 
-    associado.dt_dia_vencto = DateTime.local().day;
+    associado.dt_dia_vencto = dataExpiracao.day;
     associado.nu_vl_mensalidade = valorContrato;
 
     associado.id_meiopagto_a = params.formaPagamento.gpPagto;
