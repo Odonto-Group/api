@@ -88,7 +88,7 @@ export default class PlanPayment {
 
     let dataExpiracao = this.calcularDataExpiracao(params);
 
-    if (DateTime.now() > dataExpiracao) {
+    if (dataExpiracao < DateTime.now()) {
       throw new DataExpiracaoInvalida();
     }
 
