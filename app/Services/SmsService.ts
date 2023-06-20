@@ -1,7 +1,10 @@
 import Env from '@ioc:Adonis/Core/Env'
+import TbAssociado from 'App/Models/TbAssociado';
+import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import fetch from 'node-fetch';
 
 export default class SmsService {
+
   sendSmsUrl = async (number: string) => {
     const code = Math.floor(Math.random() * 9000) + 1000;
 
@@ -27,4 +30,12 @@ export default class SmsService {
       throw new Error('Erro ao enviar SMS');
     }
   };
+
+  async enviaSmsResponsavel(responsavelFinanceiroBanco: TbResponsavelFinanceiro, associado: TbAssociado) {
+    if (responsavelFinanceiroBanco) {
+      await this.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
+    } else {
+      await this.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
+    }
+  }
 }

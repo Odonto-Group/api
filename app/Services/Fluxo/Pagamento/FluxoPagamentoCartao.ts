@@ -16,6 +16,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import { SituacaoRetornoCartao } from "App/Enums/SituacaoRetornoCartao";
 import creditCardType from 'credit-card-type';
 import AssociadoService from "App/Services/AssociadoService";
+import formatNumberBrValue from "App/utils/FormatNumber";
 
 @inject()
 export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
@@ -58,7 +59,7 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
                     NOMECLIENTE: associado.nm_associado
                 } as PagamentoEmailContent;
 
-                await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+                await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
             } else if (pagamento.situacao == SituacaoRetornoCartao.NAO_APROVADA) {
 
                 const planoContent = { 
@@ -66,10 +67,10 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
                     DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
                     NOMECLIENTE: associado.nm_associado,    
                     LINKPAGAMENTO: linkPagamento,
-                    VALORPLANO: associado.nu_vl_mensalidade
+                    VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade)
                 } as AdesaoEmailContent;
 
-                await this.mailSenderService.sendEmailAdesaoCartao(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+                await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
             } else {
                 // TODO ERRO SITUACAO DESCONHECIDA
             }

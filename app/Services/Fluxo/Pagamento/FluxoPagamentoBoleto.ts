@@ -15,6 +15,7 @@ import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPa
 import P4XService from "App/Services/P4XService";
 import Env from '@ioc:Adonis/Core/Env'
 import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
+import formatNumberBrValue from "App/utils/FormatNumber";
 
 @inject()
 export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
@@ -29,16 +30,16 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
         private ufService: UfService,
         private empresaService: EmpresaService,
         private mailSenderService: MailSenderService,
-        private p4XService: P4XService,
+        private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, valorContrato, transaction, nomePlano}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string, valorContrato: number, transaction: TransactionClientContract, nomePlano: string}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string, transaction: TransactionClientContract, nomePlano: string}): Promise<RetornoGeracaoPagamento> {
         let tipoPessoa = {} as TipoPessoaBoleto
 
         if (associado.nu_cpf.length == 11) {
-            tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento, valorContrato);
+            tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
         } else if (associado.nu_cpf.length == 14) {
-            tipoPessoa = await this.criaBodyPessoaJuridica(associado.nu_cpf, dataPrimeiroVencimento, valorContrato);
+            tipoPessoa = await this.criaBodyPessoaJuridica(associado.nu_cpf, dataPrimeiroVencimento, associado.nu_vl_mensalidade);
         } else {
             throw new DocumentoPessoaInvalido();
         }
@@ -51,7 +52,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
-            //await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
+            await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idClient, transaction);
 
             await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idClient, pagamento, dataPrimeiroVencimento, this.urlBaseP4x, tipoPessoa.tipoPessoa, tipoPessoa.numeroProsposta, transaction);
 
@@ -62,10 +63,10 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
                 DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
                 NOMECLIENTE: associado.nm_associado,    
                 LINKPAGAMENTO: linkPagamento,
-                VALORPLANO: associado.nu_vl_mensalidade
+                VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade)
             } as AdesaoEmailContent;
     
-            await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
+            await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
             
             const pix = {
                 copiaCola: pagamento.pix.copiaCola,
@@ -82,7 +83,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
         return retorno
     }
 
-    async criaBodyPessoaJuridica(associadoCpf: string,dataPrimeiroVencimento: string, valorContrato: number): Promise<TipoPessoaBoleto> {
+    async criaBodyPessoaJuridica(associadoCpf: string, dataPrimeiroVencimento: string, valorContrato: number): Promise<TipoPessoaBoleto> {
         const empresa = await this.empresaService.buscarEmpresa(associadoCpf)
 
         await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(empresa.nu_cnpj)
@@ -140,7 +141,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
         return tipoPessoa;
     }
 
-    async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string, valorContrato: number): Promise<TipoPessoaBoleto> {
+    async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: string): Promise<TipoPessoaBoleto> {
         await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(associado.id_associado.toString())
 
         const uf = await this.ufService.findUfById(associado.id_UF_a)
@@ -159,7 +160,7 @@ export default class FluxoPagamentoBoleto implements FluxoPagamentoStrategy {
             pagadorUf: uf.sigla,
             pagadorCep: responsavelFinanceiro.nu_CEP,
             dataVencimento: dataPrimeiroVencimento,
-            valorNominal: valorContrato,
+            valorNominal: associado.nu_vl_mensalidade,
             multaPercentual: 0,
             multaQuantidadeDias: 0,
             jurosPercentual: 0,

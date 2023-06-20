@@ -3,5 +3,5 @@ interface AdesaoEmailContent {
     DATAVENCIMENTO: string,
     NOMECLIENTE: string,
     LINKPAGAMENTO: string,
-    VALORPLANO: number
+    VALORPLANO: string
 }

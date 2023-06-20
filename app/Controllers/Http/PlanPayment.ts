@@ -30,9 +30,15 @@ import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbDependente from 'App/Models/TbDependente';
 import DataExpiracaoInvalida from 'App/Exceptions/DataExpiracaoInvalida';
+import { MailSenderService } from 'App/Services/MailSenderService';
+import Env from '@ioc:Adonis/Core/Env'
+import formatNumberBrValue from 'App/utils/FormatNumber';
+import FluxoPagamentoDebito from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebito';
 
 @inject()
 export default class PlanPayment {
+
+  private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
 
   constructor(private tokenService: TokenService
       , private associadoService: AssociadoService
@@ -44,7 +50,9 @@ export default class PlanPayment {
       , private pagamentoDebitoService: PagamentoDebitoService
       , private smsService: SmsService
       , private fluxoPagamentoBoleto: FluxoPagamentoBoleto
-      , private fluxoPagamentoCartao: FluxoPagamentoCartao) {} 
+      , private fluxoPagamentoCartao: FluxoPagamentoCartao
+      , private fluxoPagamentoDebito: FluxoPagamentoDebito
+      , private mailSenderService: MailSenderService) {} 
 
   async index({ request, response }: HttpContextContract) {
     let retorno = {}
@@ -88,7 +96,7 @@ export default class PlanPayment {
 
     let dataExpiracao = this.calcularDataExpiracao(params);
 
-    if (dataExpiracao < DateTime.now()) {
+    if (dataExpiracao.startOf('day') < DateTime.now().startOf('day')) {
       throw new DataExpiracaoInvalida();
     }
 
@@ -110,7 +118,7 @@ export default class PlanPayment {
 
     //await this.emailConsignado(params, associado)
 
-    const returnPayment =  await this.executaPagamento(params, associado, valorContrato, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+    const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   
     return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
   }
@@ -118,7 +126,6 @@ export default class PlanPayment {
   async executaPagamento(
       params: any,
       associado: TbAssociado,
-      valorContrato: number,
       dataPrimeiroVencimento: string,
       responsavelFinanceiro: TbResponsavelFinanceiro,
       transaction: TransactionClientContract,
@@ -126,43 +133,24 @@ export default class PlanPayment {
   
     let returnPayment = {} as RetornoGeracaoPagamento
 
-    //melhorar logica para organizacao do debito
-    //todo está em 2 locais ativarPlanoAssociado distintos
     if(params.formaPagamento.gpPagto == 2) { //DEBITO EM CONTA
-      await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
-      await this.pagamentoDebitoService.savePagamentoDebito(params, associado, valorContrato, dataPrimeiroVencimento, transaction)
-
-      if (params.primeiraBoleto) { // PRIMEIRA NO BOLETO
-        returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
-      
-        returnPayment.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO
-      } else {
-        returnPayment.formaPagamento = FormaPagamento.DEBITO_EM_CONTA;
-        returnPayment.agencia = params.agencia;
-        returnPayment.conta = params.conta;
-        returnPayment.linkPagamento = '';
-
-        await this.associadoService.ativarPlanoAssociado(associado, transaction, 1);
-      }
+      returnPayment = await this.fluxoPagamentoDebito.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
     } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
+
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
-
     } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
-      returnPayment = await this.iniciaEnvioBoleto(associado, valorContrato, dataPrimeiroVencimento, responsavelFinanceiro, transaction, nomePlano)
 
+      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
     } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
+
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
-
-      if (!returnPayment.linkPagamento) {
-        throw new NaoFoiPossivelGerarPagamentoCartaoException();
-      }
-
-      this.enviaSms(responsavelFinanceiro, associado)
     } else {
       throw new MetodoDePagamentoInvalidoException()
     }
-
+    
+    this.smsService.enviaSmsResponsavel(responsavelFinanceiro, associado)
+    
     return returnPayment;
   }
 
@@ -173,7 +161,7 @@ export default class PlanPayment {
     returnPayment.numeroProposta = associado.nr_proposta
     returnPayment.nome = associado.nm_associado
     returnPayment.quantidadeVidas = quantidadeVidas;
-    returnPayment.valorPagamento = valorMensalidade
+    returnPayment.valorPagamento = formatNumberBrValue(valorMensalidade)
     returnPayment.nomePlano = nomePlano;
     returnPayment.telefone = associado.nu_dddCel + associado.nu_Celular
     returnPayment.nomeVendedor = nomeVendedor
@@ -181,32 +169,6 @@ export default class PlanPayment {
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
 
     return returnPayment;
-  }
-
-  async iniciaEnvioBoleto(
-    associado: TbAssociado,
-    valorContrato: number,
-    dataPrimeiroVencimento: string,
-    responsavelFinanceiro: TbResponsavelFinanceiro,
-    transaction: TransactionClientContract,
-    nomePlano: string): Promise<RetornoGeracaoPagamento> {
-    const returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, valorContrato, transaction, nomePlano})
-
-    if (!returnPayment.linkPagamento) {
-      throw new NaoFoiPossivelGerarBoletoException();
-    }
-
-    await this.enviaSms(responsavelFinanceiro, associado)
-
-    return returnPayment;
-  }
-
-  async enviaSms(responsavelFinanceiroBanco: TbResponsavelFinanceiro, associado: TbAssociado) {
-    if (responsavelFinanceiroBanco) {
-      await this.smsService.sendSmsUrl(responsavelFinanceiroBanco.nu_dddRespFin + responsavelFinanceiroBanco.nu_telRespFin)
-    } else {
-      await this.smsService.sendSmsUrl(associado.nu_dddCel + associado.nu_Celular)
-    }
   }
 
   async emailConsignado(params: any, associado: TbAssociado) {
@@ -267,9 +229,7 @@ export default class PlanPayment {
   }
 
   async saveResponsavelFinanceiro(params:any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
-    return params.chkResp ? 
-      await this.responsavelFinanceiroService.saveResponsavelFinanceiroByAssociado(params, associado, transaction)
-      : await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, transaction)
+      return await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, transaction)
   }
 
   async salvarAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {

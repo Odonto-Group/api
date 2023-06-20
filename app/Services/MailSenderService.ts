@@ -4,13 +4,20 @@ import ErroAoEnviarEmailException from 'App/Exceptions/ErroAoEnviarEmailExceptio
 import * as fs from 'fs';
 import * as path from 'path';
 import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
+import FileService from './FileService';
+import { inject } from '@adonisjs/core/build/standalone';
 
+@inject()
 export class MailSenderService {
 
+  constructor(
+    private fileService: FileService
+  ) {}
 
   async sendEmailPagamentoAprovado(
       to: string,
       subject: string,
+      idContrato: number,
       contentView: PagamentoEmailContent
     ) {
       const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'pagamento', `PagamentoTemplate.html`);
@@ -22,6 +29,8 @@ export class MailSenderService {
       const apple = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'pagamento', `apple-logo.png`));
       const android = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'pagamento', `android-logo.png`));
       const telefone = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'pagamento', `telefone.png`));
+
+      const file = await this.fileService.buscarContrato(idContrato);
 
       const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
 
@@ -79,6 +88,10 @@ export class MailSenderService {
             filename: 'telefone.png',
             content: telefone,
             cid: 'telefone' // Identificador para referenciar a imagem no HTML
+          },
+          {
+            filename: 'contrato.pdf', // nome que você quer dar ao anexo
+            content: file
           }
         ]
       };
@@ -93,6 +106,7 @@ export class MailSenderService {
   async sendEmailAdesaoBoleto(
         to: string,
         subject: string,
+        idContrato: number,
         contentView: AdesaoEmailContent
       ) {
         const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', 'boleto', `AdesaoTemplate.html`);
@@ -102,6 +116,8 @@ export class MailSenderService {
         const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'boleto', `odonto-group.png`));
         const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'boleto', `instagram-logo.png`));
         
+        const file = await this.fileService.buscarContrato(idContrato);
+
         const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
 
         // Substituir os campos dinâmicos no HTML
@@ -143,6 +159,10 @@ export class MailSenderService {
               filename: 'ANS.png',
               content: ans,
               cid: 'ans' // Identificador para referenciar a imagem no HTML
+            },
+            {
+              filename: 'contrato.pdf',
+              content: file
             }
           ]
         };
@@ -154,18 +174,21 @@ export class MailSenderService {
         }
       };
 
-      async sendEmailAdesaoCartao(
+      async sendEmailAdesaoSemLinkPagamento(
         to: string,
         subject: string,
+        idContrato: number,
         contentView: AdesaoEmailContent
       ) {
-        const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `AdesaoTemplate.html`);
-        const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `capa-mulher.png`));
-        const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `linkedin-logo.png`));
-        const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `ANS.png`));
-        const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `odonto-group.png`));
-        const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'cartao', `instagram-logo.png`));
+        const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `AdesaoTemplate.html`);
+        const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `capa-mulher.png`));
+        const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `linkedin-logo.png`));
+        const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `ANS.png`));
+        const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `odonto-group.png`));
+        const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'semlinkpagamento', `instagram-logo.png`));
         
+        const file = await this.fileService.buscarContrato(idContrato);
+
         const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
 
         // Substituir os campos dinâmicos no HTML
@@ -207,6 +230,10 @@ export class MailSenderService {
               filename: 'ANS.png',
               content: ans,
               cid: 'ans' // Identificador para referenciar a imagem no HTML
+            },
+            {
+              filename: 'contrato.pdf',
+              content: file
             }
           ]
         };
