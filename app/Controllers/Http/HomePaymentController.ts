@@ -36,7 +36,7 @@ import formatNumberBrValue from 'App/utils/FormatNumber';
 import FluxoPagamentoDebito from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebito';
 
 @inject()
-export default class PlanPayment {
+export default class HomePaymentController {
 
   private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
 

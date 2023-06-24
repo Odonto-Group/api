@@ -47,7 +47,8 @@ Route.group(() => {
 }).prefix('/info')
 
 Route.group(() => {
-  Route.post('/plan', 'PlanPayment.index')
+  Route.post('/home/plan', 'HomePaymentController.index')
+  Route.post('/company/plan', 'CompanyPaymentController.index')
 }).prefix('/payment')
 
 Route.group(() => {

@@ -15,7 +15,7 @@ import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
 import Env from '@ioc:Adonis/Core/Env'
 
 @inject()
-export default class PlanPayment {
+export default class WebhookController {
 
   private emailSuporteOdontoGroup = Env.get('EMAIL_ODONTO_GROUP_SUPORTE')
   private emailDefaultTeste = Env.get('EMAIL_ENVIO_DEFAULT')

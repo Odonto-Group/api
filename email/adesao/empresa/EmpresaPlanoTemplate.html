@@ -6,14 +6,14 @@
 	<title>Seu título aqui</title>
 	<style type="text/css">
     @font-face {
-      font-family: 'Inter';
-      src: url('static/Inter-Regular.ttf') format('truetype');
+      font-family: 'Poppins';
+      src: url('static/Poppins-Regular.ttf') format('truetype');
     }
 
 		body {
 			margin: 0;
 			padding: 0;
-			font-family: 'Inter';
+			font-family: 'Poppins';
 			background-color: #fff;
 		}
 		.outer-container {
@@ -51,52 +51,18 @@
 		}
 
 		.button {
-			display: block;
-			background-color: #282A62;
-			color: #fff;
-			text-align: center;
-			padding: 10px;
-			margin: 20px auto;
-			max-width: 200px;
-			text-decoration: none;
-			border-radius: 4px;
-		}
+      display: block;
+      background-color: #282A62;
+      color: #fff !important;
+      text-align: center;
+      padding: 10px;
+      margin: 20px auto;
+      max-width: 200px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
     
-		.footer {
-      display: flex;
-      flex-direction: column;
-			background-color: #282A62;
-			padding: 20px;
-			font-size: 12px;
-			line-height: 1.5;
-			text-align: center;
-      margin-bottom: 5%;
-		}
-
-    .line {
-      border-top: 2px dotted #000;
-      width: 100%;
-      margin-top: 20px;
-      margin-bottom: 20px;
-    } 
-
-    .text_image_block {
-      display: flex;
-    }
-
-    .title_super {
-      font-weight: 800;
-      font-size: 26px;
-      color: #001359;
-      margin-left: 25%;
-    }
-
-    .icons_align {
-      display: flex;
-      align-items: center;
-    }
-
-    .footer_box {
+		.footer_box {
       width: 100%;
 			background-color: #282A62;
 			padding: 20px;
@@ -123,18 +89,43 @@
       font-size: 16px;
       font-weight: 400;
       color: #fff !important;
-    }
-  
-    .title_mini {
-      font-weight: 700;
-      font-size: 16px;
-      color: #001359;
+      white-space: nowrap;
     }
 
     .footer_text_mini {
       font-size: 12px;
       font-weight: 400;
       color: #fff !important;
+    }
+    
+    .block_footer { 
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .block_footer_icons { 
+      display: flex;
+      gap: 15px;
+      padding-top: 20px;
+      justify-content: left;
+    }
+
+    .block_footer_images {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .images_block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title_mini {
+      font-weight: 700;
+      font-size: 16px;
+      color: #001359;
     }
 
 	</style>
@@ -145,46 +136,13 @@
 			<img src="cid:capa" alt="Descrição da imagem" style="display:block; margin:0 auto; width: 779px;">
       <div class="inner-container">
         <div class="inner-inner-container">
-          <p>Prezado(a) <span class="title_mini">{{NOMECLIENTE}},</span></p>
-          <br><br>
-          <p>Seja bem-vindo(a) à OdontoGroup!</p>
-          <br>
-          <p>Agradecemos por escolher nossos serviços para cuidar da sua saúde bucal.</p>
-          <p>Gostaríamos de lembrar que a adesão ao plano é finalizada somente após a confirmação do pagamento da primeira mensalidade e a validação dos documentos comprobatórios. Portanto, é importante que você realize o pagamento o quanto antes e envie os documentos necessários para garantir a sua cobertura.</p>
-          <br>
-          <p>Pagamentos com cartão de crédito, débito em conta e boleto bancário podem levar até 72 horas úteis para serem confirmados no sistema. Já para pagamento em desconto em folha, o prazo é de até 7 dias úteis.</p>
-          <br><br>
-          <p>Em anexo, segue o guia de leitura contratual com as orientações do plano contratado. Ele é de leitura obrigatória.</p>
-          <p>A partir de agora, você terá acesso a uma ampla rede de dentistas e serviços odontológicos de qualidade, além de um atendimento personalizado e exclusivo para os nossos clientes. Esperamos que esteja tão empolgado(a) quanto nós em iniciar essa parceria.</p>
-          <div class="line"></div>
-          <div class="text_image_block">
-              <div>
-                <span class="title_super" >BAIXE O APP!</span>
-                <br><br>
-                <p>Conheça o aplicativo <span class="title_mini">OdontoGroup Associado</span>. Nele você terá acesso a sua carteirinha, rede de atendimento, falar com a gente e muito mais!</p>
-                <br><br>
-                <p>Para acessar pela primeira vez, coloque no login o seu CPF e a senha é a primeira letra do seu nome mais os três primeiros digitos do seu CPF.</p>
-                <br><br>
-                <p>Se precisar de ajuda para marcar sua consulta, fale com os nossos Concierges! Os números estão no rodapé desse email.</p>
-                <br><br>
-                <div class="icons_align" style="text-align: center;">
-                  <img src="cid:android">
-                  <img src="cid:apple" style="margin-left: 10px;">
-                </div>
-              </div>
-              <div>
-                <img src="cid:telefone">
-              </div>
-          </div>
-          <div class="line"></div>
-          <br><br>
-          <p>Qualquer dúvida ou problema, não hesite em entrar em contato com a nossa equipe de atendimento ao cliente. Nosso horário é das 8h às 18h de segunda à sexta.</p>
-          <br>
-          <p>Estamos prontos para ajudar.</p>
-
-          <p>Atenciosamente,</p>
+          <span class="title_mini">Prezado(a) OdontoGroup,</span>
           <br><br><br>
-          <span class="title">OdontoGroup Sistema de Saúde</span>
+          <p> A empresa <span class="title_mini">{{NOME_EMPRESA}}</span> deseja iniciar um plano para <span class="title_mini">{{QUANTIDADE_DE_VIDAS}}</span> funcionários. </p>
+          <p> CNPJ: <span class="title_mini">{{CNPJ}}</span> </p>
+          <p> Email para contato: <span class="title_mini">{{EMAIL_PARA_CONTATO}}</span> </p>
+          <p> Nome para contato: <span class="title_mini">{{NOME_PARA_CONTATO}}</span> </p>
+          <p> Telefone para contato: <span class="title_mini">{{TELEFONE_PARA_CONTATO}}</span> </p>
         </div>
       </div>
 		
