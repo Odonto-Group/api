@@ -13,6 +13,6 @@ WORKDIR /app
 COPY --from=builder /app/build /app
 COPY --from=builder /app/.env.example /app/.env
 
-RUN yarn install --production
+RUN yarn install --production --non-interactive
 
 CMD [ "node", "server.js" ]
