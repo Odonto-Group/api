@@ -57,5 +57,5 @@ jobs:
           name: build-folder
 
       - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: ./
+        run: ls -lhart
+        working-directory: api/
