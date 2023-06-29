@@ -26,7 +26,7 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         name: List the state of node modules
         continue-on-error: true
-        run: npm list
+        run: yarn list
 
       - name: Build artifacts
         uses: actions/setup-node@v3
@@ -34,13 +34,16 @@ jobs:
           node-version: '16.x'
       - run: yarn install --non-interactive
       - run: node ace build --production --ignore-ts-errors
-      - run: cd build && yarn install --production --non-interactive
+      - run: |
+          cd build
+          yarn install --production --non-interactive
+          tar cf backend-develop.tar .
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-folder
           path: |
-            build
+            build/backend-develop.tar
             .env*
           retention-days: 5
