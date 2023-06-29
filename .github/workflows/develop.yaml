@@ -58,4 +58,4 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -lhart
-        working-directory: api/
+        working-directory: ./
