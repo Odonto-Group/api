@@ -37,14 +37,15 @@ jobs:
       - run: |
           cd build
           yarn install --production --non-interactive
-          tar cfv ../${GITHUB_REF##*/}.tar .
+          tar cf ../${GITHUB_REF##*/}.tar .
+          ls -lhart ./..
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-folder
           path: |
-            ${GITHUB_REF##*/}.tar
+            ./${GITHUB_REF##*/}.tar
             .env*
           retention-days: 5
 
