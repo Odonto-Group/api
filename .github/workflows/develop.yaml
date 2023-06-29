@@ -37,14 +37,14 @@ jobs:
       - run: |
           cd build
           yarn install --production --non-interactive
-          tar cf ${GITHUB_REF##*/}.tar .
+          tar cfv ../${GITHUB_REF##*/}.tar .
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-folder
           path: |
-            build/${GITHUB_REF##*/}.tar
+            ${GITHUB_REF##*/}.tar
             .env*
           retention-days: 5
 
@@ -59,3 +59,21 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -lhart
         working-directory: ./
+
+      # - name: Deploy to Staging server
+      #   uses: easingthemes/ssh-deploy@main
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     ARGS: "-rlgoDzvc -i"
+      #     SOURCE: "dist/"
+      #     REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      #     REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      #     TARGET: ${{ secrets.REMOTE_TARGET }}
+      #     EXCLUDE: "/dist/, /node_modules/"
+      #     SCRIPT_BEFORE: |
+      #       whoami
+      #       ls -al
+      #     SCRIPT_AFTER: |
+      #       whoami
+      #       ls -al
+      #       echo $RSYNC_STDOUT
