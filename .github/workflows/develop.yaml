@@ -37,15 +37,14 @@ jobs:
       - run: |
           cd build
           yarn install --production --non-interactive
-          echo "GIT_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
-          tar cf ../${{ env.GIT_BRANCH }}.tar .
+          tar cf ../develop-artifact.tar .
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-folder
           path: |
-            ${{ env.GIT_BRANCH }}.tar
+            *.tar
             .env*
           retention-days: 5
 
