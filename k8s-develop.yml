@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: api-develop
-        image: registry.gitlab.com/very-tech/odontogroup:api-develop
+        image: registry.gitlab.com/very-tech/odontogroup:$COMMIT_SHA
         resources: {}
         ports:
         - containerPort: 3333
