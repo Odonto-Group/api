@@ -77,3 +77,4 @@ jobs:
             pwd
             tar xfv develop-artifact.tar
             rm -rf develop-artifact.tar
+            yarn install --production --non-interactive
