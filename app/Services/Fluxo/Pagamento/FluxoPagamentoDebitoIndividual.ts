@@ -1,4 +1,4 @@
-import RetornoGeracaoPagamento from "App/interfaces/RetornoGeracaoPagamento.interface";
+import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 import FluxoPagamentoStrategy from "./FluxoPagamentoStrategy";
 import { inject } from '@adonisjs/core/build/standalone';
 import PagamentoDebitoService from "App/Services/PagamentoDebitoService";
@@ -26,12 +26,12 @@ export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStr
         private fluxoPagamentoBoleto: FluxoPagamentoBoletoIndividual
     ) {}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
         await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
         await this.pagamentoDebitoService.savePagamentoDebito(params, associado, dataPrimeiroVencimento, transaction)
 
-        let returnPayment = {} as RetornoGeracaoPagamento
+        let returnPayment = {} as RetornoGeracaoPagamentoIndividual
 
         if (params.primeiraBoleto) { // DEBITO COM PRIMEIRA NO BOLETO
             returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.PRIMEIRA_NO_BOLETO})

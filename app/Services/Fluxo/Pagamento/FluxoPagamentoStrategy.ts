@@ -1,5 +1,5 @@
-import RetornoGeracaoPagamento from "App/interfaces/RetornoGeracaoPagamento.interface";
+import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 
 export default interface FluxoPagamentoStrategy {
-    iniciarFluxoPagamento(params: any): Promise<RetornoGeracaoPagamento>;
+    iniciarFluxoPagamento(params: any): Promise<RetornoGeracaoPagamentoIndividual>;
 }
