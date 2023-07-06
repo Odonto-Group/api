@@ -55,7 +55,7 @@ Route.group(() => {
 }).prefix('/payment')
 
 Route.group(() => {
-  Route.post('/boleto', 'Webhook.index')
-  Route.post('/cartao', 'Webhook.creditCardPayment')
-  Route.post('/pix', 'Webhook.pixPayment')
+  Route.post('/boleto', 'WebhookController.index')
+  Route.post('/cartao', 'WebhookController.creditCardPayment')
+  Route.post('/pix', 'WebhookController.pixPayment')
 }).prefix('/webhooks/payment')
