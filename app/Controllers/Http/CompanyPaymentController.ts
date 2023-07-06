@@ -23,6 +23,9 @@ import ResponsavelEmpresaService from 'App/Services/ResponsavelEmpresaService';
 import TbCategoria from 'App/Models/TbCategoria';
 import QuantidadeDeVidasAbaixoDoMinimo from 'App/Exceptions/QuantidadeDeVidasAbaixoDoMinimo';
 import QuantidadeDeVidasAcimaDoMaximo from 'App/Exceptions/QuantidadeDeVidasAcimaDoMaximo';
+import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
+import formatNumberBrValue from 'App/utils/FormatNumber';
+import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamentoEmpresa.interface';
 
 @inject()
 export default class CompanyPaymentController {
@@ -62,7 +65,7 @@ export default class CompanyPaymentController {
     let retorno = {}
     await Database.transaction(async (transaction) => {
       try {
-        await this.iniciarFluxoPagamentoPlanoEmpresa(request, transaction);
+        retorno = await this.iniciarFluxoPagamentoPlanoEmpresa(request, transaction);
         transaction.commit();
 
         return retorno;
@@ -126,7 +129,26 @@ export default class CompanyPaymentController {
 
     await this.saveFuncionario(params, empresa, produtoComercial, transaction);
 
-    await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, formaPagamento: FormaPagamento.BOLETO_EMPRESA})
+    let retunPayment = await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, formaPagamento: FormaPagamento.BOLETO_EMPRESA})
+
+    return this.criarRetornoPagamento(retunPayment, empresa, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc,  tokenParceiro.vendedor.tx_nome, dataPrimeiroVencimento);
+  }
+
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoEmpresa, empresa: TbEmpresa, quantidadeVidas: number, valorContrato: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
+    returnPayment.idEmpresa = empresa.id_cdempresa
+    returnPayment.dataCadastro = empresa.DT_CADASTRO
+    returnPayment.email = empresa.ds_email
+    returnPayment.numeroProposta = empresa.nr_proposta
+    returnPayment.nome = empresa.nm_nome_fantasia
+    returnPayment.quantidadeVidas = quantidadeVidas;
+    returnPayment.valorPagamento = formatNumberBrValue(valorContrato)
+    returnPayment.nomePlano = nomePlano;
+    returnPayment.telefone = empresa.nu_dddcel + empresa.nu_celular
+    returnPayment.nomeVendedor = nomeVendedor
+    returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/2/${empresa.id_cdempresa}`
+    returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
+
+    return returnPayment;
   }
 
   async saveFuncionario(params: any, empresa: TbEmpresa, produtoComercial: TbProdutoComercial, transaction: TransactionClientContract) {

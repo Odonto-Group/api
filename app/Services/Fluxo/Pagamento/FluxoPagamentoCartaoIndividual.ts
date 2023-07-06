@@ -6,7 +6,7 @@ import UfService from "App/Services/UfService";
 import PagamentoCartaoOdontoCobService from "App/Services/PagamentoCartaoOdontoCobService";
 import { MailSenderService } from "App/Services/MailSenderService";
 import { inject } from '@adonisjs/core/build/standalone';
-import RetornoGeracaoPagamento from "App/interfaces/RetornoGeracaoPagamento.interface";
+import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
@@ -35,14 +35,14 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         private associadoService: AssociadoService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
         const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
     
         const retorno = {
             formaPagamento: FormaPagamento.CARTAO_CREDITO
-        } as RetornoGeracaoPagamento
+        } as RetornoGeracaoPagamentoIndividual
 
         const pagamento = await this.p4XService.geraPagamentoP4XCartaoCredito(body)
 

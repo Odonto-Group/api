@@ -1,6 +1,6 @@
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 
-export default interface RetornoGeracaoPagamento {
+export default interface RetornoGeracaoPagamentoIndividual {
     linkProposta: string;
     nomeVendedor: string;
     telefone: string;

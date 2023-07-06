@@ -6,7 +6,7 @@ import PagamentoBoletoOdontoCobService from "App/Services/PagamentoBoletoOdontoC
 import UfService from "App/Services/UfService";
 import { MailSenderService } from "App/Services/MailSenderService";
 import { inject } from '@adonisjs/core/build/standalone';
-import RetornoGeracaoPagamento from "App/interfaces/RetornoGeracaoPagamento.interface";
+import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
@@ -30,14 +30,14 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamentoIndividual> {
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
 
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
-        const retorno = {} as RetornoGeracaoPagamento
+        const retorno = {} as RetornoGeracaoPagamentoIndividual
 
         if (pagamento) {
             

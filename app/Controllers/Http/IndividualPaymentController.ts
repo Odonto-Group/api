@@ -18,15 +18,16 @@ import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
 import { RequestContract } from '@ioc:Adonis/Core/Request';
 import FluxoPagamentoBoletoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoletoIndividual';
 import FluxoPagamentoCartaoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCartaoIndividual';
-import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.interface';
+import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbDependente from 'App/Models/TbDependente';
 import DataExpiracaoInvalida from 'App/Exceptions/DataExpiracaoInvalida';
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import FluxoPagamentoDebitoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebitoIndividual';
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
-import FileServiceAAA from 'App/Services/FileService';
+import FileService from 'App/Services/FileService';
 import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
+import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 
 @inject()
 export default class IndividualPaymentController {
@@ -40,7 +41,7 @@ export default class IndividualPaymentController {
       , private fluxoPagamentoBoleto: FluxoPagamentoBoletoIndividual
       , private fluxoPagamentoCartao: FluxoPagamentoCartaoIndividual
       , private fluxoPagamentoDebito: FluxoPagamentoDebitoIndividual
-      , private fileService: FileServiceAAA) {} 
+      , private fileService: FileService) {} 
 
   async index({ request, response }: HttpContextContract) {
     let retorno = {}
@@ -105,17 +106,15 @@ export default class IndividualPaymentController {
 
     const dependentes = await this.saveDependentes(params, associado, transaction);
 
-    //this.saveDocuments(params, associado); pular tudo de documento
-
     //await this.emailConsignado(params, associado)
 
     const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao, responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   
-    if (arquivos) {
-      await this.salvarArquivos(dependentes, arquivos, associado);
-    }
+    // if (arquivos) {
+    //   await this.salvarArquivos(dependentes, arquivos, associado);
+    // }
 
-    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
+    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
   }
 
   async salvarArquivos(dependentes: TbDependente[], arquivos: MultipartFileContract, associado: TbAssociado) {
@@ -164,7 +163,7 @@ export default class IndividualPaymentController {
     return returnPayment;
   }
 
-  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamento, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoIndividual, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
     returnPayment.idAssociado = associado.id_associado
     returnPayment.dataCadastro = associado.dt_Cadastro
     returnPayment.email = associado.ds_email

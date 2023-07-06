@@ -1,14 +1,10 @@
-import TbAssociado from "App/Models/TbAssociado";
 import FluxoPagamentoStrategy from "./FluxoPagamentoStrategy";
-import TbResponsavelFinanceiro from "App/Models/TbResponsavelFinanceiro";
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import PagamentoBoletoOdontoCobService from "App/Services/PagamentoBoletoOdontoCobService";
 import UfService from "App/Services/UfService";
 import EmpresaService from "App/Services/EmpresaService";
 import { MailSenderService } from "App/Services/MailSenderService";
 import { inject } from '@adonisjs/core/build/standalone';
-import DocumentoPessoaInvalido from "App/Exceptions/DocumentoPessoaInvalido";
-import RetornoGeracaoPagamento from "App/interfaces/RetornoGeracaoPagamento.interface";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
@@ -18,6 +14,7 @@ import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobServ
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 import TbEmpresa from "App/Models/TbEmpresa";
+import RetornoGeracaoPagamentoEmpresa from "App/interfaces/RetornoGeracaoPagamentoEmpresa.interface";
 
 @inject()
 export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrategy {
@@ -34,14 +31,14 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento}: {empresa: TbEmpresa, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento}: {empresa: TbEmpresa, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamentoEmpresa> {
         let tipoPessoa = {} as TipoPessoaBoletoEmpresa
 
         tipoPessoa = await this.criaBodyPessoaJuridica(empresa, dataPrimeiroVencimento, empresa.nu_vl_mensalidade);
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
-        const retorno = {} as RetornoGeracaoPagamento
+        const retorno = {} as RetornoGeracaoPagamentoEmpresa
 
         if (pagamento) {
             
