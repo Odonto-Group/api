@@ -1,12 +1,15 @@
 import { BaseModel, column, belongsTo, HasMany, hasMany, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
 import TbAbrangeRegiao from './TbAbrangeRegiao'
 import TbCategoria from './TbCategoria'
-import TbFormasPagamento from './TbFormasPagamento'
+import TbFormasPagamentoIndividual from './TbFormasPagamentoIndividual'
 import TbModProduto from './TbModProduto'
 import TbTipoPreco from './TbTipoPreco'
 import TipoPreco from './TbTipoPreco'
 import TbParceiro from './TbParceiro'
 import TbAssociado from './TbAssociado'
+import TbEmpresa from './TbEmpresa'
+import TbFormasPagamentoEmpresa from './TbFormasPagamentoEmpresa'
+import TbProdutoS4E from './TbProdutoS4E'
 
 export default class TbProdutoComercial extends BaseModel {
     public static table = 'tb_ProdutoComercial'
@@ -67,6 +70,9 @@ export default class TbProdutoComercial extends BaseModel {
     
     @hasMany(() => TbParceiro)
     public parceiro: HasMany<typeof TbParceiro>
+
+    @hasMany(() => TbEmpresa)
+    public empresa: HasMany<typeof TbEmpresa>
   
     @belongsTo(() => TbModProduto, {
       foreignKey: 'id_modproduto_c',
@@ -88,8 +94,18 @@ export default class TbProdutoComercial extends BaseModel {
     })
     public tipoPreco: BelongsTo<typeof TbTipoPreco>
   
-    @hasMany(() => TbFormasPagamento, {
+    @hasMany(() => TbFormasPagamentoIndividual, {
       foreignKey: 'id_prodcomerc_if',
     })
-    public formasPagamento: HasMany<typeof TbFormasPagamento>
+    public formasPagamentoIndividual: HasMany<typeof TbFormasPagamentoIndividual>
+
+    @hasMany(() => TbFormasPagamentoEmpresa, {
+      foreignKey: 'id_prodcomerc_fc',
+    })
+    public formasPagamentoEmpresa: HasMany<typeof TbFormasPagamentoEmpresa>
+
+    @belongsTo(() => TbProdutoS4E, {
+      foreignKey: 'id_ProdutoS4E_c'
+    })
+    public produtoS4E: BelongsTo<typeof TbProdutoS4E>
 }

@@ -42,17 +42,20 @@ Route.group(() => {
 }).prefix('/leads').middleware('auth:api')
 
 Route.group(() => {
-  Route.get('getPlanValue/:state/:token?', 'PlanController.index')
-  Route.get('getPlanDetails/:token', 'PlanController.planByToken')
+  Route.get('/individual/getPlanValue/:state/:token?', 'IndividualPlanController.index')
+  Route.get('/individual/getPlanDetails/:token', 'IndividualPlanController.getPlanDetails')
+  Route.get('/company/getPlanValue/:state/:token?', 'CompanyPlanController.index')
+  Route.get('/company/getPlanDetails/:token', 'CompanyPlanController.getPlanDetails')
 }).prefix('/info')
 
 Route.group(() => {
-  Route.post('/home/plan', 'HomePaymentController.index')
-  Route.post('/company/plan', 'CompanyPaymentController.index')
+  Route.post('/individual/plan', 'IndividualPaymentController.index')
+  Route.post('/company/plan/old', 'CompanyPaymentController.index')
+  Route.post('/company/plan', 'CompanyPaymentController.fluxoPagamentoPlanoEmpresa')
 }).prefix('/payment')
 
 Route.group(() => {
-  Route.post('/payment/boleto', 'Webhook.index')
-  Route.post('/payment/cartao', 'Webhook.creditCardPayment')
-  Route.post('/payment/pix', 'Webhook.pixPayment')
-}).prefix('/webhooks')
+  Route.post('/boleto', 'Webhook.index')
+  Route.post('/cartao', 'Webhook.creditCardPayment')
+  Route.post('/pix', 'Webhook.pixPayment')
+}).prefix('/webhooks/payment')

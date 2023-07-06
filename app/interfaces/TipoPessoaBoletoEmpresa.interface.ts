@@ -1,6 +1,5 @@
-interface TipoPessoaBoleto {
-    tipoPessoa: string,
-    idClient: number,
+interface TipoPessoaBoletoEmpresa {
+    idEmpresa: number,
     numeroProsposta: string, 
     primeiroNome: string,
     email: string,

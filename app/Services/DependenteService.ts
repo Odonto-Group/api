@@ -6,7 +6,7 @@ import TbUf from "App/Models/TbUf";
 import { DateTime } from "luxon";
 export default class DependenteService {
 
-  async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract) {
+  async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbDependente> {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(novoDependente.idOrgaoExpedidor)
     const uf = await TbUf.findOrFail(novoDependente.idOrgaoExpedidorUf)
 
@@ -25,7 +25,7 @@ export default class DependenteService {
     dependente.id_sexo_d = novoDependente.idSexo || 0;
     dependente.id_parentesco_d = novoDependente.idParentesco || 14;
     dependente.cd_status = 0;
-    await dependente.useTransaction(transaction).save();
+    return await dependente.useTransaction(transaction).save();
   }
 
 }
