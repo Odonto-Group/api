@@ -5,7 +5,6 @@ import { Category } from 'App/Enums/Category';
 import PlanService from 'App/Services/PlanService';
 import TokenService from 'App/Services/TokenService';
 import CarenciaProdutoService from 'App/Services/CarenciaProdutoService';
-import VendedorService from 'App/Services/VendedorService';
 import { DateTime } from 'luxon';
 import TbOrgao from 'App/Models/TbOrgao';
 import TbFontePagadora from 'App/Models/TbFontePagadora';
@@ -22,13 +21,12 @@ import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
 
 @inject()
-export default class PlanController {
+export default class CompanyPlanController {
 
   constructor(
     private planService: PlanService,
     private tokenService: TokenService,
     private carenciaProdutoService: CarenciaProdutoService,
-    private vendedorService: VendedorService,
     private ufService: UfService
     ) {}
 
@@ -45,22 +43,22 @@ export default class PlanController {
     let plan;
 
     if (token) {
-      plan = await this.planService.getPlanWithToken(state, Category.PESSOA_FISICA, token)
+      plan = await this.planService.getPlanWithTokenCompany(state, token)
     } else {
-      plan = await this.planService.getBasicPlan(state, Category.PESSOA_FISICA)
+      plan = await this.planService.getBasicPlanCompany(state, Category.EMPRESARIAL)
     }
     
     return {
-      valor: plan.produtoComercial.formasPagamento[0].vl_valor
+      valor: plan.produtoComercial.formasPagamentoEmpresa[0].vl_valor
     }
   }
   
-  async planByToken({ request, response }: HttpContextContract) {
+  async getPlanDetails({ request }: HttpContextContract) {
     const token = request.params().token
 
     await this.validaToken(token)
 
-    const tokenBanco = await this.tokenService.findToken(token)
+    const tokenBanco = await this.tokenService.findTokenParceiroEmpresa(token)
 
     const carencias = await this.carenciaProdutoService.buscarCarencia(tokenBanco.parceiro.produtoComercial.id_prodcomerc)
 
@@ -86,8 +84,8 @@ export default class PlanController {
 
     let formasPagamento = {} as any
 
-    tokenBanco.parceiro.produtoComercial.formasPagamento.forEach(pagamento => {
-      let cdMeioPagto = pagamento.meioPagamento.cd_gmeiopagto
+    tokenBanco.parceiro.produtoComercial.formasPagamentoEmpresa.forEach(pagamento => {
+      let cdMeioPagto = pagamento.meioPagamentoEmpresa.cd_gmeiopagto
       let pag = {} as any
       let arrayPag = [] as any
       
@@ -97,30 +95,30 @@ export default class PlanController {
           case 1:
             pag.nome = "Cartão de Crédito";
             pag.slug = "pgtoCartao";
-            pag.meioPagamaneto = pagamento.id_meiopagto_if
-            arrayPag[pagamento.id_meiopagto_if] = {vl_fp: pagamento.vl_valor}
+            pag.meioPagamaneto = pagamento.id_meiopagto_fc
+            arrayPag[pagamento.id_meiopagto_fc] = {vl_fp: pagamento.vl_valor}
   
             break
           case 2:
             pag.nome = "Débito em conta";
             pag.slug = "pgtoDebito";
-            pag.meioPagamaneto = pagamento.id_meiopagto_if
-            arrayPag[pagamento.id_meiopagto_if] = {vl_fp: pagamento.vl_valor}
+            pag.meioPagamaneto = pagamento.id_meiopagto_fc
+            arrayPag[pagamento.id_meiopagto_fc] = {vl_fp: pagamento.vl_valor}
   
             break
           case 3:
             if (pagamento.nu_PagUnico == 0) {
               pag.nome = "Boleto Bancário"; 
               pag.slug = "pgtoBoleto";
-              pag.meioPagamaneto = pagamento.id_meiopagto_if
+              pag.meioPagamaneto = pagamento.id_meiopagto_fc
               pag.vl_valor = pagamento.vl_valor
-              arrayPag[pagamento.id_meiopagto_if] = {vl_fp: pagamento.vl_valor}
+              arrayPag[pagamento.id_meiopagto_fc] = {vl_fp: pagamento.vl_valor}
             } else {
               pag.nome = "Boleto Bancário"; 
               pag.slug = "pgtoBoleto";
-              pag.meioPagamaneto = pagamento.id_meiopagto_if
+              pag.meioPagamaneto = pagamento.id_meiopagto_fc
               pag.valorCheio = pagamento.vl_valor * 12
-              arrayPag[pagamento.id_meiopagto_if] = {vl_fp: pagamento.vl_valor}
+              arrayPag[pagamento.id_meiopagto_fc] = {vl_fp: pagamento.vl_valor}
             }
   
             break
@@ -128,7 +126,7 @@ export default class PlanController {
           case 4:
             pag.nome = "Consignado";
             pag.slug = "pgtoConsignado";
-            pag.meioPagamaneto = pagamento.id_meiopagto_if
+            pag.meioPagamaneto = pagamento.id_meiopagto_fc
             const dia = DateTime.now().day
   
             if (dia < 5) {
@@ -145,7 +143,7 @@ export default class PlanController {
           case 5:
             pag.nome = "Fatura";
             pag.slug = "pgtoFatura";
-            pag.meioPagamaneto = pagamento.id_meiopagto_if
+            pag.meioPagamaneto = pagamento.id_meiopagto_fc
   
             break
   
@@ -172,6 +170,7 @@ export default class PlanController {
       let angariador;
       const produtoComercial = tokenBanco.parceiro.produtoComercial
       let confirma = false; 
+
     //   if (produtoComercial) {
     //     if ([751, 752, 753, 754].includes(produtoComercial.id_prodcomerc)) {
     //       equipe = await TbEquipe.query();
@@ -229,7 +228,7 @@ export default class PlanController {
       vendedor: tokenBanco?.vendedor?.tx_nome,
       corretora: tokenBanco.corretora,
       parceiro: tokenBanco.parceiro,
-      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamento,
+      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
       listaFormaPagamentos: formasPagamento,
       equipes: equipe,
       angariadores: angariador,

@@ -56,7 +56,7 @@ export default class TbParceiro extends BaseModel {
   @column()
   public HabilitaUpDoc: number
 
-  @column()
+  @column({columnName: "en_SitCarencia"})
   public en_SitCarencia: number | null
 
   @column({columnName: 'id_prodcomerc_pr'})

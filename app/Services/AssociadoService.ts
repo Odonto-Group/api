@@ -1,8 +1,9 @@
 import { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import TbAssociado from 'App/Models/TbAssociado';
-import TbFormasPagamento from 'App/Models/TbFormasPagamento';
+import TbFormasPagamentoIndividual from 'App/Models/TbFormasPagamentoIndividual';
 import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import TbUf from 'App/Models/TbUf';
+import gerarNumeroProposta from 'App/utils/Proposta';
 import { DateTime } from 'luxon';
 
 export default class AssociadoService {
@@ -20,10 +21,6 @@ export default class AssociadoService {
       .where("id_associado", associado.id_associado)
       .useTransaction(transaction)
       .update({cd_status: cdStatus})
-  }
-
-  async saveAssociado(associado: TbAssociado, transaction: TransactionClientContract) {
-    await associado.useTransaction(transaction).save()
   }
 
   async findAssociadoByCpf(cpfAssociado: string): Promise<TbAssociado> {
@@ -59,7 +56,7 @@ export default class AssociadoService {
   }
 
  
-  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number) {
+  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
     const uf = await TbUf.findOrFail(params.idOrgaoExpedidor)
     
@@ -105,19 +102,9 @@ export default class AssociadoService {
     associado.cd_status = 0;
     associado.st_mail = 0;
 
-    associado.nr_proposta = this.gerarNumeroProposta()
+    associado.nr_proposta = gerarNumeroProposta()
     associado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
-  }
-  
 
-  private gerarNumeroProposta() {
-    const now = DateTime.local();
-    
-    const year = now.toFormat('yyyy');
-    const month = now.toFormat('MM');
-    
-    const timestamp = Math.floor(now.toMillis() / 1000);
-    
-    return `${year}${month}${timestamp}`;
+    await associado.useTransaction(transaction).save()
   }
 }

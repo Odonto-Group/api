@@ -8,51 +8,39 @@ import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import FormaPagamentoNaoEncontrada from 'App/Exceptions/FormaPagamentoNaoEncontrada';
 import FormasPagamentoService from 'App/Services/FormasPagamentoService';
 import { DateTime } from 'luxon';
-import UfService from 'App/Services/UfService';
-import TbUf from 'App/Models/TbUf';
-import TbFormasPagamento from 'App/Models/TbFormasPagamento';
 import ResponsavelFinanceiroService from 'App/Services/ResponsavelFinanceiroService';
 import DependenteService from 'App/Services/DependenteService';
-import DocumentService from 'App/Services/DocumentService';
 import TbAssociado from 'App/Models/TbAssociado';
-import PagamentoDebitoService from 'App/Services/PagamentoDebitoService';
-import NaoFoiPossivelGerarBoletoException from 'App/Exceptions/NaoFoiPossivelGerarBoletoException';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import SmsService from 'App/Services/SmsService';
 import { Exception } from '@adonisjs/core/build/standalone';
 import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import { RequestContract } from '@ioc:Adonis/Core/Request';
-import NaoFoiPossivelGerarPagamentoCartaoException from 'App/Exceptions/NaoFoiPossivelGerarPagamentoCartaoException';
-import FluxoPagamentoBoleto from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoleto';
-import FluxoPagamentoCartao from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCartao';
+import FluxoPagamentoBoletoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoletoIndividual';
+import FluxoPagamentoCartaoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCartaoIndividual';
 import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamento.interface';
-import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbDependente from 'App/Models/TbDependente';
 import DataExpiracaoInvalida from 'App/Exceptions/DataExpiracaoInvalida';
-import { MailSenderService } from 'App/Services/MailSenderService';
-import Env from '@ioc:Adonis/Core/Env'
 import formatNumberBrValue from 'App/utils/FormatNumber';
-import FluxoPagamentoDebito from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebito';
+import FluxoPagamentoDebitoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebitoIndividual';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import FileServiceAAA from 'App/Services/FileService';
+import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 
 @inject()
-export default class HomePaymentController {
-
-  private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
+export default class IndividualPaymentController {
 
   constructor(private tokenService: TokenService
       , private associadoService: AssociadoService
       , private formasPagamentoService: FormasPagamentoService
-      , private ufService: UfService
       , private responsavelFinanceiroService: ResponsavelFinanceiroService
       , private dependenteService: DependenteService
-      , private documentService: DocumentService
-      , private pagamentoDebitoService: PagamentoDebitoService
       , private smsService: SmsService
-      , private fluxoPagamentoBoleto: FluxoPagamentoBoleto
-      , private fluxoPagamentoCartao: FluxoPagamentoCartao
-      , private fluxoPagamentoDebito: FluxoPagamentoDebito
-      , private mailSenderService: MailSenderService) {} 
+      , private fluxoPagamentoBoleto: FluxoPagamentoBoletoIndividual
+      , private fluxoPagamentoCartao: FluxoPagamentoCartaoIndividual
+      , private fluxoPagamentoDebito: FluxoPagamentoDebitoIndividual
+      , private fileService: FileServiceAAA) {} 
 
   async index({ request, response }: HttpContextContract) {
     let retorno = {}
@@ -73,13 +61,16 @@ export default class HomePaymentController {
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
     const params = request.all()
     const token = params.token
+    const arquivos = request.allFiles()
 
     if(token && !(await this.tokenService.isTokenValido(token))) {
         throw new TokenInvalidoException();
     }
 
-    const tokenParceiro = await this.tokenService.findToken(token);
+    const tokenParceiro = await this.tokenService.findTokenParceiroIndividual(token);
+
     const parceiro = tokenParceiro.parceiro
+    
     const produtoComercial = parceiro.produtoComercial
 
     const associado = await this.associadoService.findAssociadoByCpf(params.cpf);
@@ -88,7 +79,7 @@ export default class HomePaymentController {
         throw new AssociadoComPlanoJaCadastrado();
     }
 
-    const formaPagamento = await this.formasPagamentoService.findFormaPagamento(produtoComercial.id_prodcomerc, params.idBanco, params.formaPagamento)
+    const formaPagamento = await this.formasPagamentoService.findFormaPagamentoIndividual(produtoComercial.id_prodcomerc, params.idBanco, params.formaPagamento)
     
     if (!formaPagamento) {
       throw new FormaPagamentoNaoEncontrada();
@@ -106,27 +97,41 @@ export default class HomePaymentController {
     
     const valorContrato = valorMensalidade * quantidadeVidas;
 
-    await this.salvarAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction)
+    await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction);
     
     this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado, transaction)
 
     const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, associado, transaction);
 
-    await this.saveDependentes(params, associado, transaction);
+    const dependentes = await this.saveDependentes(params, associado, transaction);
 
     //this.saveDocuments(params, associado); pular tudo de documento
 
     //await this.emailConsignado(params, associado)
 
-    const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao.toString(), responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+    const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao, responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
   
+    if (arquivos) {
+      await this.salvarArquivos(dependentes, arquivos, associado);
+    }
+
     return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorMensalidade, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
+  }
+
+  async salvarArquivos(dependentes: TbDependente[], arquivos: MultipartFileContract, associado: TbAssociado) {
+    dependentes.forEach(async dependente => {
+      const key = Object.keys(arquivos).find(key => key.includes(dependente.nu_cpf)) || "";
+      const file = arquivos[key]
+      if (file) {
+        await this.fileService.salvarArquivoIndividualDependente(dependente.id_dependente, file, associado.id_associado);
+      }
+    })
   }
 
   async executaPagamento(
       params: any,
       associado: TbAssociado,
-      dataPrimeiroVencimento: string,
+      dataPrimeiroVencimento: DateTime,
       responsavelFinanceiro: TbResponsavelFinanceiro,
       transaction: TransactionClientContract,
       nomePlano: string): Promise<RetornoGeracaoPagamento> {
@@ -141,7 +146,7 @@ export default class HomePaymentController {
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
     } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
 
-      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
+      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.BOLETO})
     } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
 
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
@@ -149,7 +154,12 @@ export default class HomePaymentController {
       throw new MetodoDePagamentoInvalidoException()
     }
     
-    this.smsService.enviaSmsResponsavel(responsavelFinanceiro, associado)
+    if (associado.cd_status == 0) {
+      this.smsService.enviaSmsResponsavelAdesao(responsavelFinanceiro, associado, nomePlano, returnPayment.linkPagamento)
+    } else {
+      this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
+    }
+    
     
     return returnPayment;
   }
@@ -212,30 +222,28 @@ export default class HomePaymentController {
         // }
     });
   }
-
-  async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract) {
+ 
+  async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbDependente[]> {
+    const dependentes: TbDependente[] = []
     if (params.dependentes) {
       await TbDependente
         .query()
         .where('cd_associado_d', associado.id_associado)
-        .useTransaction(transaction).delete()
-
-      const dependentePromises = params.dependentes.map((depen) => 
-          this.dependenteService.saveDependente(depen, associado, transaction)
-      );
-
+        .useTransaction(transaction).delete();
+  
+      const dependentePromises = params.dependentes.map(async (depen: any) => {
+        const dependente = await this.dependenteService.saveDependente(depen, associado, transaction);
+        dependentes.push(dependente)
+      });
+  
       await Promise.all(dependentePromises);
     }
+
+    return dependentes
   }
 
   async saveResponsavelFinanceiro(params:any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbResponsavelFinanceiro> {
       return await this.responsavelFinanceiroService.saveResponsavelFinanceiro(params, associado, transaction)
-  }
-
-  async salvarAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamento, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
-    await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, idVendedor);
-    
-    await this.associadoService.saveAssociado(associado, transaction);
   }
 
   calculaValorMensalidade(valorMensalidade: number, gpPagto: number, pagamentoUnico) {
@@ -258,7 +266,7 @@ export default class HomePaymentController {
         }
 
       case 3:
-        return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy");
+        return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy")
         
       case 4: 
         if (params.chkPrimeiraBoleto) {

@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@adonisjs/auth": "^8.2.3",
+    "@adonisjs/bodyparser": "^8.1.9",
     "@adonisjs/core": "^5.8.0",
     "@adonisjs/generic-exceptions": "^3.0.1",
     "@adonisjs/lucid": "^18.3.0",
@@ -66,6 +67,8 @@
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "credit-card-type": "^9.1.0",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.1.1",
     "infobip-nodejs": "^0.1.1",
     "luxon": "^3.2.1",
     "mysql2": "^3.1.2",

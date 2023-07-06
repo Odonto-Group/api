@@ -11,10 +11,11 @@ import { MailSenderService } from "App/Services/MailSenderService";
 import AssociadoService from "App/Services/AssociadoService";
 import formatNumberBrValue from "App/utils/FormatNumber";
 import Env from '@ioc:Adonis/Core/Env'
-import FluxoPagamentoBoleto from "./FluxoPagamentoBoleto";
+import FluxoPagamentoBoletoIndividual from "./FluxoPagamentoBoletoIndividual";
+import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 
 @inject()
-export default class FluxoPagamentoDebito implements FluxoPagamentoStrategy {
+export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStrategy {
 
     private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
 
@@ -22,10 +23,10 @@ export default class FluxoPagamentoDebito implements FluxoPagamentoStrategy {
         private pagamentoDebitoService: PagamentoDebitoService,
         private mailSenderService: MailSenderService,
         private associadoService: AssociadoService,
-        private fluxoPagamentoBoleto: FluxoPagamentoBoleto
+        private fluxoPagamentoBoleto: FluxoPagamentoBoletoIndividual
     ) {}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
         await this.pagamentoDebitoService.removePagamentoDebitoByIdAssociado(associado, transaction);
 
         await this.pagamentoDebitoService.savePagamentoDebito(params, associado, dataPrimeiroVencimento, transaction)
@@ -33,18 +34,19 @@ export default class FluxoPagamentoDebito implements FluxoPagamentoStrategy {
         let returnPayment = {} as RetornoGeracaoPagamento
 
         if (params.primeiraBoleto) { // DEBITO COM PRIMEIRA NO BOLETO
-            returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano})
+            returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.PRIMEIRA_NO_BOLETO})
         
             returnPayment.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO
         } else {
             const planoContent = { 
-            NOMEPLANO: nomePlano,
-            DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
-            NOMECLIENTE: associado.nm_associado,
-            VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade)
+                NOMEPLANO: nomePlano,
+                DATAVENCIMENTO: dataPrimeiroVencimento.toFormat('dd/MM/yyyy'),
+                NOMECLIENTE: associado.nm_associado,
+                VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade),
+                METODOPAGAMENTO: FormaPagamento.DEBITO_EM_CONTA
             } as AdesaoEmailContent;
             
-            await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
+            await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
 
             await this.associadoService.ativarPlanoAssociado(associado, transaction, 1);
 

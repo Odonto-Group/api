@@ -13,6 +13,9 @@ import { MailSenderService } from 'App/Services/MailSenderService';
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
 import Env from '@ioc:Adonis/Core/Env'
+import SmsService from 'App/Services/SmsService';
+import TbAssociado from 'App/Models/TbAssociado';
+import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 
 @inject()
 export default class WebhookController {
@@ -28,13 +31,11 @@ export default class WebhookController {
     private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
     private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
     private pagamentoPixOdontoCobService: PagamentoPixOdontoCobService,
-    private mailSenderService: MailSenderService
+    private mailSenderService: MailSenderService,
+    private smsService: SmsService
   ) {} 
 
   async index({ request }: HttpContextContract) {
-    // cadastra na tabela boleto
-    // atualiza odontocob
-    // altera status associado
 
     const params = request.all()
 
@@ -50,8 +51,11 @@ export default class WebhookController {
 
                 await this.pagamentoBoletoService.savePagamentoEfetuado(associado, params, pagamentoOdontoCob, transaction);
 
-                // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
-                // TO DO INSERIR ENVIO DE SMS
+                const responsavelFinanceiro = associado.responsavelFinanceiro[0];
+
+                await this.enviarEmailPagamento(associado, responsavelFinanceiro);
+
+                this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
             } else {
                 const planoContent = {
                   NOMECLIENTE: associado.nm_associado,
@@ -84,8 +88,11 @@ export default class WebhookController {
 
             await this.pagamentoCartaoService.savePagamentoEfetuado(associado, params, transaction);
 
-            // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
-            // TO DO INSERIR ENVIO DE SMS
+            const responsavelFinanceiro = associado.responsavelFinanceiro[0];
+
+            await this.enviarEmailPagamento(associado, responsavelFinanceiro);
+
+            this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
           } else {
             const planoContent = {
               NOMECLIENTE: associado.nm_associado,
@@ -118,8 +125,11 @@ export default class WebhookController {
 
           await this.pagamentoPixService.savePagamentoEfetuado(associado, params, pix, transaction);
 
-          // TO DO INSERIR CRIACAO DE EMAIL E ENVIO
-          // TO DO INSERIR ENVIO DE SMS
+          const responsavelFinanceiro = associado.responsavelFinanceiro[0];
+
+          await this.enviarEmailPagamento(associado, responsavelFinanceiro);
+
+          this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
         } else {
           const planoContent = {
             NOMECLIENTE: associado.nm_associado,
@@ -135,8 +145,14 @@ export default class WebhookController {
         throw error;
       }
     })
-
   }
 
+  async enviarEmailPagamento(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro) {
+    const planoContent = {
+      NOMECLIENTE: associado.nm_associado
+    } as PagamentoEmailContent;
+
+    await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefaultTeste || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent);
+  }
   
 }

@@ -8,4 +8,10 @@ export default class TbCategoria extends BaseModel {
   
     @column()
     public tx_descricao: string
+
+    @column()
+    public nu_vidas_min: number
+
+    @column()
+    public nu_vidas_max: number
 }

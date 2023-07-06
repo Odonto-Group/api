@@ -17,9 +17,10 @@ import { SituacaoRetornoCartao } from "App/Enums/SituacaoRetornoCartao";
 import creditCardType from 'credit-card-type';
 import AssociadoService from "App/Services/AssociadoService";
 import formatNumberBrValue from "App/utils/FormatNumber";
+import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 
 @inject()
-export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
+export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStrategy {
 
     private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
     private urlP4xLinkPagamento = Env.get('URL_P4X_PAGAMENTO_CARTAO') as string
@@ -34,7 +35,7 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
         private associadoService: AssociadoService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: string, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamento> {
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
         const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
@@ -64,13 +65,14 @@ export default class FluxoPagamentoCartao implements FluxoPagamentoStrategy {
 
                 const planoContent = { 
                     NOMEPLANO: nomePlano,
-                    DATAVENCIMENTO: DateTime.fromISO(dataPrimeiroVencimento).toFormat('dd/MM/yyyy'),
+                    DATAVENCIMENTO: dataPrimeiroVencimento.toFormat('dd/MM/yyyy'),
                     NOMECLIENTE: associado.nm_associado,    
                     LINKPAGAMENTO: linkPagamento,
-                    VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade)
+                    VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade),
+                    METODOPAGAMENTO: FormaPagamento.CARTAO_CREDITO
                 } as AdesaoEmailContent;
 
-                await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
+                await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             } else {
                 // TODO ERRO SITUACAO DESCONHECIDA
             }

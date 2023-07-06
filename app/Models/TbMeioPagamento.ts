@@ -1,5 +1,6 @@
 import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import TbFormasPagamento from './TbFormasPagamento'
+import TbFormasPagamentoIndividual from './TbFormasPagamentoIndividual'
+import TbFormasPagamentoEmpresa from './TbFormasPagamentoEmpresa';
 
 export default class CarenciaProduto extends BaseModel {
   public static table = 'tb_meiopagto'
@@ -19,8 +20,13 @@ export default class CarenciaProduto extends BaseModel {
   @column()
   public nu_status: number;
 
-  @hasMany(() => TbFormasPagamento, {
+  @hasMany(() => TbFormasPagamentoIndividual, {
     foreignKey: 'id_prodcomerc_if',
   })
-  public formasPagamento: HasMany<typeof TbFormasPagamento>
+  public formasPagamentoIndividual: HasMany<typeof TbFormasPagamentoIndividual>
+
+  @hasMany(() => TbFormasPagamentoEmpresa, {
+    foreignKey: 'id_prodcomerc_fc',
+  })
+  public formasPagamentoEmpresa: HasMany<typeof TbFormasPagamentoEmpresa>
 }

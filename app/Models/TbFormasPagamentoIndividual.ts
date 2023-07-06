@@ -2,7 +2,7 @@ import { BaseModel, BelongsTo, belongsTo, column, manyToMany } from "@ioc:Adonis
 import TbMeioPagamento from "./TbMeioPagamento"
 import TbProdutoComercial from "./TbProdutoComercial"
 
-export default class TbFormasPagamento extends BaseModel {
+export default class TbFormasPagamentoIndividual extends BaseModel {
     public static table = 'tb_formaspgtoIF'
   
     @column({ isPrimary: true })
@@ -31,5 +31,5 @@ export default class TbFormasPagamento extends BaseModel {
     @belongsTo(() => TbMeioPagamento, {
       foreignKey: 'id_meiopagto_if'
     })
-    public meioPagamento: BelongsTo<typeof TbMeioPagamento>
+    public meioPagamentoIndividual: BelongsTo<typeof TbMeioPagamento>
 }

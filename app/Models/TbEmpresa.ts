@@ -1,5 +1,5 @@
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { DateTime } from 'luxon'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import TbProdutoComercial from './TbProdutoComercial'
 
 export default class TbEmpresa extends BaseModel {
   public static table = 'tb_empresa'
@@ -7,7 +7,7 @@ export default class TbEmpresa extends BaseModel {
   @column({ isPrimary: true })
   public id_cdempresa: number
 
-  @column()
+  @column({ columnName: "cd_codcontratoS4E" })
   public cd_codcontratoS4E: number
 
   @column()
@@ -52,8 +52,8 @@ export default class TbEmpresa extends BaseModel {
   @column()
   public nu_celular: string
 
-  @column.dateTime({ autoCreate: true })
-  public DT_CADASTRO: DateTime
+  @column({ columnName: "DT_CADASTRO" })
+  public DT_CADASTRO: string
 
   @column()
   public id_vendedor_e: number
@@ -64,28 +64,28 @@ export default class TbEmpresa extends BaseModel {
   @column()
   public id_prodcomerc_e: number
 
-  @column.dateTime()
-  public dt_dataprimvenc: DateTime
-
   @column()
+  public dt_dataprimvenc: string
+
+  @column({ columnName: "nu_CEP"})
   public nu_CEP: string
 
-  @column()
+  @column({ columnName: "tx_EndLograd"})
   public tx_EndLograd: string
 
-  @column()
+  @column({ columnName: "tx_EndNumero"})
   public tx_EndNumero: string
 
-  @column()
+  @column({ columnName: "tx_EndCompl"})
   public tx_EndCompl: string
 
-  @column()
+  @column({ columnName: "tx_EndBairro"})
   public tx_EndBairro: string
 
-  @column()
+  @column({ columnName: "tx_EndCidade"})
   public tx_EndCidade: string
 
-  @column()
+  @column({ columnName: "id_UF_e"})
   public id_UF_e: number
 
   @column()
@@ -100,12 +100,17 @@ export default class TbEmpresa extends BaseModel {
   @column()
   public nr_proposta: string
 
-  @column()
+  @column({ columnName: "id_origemVenda"})
   public id_origemVenda: number
 
-  @column.date()
-  public dt_alteraStatus: DateTime
+  @column()
+  public dt_alteraStatus: string
 
   @column()
   public nu_vl_mensalidade: number
+
+  @belongsTo(() => TbProdutoComercial, {
+    foreignKey: "id_prodcomerc_e"
+  })
+  public produtoComercial: BelongsTo<typeof TbProdutoComercial>
 }

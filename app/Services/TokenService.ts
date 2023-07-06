@@ -7,14 +7,34 @@ export default class TokenService {
     return !!tok
   }
 
-  async findToken(token: string): Promise<TbTokenIdParc> {
+  async findTokenParceiroIndividual(token: string): Promise<TbTokenIdParc> {
     const tokenIdParc = await TbTokenIdParc
     .query()
     .preload('parceiro', (query) => {
       query.preload('produtoComercial', (query) => {
         query.preload('categoria')
-        .preload('formasPagamento', (query => {
-          query.preload('meioPagamento')
+        .preload('formasPagamentoIndividual', (query => {
+          query.preload('meioPagamentoIndividual')
+        }))
+      })
+    })
+    .preload('vendedor')
+    .preload('corretora')
+    .where('cd_Codtokenidparc', token)
+    .first();
+
+    return tokenIdParc || new TbTokenIdParc;
+  }
+
+  async findTokenParceiroEmpresa(token: string): Promise<TbTokenIdParc> {
+    const tokenIdParc = await TbTokenIdParc
+    .query()
+    .preload('parceiro', (query) => {
+      query.preload('produtoComercial', (query) => {
+        query.preload('categoria')
+        .preload('produtoS4E')
+        .preload('formasPagamentoEmpresa', (query => {
+          query.preload('meioPagamentoEmpresa')
         }))
       })
     })
