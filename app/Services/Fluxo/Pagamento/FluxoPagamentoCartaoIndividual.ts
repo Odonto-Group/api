@@ -74,7 +74,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
 
                 await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             } else {
-                // TODO ERRO SITUACAO DESCONHECIDA
+                throw new SituacaoPagamentoCartaoDesconhecidaException();
             }
     
             retorno.linkPagamento = linkPagamento

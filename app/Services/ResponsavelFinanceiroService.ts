@@ -29,7 +29,7 @@ export default class ResponsavelFinanceiroService {
     responsavelFinanceiro.dt_NascRespFin = DateTime.fromFormat(params.responsavelFinanceiro.dataNascimento, "dd/MM/yyyy").toString();
     responsavelFinanceiro.ds_emailRespFin = params.responsavelFinanceiro.email ? params.responsavelFinanceiro.email.toUpperCase() : "";
     responsavelFinanceiro.nu_CEP = params.responsavelFinanceiro.cep ? params.responsavelFinanceiro.cep.replace(/\D/g, "") : "00000000";
-    responsavelFinanceiro.tx_EndLograd = params.responsavelFinanceiro.enderenco;
+    responsavelFinanceiro.tx_EndLograd = params.responsavelFinanceiro.endereco;
     responsavelFinanceiro.tx_EndNumero = params.responsavelFinanceiro.numero;
     responsavelFinanceiro.tx_EndCompl = params.responsavelFinanceiro.complemento || "";
     responsavelFinanceiro.tx_EndBairro = params.responsavelFinanceiro.bairro;

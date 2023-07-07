@@ -26,6 +26,7 @@ import QuantidadeDeVidasAcimaDoMaximo from 'App/Exceptions/QuantidadeDeVidasAcim
 import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamentoEmpresa.interface';
+import CompanyPaymentValidator from 'App/Validators/CompanyPaymentValidator';
 
 @inject()
 export default class CompanyPaymentController {
@@ -78,7 +79,7 @@ export default class CompanyPaymentController {
   }
 
   async iniciarFluxoPagamentoPlanoEmpresa(request: RequestContract, transaction: TransactionClientContract) {
-    const params = request.all()
+    const params = await request.validate(CompanyPaymentValidator)
     const token = params.token
 
     if(token && !(await this.tokenService.isTokenValido(token))) {

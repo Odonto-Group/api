@@ -28,6 +28,9 @@ import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import FileService from 'App/Services/FileService';
 import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
+import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidator';
+import Env from '@ioc:Adonis/Core/Env'
+import Drive from '@ioc:Adonis/Core/Drive'
 
 @inject()
 export default class IndividualPaymentController {
@@ -59,10 +62,17 @@ export default class IndividualPaymentController {
     return retorno;
   }
 
+  private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
+  private nomeArquivoIndividualDependente = Env.get('COMPROVANTE_VINCULO_INDIVIDUAL_DEPENDENTE_ARQUIVO')
+
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
-    const params = request.all()
+    const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
+    const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
+    const params = await request.validate(IndividualPaymentValidator)
     const token = params.token
     const arquivos = request.allFiles()
+
+    // await Drive.put(caminhoArquivo + nomeArquivo, "teste")
 
     if(token && !(await this.tokenService.isTokenValido(token))) {
         throw new TokenInvalidoException();
@@ -94,7 +104,7 @@ export default class IndividualPaymentController {
 
     let valorMensalidade = this.calculaValorMensalidade(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 
-    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes);
+    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes.length);
     
     const valorContrato = valorMensalidade * quantidadeVidas;
 
@@ -249,8 +259,8 @@ export default class IndividualPaymentController {
     return gpPagto == 3 && pagamentoUnico ? valorMensalidade * 12 : valorMensalidade;
   }
 
-  calculaNumeroVidas(quantidadeVidas: number, dependentes: []) {
-    return quantidadeVidas + (dependentes && dependentes.length || 0);
+  calculaNumeroVidas(quantidadeVidas: number, dependentes: number) {
+    return quantidadeVidas + (dependentes || 0);
   }
 
   calcularDataExpiracao(params: any): DateTime {

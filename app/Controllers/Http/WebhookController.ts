@@ -16,6 +16,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import SmsService from 'App/Services/SmsService';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
+import WebhookPixValidator from 'App/Validators/WebhookPixValidator';
 
 @inject()
 export default class WebhookController {
@@ -111,7 +112,7 @@ export default class WebhookController {
   }
 
   async pixPayment({ request }: HttpContextContract) {
-    const params = request.all()
+    const params = await request.validate(WebhookPixValidator)
 
     await Database.transaction(async (transaction) => {
       try {

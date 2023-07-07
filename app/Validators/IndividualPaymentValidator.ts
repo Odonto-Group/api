@@ -1,0 +1,88 @@
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
+
+export default class PayloadValidator {
+  public schema = schema.create({
+    token: schema.string(),
+    cpf: schema.string({}, [
+      rules.minLength(11),
+      rules.regex(/^\d{11}$/),
+    ]),
+    idBanco: schema.string.optional(),
+    conta: schema.string.optional(),
+    agencia: schema.string.optional(),
+    nomeTitular: schema.string(),
+    dataNascimento: schema.string(),
+    emailTitular: schema.string(),
+    cep: schema.string(),
+    orgao: schema.number(),
+    idUf: schema.number(),
+    primeiraBoleto: schema.number.optional(),
+    endereco: schema.string(),
+    numeroCasa: schema.string(),
+    complemento: schema.string.optional(),
+    bairro: schema.string(),
+    cidade: schema.string(),
+    celular: schema.string(),
+    nomeMae: schema.string(),
+    cns: schema.string(),
+    rg: schema.string(),
+    idSexo: schema.number(),
+    idEstadoCivil: schema.number(),
+    idFontePagadora: schema.number.optional(),
+    idOrgaoExpedidor: schema.number(),
+    idOrgaoExpedidorUf: schema.number(),
+    perfil: schema.string.optional(),
+    matricula: schema.string.optional(),
+    cargo: schema.string.optional(),
+    formaPagamento: schema.object().members({
+      gpPagto: schema.number(),
+      idPagto: schema.number(),
+    }),
+    vencimentoDebito: schema.string.optional(),
+    vencimentoBoleto: schema.string.optional(),
+    celularAssociado: schema.string(),
+    dependentes: schema.array().members(
+      schema.object().members({
+        nome: schema.string(),
+        cpf: schema.string({}, [
+          rules.minLength(11),
+          rules.regex(/^\d{11}$/),
+        ]),
+        rg: schema.string(),
+        idOrgaoExpedidor: schema.number(),
+        idOrgaoExpedidorUf: schema.number(),
+        idUf: schema.number(),
+        cns: schema.string(),
+        dataNascimento: schema.string(),
+        nomeMae: schema.string(),
+        idSexo: schema.number(),
+        idParentesco: schema.number(),
+      })
+    ),
+    responsavelFinanceiro: schema.object().members({
+      cpf: schema.string({}, [
+        rules.minLength(11),
+        rules.regex(/^\d{11}$/),
+      ]),
+      nome: schema.string(),
+      dataNascimento: schema.string(),
+      email: schema.string(),
+      cep: schema.string(),
+      endereco: schema.string(),
+      numero: schema.string(),
+      complemento: schema.string.optional(),
+      bairro: schema.string(),
+      cidade: schema.string(),
+      idUf: schema.number(),
+      telefone: schema.string(),
+    }),
+    cartaoCredito: schema.object.optional().members({
+        codigoSeguranca: schema.string(),
+        numero: schema.string(),
+        nome: schema.string(),
+        expiracao: schema.string(),
+        bandeira: schema.string(),
+    }),
+
+  })
+}

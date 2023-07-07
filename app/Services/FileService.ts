@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fsExtra from 'fs-extra';
 import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 import { inject } from '@adonisjs/core/build/standalone';
+import Drive from '@ioc:Adonis/Core/Drive'
 
 @inject()
 export default class FileService {
@@ -39,7 +40,9 @@ export default class FileService {
         const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", idAssociado.toString());
     
         // Garantir que o diretório de destino exista
-        await fsExtra.ensureDir(caminhoArquivo);
+        //await fsExtra.ensureDir(caminhoArquivo);
+        
+        await Drive.put(caminhoArquivo + nomeArquivo, "teste")
     
         const url = path.join(caminhoArquivo, nomeArquivo);
     

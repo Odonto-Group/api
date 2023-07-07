@@ -49,7 +49,7 @@ export default class IndividualPlanController {
     }
     
     return {
-      valor: plan.produtoComercial.formasPagamento[0].vl_valor
+      valor: plan.produtoComercial.formasPagamentoIndividual[0].vl_valor
     }
   }
   
