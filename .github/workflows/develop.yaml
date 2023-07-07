@@ -80,4 +80,4 @@ jobs:
             pkill node
             source ../../activate
             yarn install --production --non-interactive
-            nohup forever server.js &
+            #nohup forever server.js &
