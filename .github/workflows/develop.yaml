@@ -77,6 +77,6 @@ jobs:
             pwd
             tar xfv develop-artifact.tar
             rm -rf develop-artifact.tar
-            pkill node
+            screen -XS api-dev quit
             yarn install --production --non-interactive
-            nohup forever server.js;
+            screen -S api-dev -dm forever server.js
