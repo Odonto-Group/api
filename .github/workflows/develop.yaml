@@ -79,4 +79,4 @@ jobs:
             rm -rf develop-artifact.tar
             pkill node
             yarn install --production --non-interactive
-            nohup forever server.js &
+            nohup forever server.js;
