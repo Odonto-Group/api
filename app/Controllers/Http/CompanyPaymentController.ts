@@ -23,7 +23,6 @@ import ResponsavelEmpresaService from 'App/Services/ResponsavelEmpresaService';
 import TbCategoria from 'App/Models/TbCategoria';
 import QuantidadeDeVidasAbaixoDoMinimo from 'App/Exceptions/QuantidadeDeVidasAbaixoDoMinimo';
 import QuantidadeDeVidasAcimaDoMaximo from 'App/Exceptions/QuantidadeDeVidasAcimaDoMaximo';
-import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamentoEmpresa.interface';
 import CompanyPaymentValidator from 'App/Validators/CompanyPaymentValidator';

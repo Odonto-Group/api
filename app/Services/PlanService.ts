@@ -4,7 +4,7 @@ import TbParceiro from 'App/Models/TbParceiro';
 
 export default class PlanService {
 
-  async getPlanWithTokenIndividual(sigla: string, idCategoria: number, token: string): Promise<TbParceiro> {
+  async getPlanWithTokenIndividual(sigla: string, idCategoria: number[], token: string): Promise<TbParceiro> {
     const parceiro = await TbParceiro
     .query()
     .preload('produtoComercial', (query) => {
@@ -21,7 +21,7 @@ export default class PlanService {
     .where('tb_ProdutoComercial.nu_PublicaInt', 1)
     .where('tb_ProdutoComercial.en_status', 1)
     .where('tb_UF.sigla', sigla)
-    .where('tb_categoria.id_categoria', idCategoria)
+    .whereIn('tb_categoria.id_categoria', idCategoria)
     .where('tb_tokenidparc.cd_Codtokenidparc', token)
     .orderBy('tb_formaspgtoIF.vl_valor', 'asc')
     .distinct()
@@ -34,7 +34,7 @@ export default class PlanService {
     return parceiro;
   }
 
-  async getBasicPlanIndividual(sigla: string, idCategoria: number): Promise<TbParceiro> {
+  async getBasicPlanIndividual(sigla: string, idCategoria: number[]): Promise<TbParceiro> {
     return await TbParceiro
     .query()
     .preload('produtoComercial', (query) => {
@@ -51,7 +51,7 @@ export default class PlanService {
     .where('tb_ProdutoComercial.nu_PublicaInt', 1)
     .where('tb_ProdutoComercial.en_status', 1)
     .where('tb_UF.sigla', sigla)
-    .where('tb_categoria.id_categoria', idCategoria)
+    .whereIn('tb_categoria.id_categoria', idCategoria)
     .where('tb_ProdutoComercial.en_SitCarencia', 0)
     .where('nu_cdVendedor4E_tk', 0)
     .where('nu_cdCorretoraS4E_tk', 0)
@@ -60,7 +60,7 @@ export default class PlanService {
     .first() || new TbParceiro;
   }
 
-  async getPlanWithTokenCompany(sigla: string, token: string): Promise<TbParceiro> {
+  async getPlanWithTokenCompany(sigla: string, token: string, idsCategoria: number[]): Promise<TbParceiro> {
     const parceiro = await TbParceiro
     .query()
     .preload('produtoComercial', (query) => {
@@ -77,6 +77,7 @@ export default class PlanService {
     .where('tb_ProdutoComercial.nu_PublicaInt', 1)
     .where('tb_ProdutoComercial.en_status', 1)
     .where('tb_UF.sigla', sigla)
+    .whereIn('tb_categoria.id_categoria', idsCategoria)
     .where('tb_tokenidparc.cd_Codtokenidparc', token)
     .orderBy('tb_formaspgtoCol.vl_valor', 'asc')
     .distinct()
@@ -89,7 +90,7 @@ export default class PlanService {
     return parceiro;
   }
 
-  async getBasicPlanCompany(sigla: string, idCategoria: number): Promise<TbParceiro> {
+  async getBasicPlanCompany(sigla: string, idsCategoria: number[]): Promise<TbParceiro> {
     return await TbParceiro
     .query()
     .preload('produtoComercial', (query) => {
@@ -106,7 +107,7 @@ export default class PlanService {
     .where('tb_ProdutoComercial.nu_PublicaInt', 1)
     .where('tb_ProdutoComercial.en_status', 1)
     .where('tb_UF.sigla', sigla)
-    .where('tb_categoria.id_categoria', idCategoria)
+    .whereIn('tb_categoria.id_categoria', idsCategoria)
     .where('tb_ProdutoComercial.en_SitCarencia', 0)
     .where('nu_cdVendedor4E_tk', 0)
     .where('nu_cdCorretoraS4E_tk', 0)

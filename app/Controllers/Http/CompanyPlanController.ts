@@ -43,9 +43,9 @@ export default class CompanyPlanController {
     let plan;
 
     if (token) {
-      plan = await this.planService.getPlanWithTokenCompany(state, token)
+      plan = await this.planService.getPlanWithTokenCompany(state, token, [Category.PME_2_29_VIDAS, Category.PME_30_199_VIDAS])
     } else {
-      plan = await this.planService.getBasicPlanCompany(state, Category.EMPRESARIAL)
+      plan = await this.planService.getBasicPlanCompany(state, [Category.PME_2_29_VIDAS, Category.PME_30_199_VIDAS])
     }
     
     return {

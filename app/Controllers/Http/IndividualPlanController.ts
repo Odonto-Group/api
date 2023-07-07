@@ -43,9 +43,9 @@ export default class IndividualPlanController {
     let plan;
 
     if (token) {
-      plan = await this.planService.getPlanWithTokenIndividual(state, Category.PESSOA_FISICA, token)
+      plan = await this.planService.getPlanWithTokenIndividual(state, [Category.PESSOA_FISICA], token)
     } else {
-      plan = await this.planService.getBasicPlanIndividual(state, Category.PESSOA_FISICA)
+      plan = await this.planService.getBasicPlanIndividual(state, [Category.PESSOA_FISICA])
     }
     
     return {
