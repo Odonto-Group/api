@@ -49,7 +49,7 @@ jobs:
           path: |
             *.tar
             .env*
-          retention-days: 5
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
