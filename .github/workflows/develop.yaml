@@ -38,6 +38,9 @@ jobs:
           cd build
           yarn install --production --non-interactive
           tar cf ../develop-artifact.tar .
+          cd ..
+          # NPM não efetua copia do diretorio email para build
+          tar r -f develop-artifact.tar email/
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3

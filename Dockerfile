@@ -8,10 +8,12 @@ RUN yarn install --non-interactive \
 
 FROM node:16
 
-WORKDIR /app
-
 COPY --from=builder /app/build /app
-COPY --from=builder /app/.env.example /app/.env
+# NPM não efetua copia do diretorio email para build
+COPY --from=builder /app/email /app/email
+COPY --from=builder /app/.env.dev /app/.env
+
+WORKDIR /app
 
 RUN yarn install --production --non-interactive
 
