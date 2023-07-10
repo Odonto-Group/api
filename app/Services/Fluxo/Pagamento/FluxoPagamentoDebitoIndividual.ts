@@ -34,7 +34,7 @@ export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStr
         let returnPayment = {} as RetornoGeracaoPagamentoIndividual
 
         if (params.primeiraBoleto) { // DEBITO COM PRIMEIRA NO BOLETO
-            returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.PRIMEIRA_NO_BOLETO})
+            returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.PRIMEIRA_NO_BOLETO, boletoUnico: 1})
         
             returnPayment.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO
         } else {

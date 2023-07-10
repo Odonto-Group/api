@@ -155,7 +155,7 @@ export default class IndividualPaymentController {
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
     } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
 
-      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.BOLETO})
+      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
     } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
 
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})

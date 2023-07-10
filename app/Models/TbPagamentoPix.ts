@@ -25,12 +25,6 @@ export default class TbPagamentoPix extends BaseModel {
   public dtPagamento: string
 
   @column()
-  public copiaCola: string
-
-  @column()
-  public qrCode: string
-
-  @column()
   public ativo: boolean
 
   @column()

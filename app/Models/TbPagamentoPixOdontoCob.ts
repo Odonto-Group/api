@@ -21,8 +21,17 @@ export default class TbPagamentoPixOdontocob extends BaseModel {
   @column({columnName: "dt_pagamento"})
   public dt_pagamento: string
 
+  @column({columnName: "valor"})
+  public valor: number
+
   @column({columnName: "valor_pago"})
   public valor_pago: number
+
+  @column({columnName: "copiaCola"})
+  public copiaCola: string
+
+  @column({columnName: "qrCode"})
+  public qrCode: string
 
   @column({columnName: "updated_at"})
   public updated_at: string

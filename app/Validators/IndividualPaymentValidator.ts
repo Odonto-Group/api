@@ -14,7 +14,7 @@ export default class PayloadValidator {
     dataNascimento: schema.string(),
     emailTitular: schema.string(),
     cep: schema.string(),
-    orgao: schema.number(),
+    orgao: schema.number.optional(),
     idUf: schema.number(),
     primeiraBoleto: schema.number.optional(),
     endereco: schema.string(),

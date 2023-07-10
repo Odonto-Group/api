@@ -30,9 +30,9 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamentoIndividual> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento, boletoUnico}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento, boletoUnico: number}): Promise<RetornoGeracaoPagamentoIndividual> {
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
-
+        
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
@@ -47,11 +47,11 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
             await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idAssociado, transaction);
 
-            await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idAssociado, pagamento, dataPrimeiroVencimento, linkPagamento, "PF", tipoPessoa.numeroProsposta, transaction);
+            await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idAssociado, pagamento, dataPrimeiroVencimento, linkPagamento, "PF", tipoPessoa.numeroProsposta, boletoUnico, transaction);
 
             await this.pagamentoPixOdontoCobService.removePagamentoIndividualPix(tipoPessoa.idAssociado, transaction);
 
-            await this.pagamentoPixOdontoCobService.savePagamentoIndividual(tipoPessoa.idAssociado, pagamento.pix.id, transaction);
+            await this.pagamentoPixOdontoCobService.savePagamentoIndividual(associado, pagamento, transaction);
             
             const planoContent = { 
                 NOMEPLANO: nomePlano,

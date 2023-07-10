@@ -9,11 +9,9 @@ export default class PagamentoPixService {
         const tbPagamentoPix = new TbPagamentoPix
 
         tbPagamentoPix.cdAssociado = associado.id_associado
-        tbPagamentoPix.idPixOdontocob = pixOdontoCob.idPixOdontocob
-        //tbPagamentoPix.copiaCola = ??
-        tbPagamentoPix.dtCadastro = pixOdontoCob.dtCadastro
-        tbPagamentoPix.dtPagamento = pixOdontoCob.dtPagamento
-        //tbPagamentoPix.dtVencimento = ??
+        tbPagamentoPix.idPixOdontocob = pixOdontoCob.id_pix_odontocob
+        tbPagamentoPix.dtCadastro = pixOdontoCob.dt_cadastro
+        tbPagamentoPix.dtPagamento = pixOdontoCob.dt_pagamento
 
         await tbPagamentoPix.useTransaction(transaction).save();
     }

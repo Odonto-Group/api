@@ -67,6 +67,8 @@ export default class WebhookController {
             }
 
             transaction.commit();
+
+            return "Pagamento boleto registrado com sucesso." 
         } catch (error) {
             transaction.rollback();
             throw error;
@@ -104,6 +106,8 @@ export default class WebhookController {
           }
 
           transaction.commit();
+
+          return "Pagamento Cartão de crédito  registrado com sucesso." 
         } catch (error) {
           transaction.rollback();
           throw error;
@@ -141,6 +145,8 @@ export default class WebhookController {
         }
 
         transaction.commit();
+
+        return "Pagamento Pix registrado com sucesso." 
       } catch (error) {
         transaction.rollback();
         throw error;

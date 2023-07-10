@@ -37,7 +37,7 @@ export default class PagamentoBoletoOdontoCobService {
         .delete();
     }
 
-    async savePagamento(idClient: number, geraOc: any, dataPrimeiroVencimento: DateTime, linkPagamento: string, tipoPessoa: string, numeroProsposta: string, transaction: TransactionClientContract) {
+    async savePagamento(idClient: number, geraOc: any, dataPrimeiroVencimento: DateTime, linkPagamento: string, tipoPessoa: string, numeroProsposta: string, boletoUnico: number, transaction: TransactionClientContract) {
         const pagamento = new TbPagamentoBoletoOdontoCob
         pagamento.cd_cliente                 = idClient; // PEGAR ID_ASSOCIADO OU ID_CDEMPRESA
         pagamento.dt_emissao                 = DateTime.now().toString()
@@ -54,6 +54,7 @@ export default class PagamentoBoletoOdontoCobService {
         pagamento.nossoNumero                = geraOc.registro.titulo.nossoNumero;
         pagamento.nr_proposta                = numeroProsposta; //PEGAR N° PROPOSTA EMPRESA
         pagamento.blAtivo                    = true;
+        pagamento.nu_unico                   = boletoUnico;
         await pagamento.useTransaction(transaction).save();
     }
 }

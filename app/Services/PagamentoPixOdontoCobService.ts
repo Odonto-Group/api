@@ -25,25 +25,34 @@ export default class PagamentoPixOdontoCobService {
            .first() || new TbPagamentoPixOdontoCob
     }
 
-    async savePagamentoIndividual(id_associado: number, pixId: string, transaction: TransactionClientContract) {
-        const pagamento = new TbPagamentoPixOdontoCob
+    async savePagamentoIndividual(id_associado: number, valor: number, pagamento: any, transaction: TransactionClientContract) {
+        const pagamentoOdontoCob = new TbPagamentoPixOdontoCob
 
-        pagamento.cd_associado = id_associado
-        pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
-        pagamento.id_pix_odontocob = pixId
-        
-        await pagamento.useTransaction(transaction).save();
+        pagamentoOdontoCob.cd_associado = id_associado
+        pagamentoOdontoCob.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
+        pagamentoOdontoCob.id_pix_odontocob = pagamento.pix.id
+        pagamentoOdontoCob.qrCode = pagamento.pix.base64
+        pagamentoOdontoCob.copiaCola = pagamento.pix.copiaCola
+        pagamentoOdontoCob.created_at = DateTime.now().toString()
+        pagamentoOdontoCob.updated_at = DateTime.now().toString()
+        pagamentoOdontoCob.valor = valor
+
+        await pagamentoOdontoCob.useTransaction(transaction).save();
     }
 
-    async savePagamentoEmpresa(idEmpresa: number, pixId: string, transaction: TransactionClientContract) {
-        const pagamento = new TbPagamentoPixOdontoCob
+    async savePagamentoEmpresa(idEmpresa: number, valor: number, pagamento: any, transaction: TransactionClientContract) {
+        const pagamentoOdontoCob = new TbPagamentoPixOdontoCob
 
-        pagamento.cd_empresa = idEmpresa
-        pagamento.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
-        pagamento.id_pix_odontocob = pixId
-        pagamento.created_at = DateTime.now().toString()
+        pagamentoOdontoCob.cd_empresa = idEmpresa
+        pagamentoOdontoCob.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
+        pagamentoOdontoCob.created_at = DateTime.now().toString()
+        pagamentoOdontoCob.updated_at = DateTime.now().toString()
+        pagamentoOdontoCob.id_pix_odontocob = pagamento.pix.id
+        pagamentoOdontoCob.qrCode = pagamento.pix.base64
+        pagamentoOdontoCob.copiaCola = pagamento.pix.copiaCola
+        pagamentoOdontoCob.valor = valor
         
-        await pagamento.useTransaction(transaction).save();
+        await pagamentoOdontoCob.useTransaction(transaction).save();
     }
 
     async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: any, transaction: TransactionClientContract): Promise<TbPagamentoPixOdontoCob> {
@@ -51,6 +60,7 @@ export default class PagamentoPixOdontoCobService {
 
         pagamentoPixOdontoCob.dt_pagamento = params.dataPagamento
         pagamentoPixOdontoCob.valor_pago = params.valor
+        pagamentoPixOdontoCob.updated_at = DateTime.now().toString()
 
         pagamentoPixOdontoCob.useTransaction(transaction).save()
 
