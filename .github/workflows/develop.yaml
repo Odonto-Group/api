@@ -38,6 +38,9 @@ jobs:
           cd build
           yarn install --production --non-interactive
           tar cf ../develop-artifact.tar .
+          cd ..
+          # NPM não efetua copia do diretorio email para build
+          tar r -f develop-artifact.tar email/
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
@@ -46,7 +49,7 @@ jobs:
           path: |
             *.tar
             .env*
-          retention-days: 5
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
@@ -77,6 +80,7 @@ jobs:
             pwd
             tar xfv develop-artifact.tar
             rm -rf develop-artifact.tar
+            cp .env.dev .env
             screen -XS api-dev quit
             yarn install --production --non-interactive
             screen -S api-dev -dm forever server.js
