@@ -5,12 +5,13 @@ export default class WebhookPixValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public schema = schema.create({
-    pagadorCpfCnpj: schema.string(),
-    dataPagamento: schema.string(),
-    valor: schema.number(),
-    pixId: schema.number(),
-    pagamentoId: schema.string(),
-    pagadorNome: schema.string(),
+    data: schema.string(),
+    boletoId: schema.number(),
+    nossoNumero: schema.number(),
+    seuNumero: schema.string(),
+    pagadorDocumentoNumero: schema.string(),
+    ocorrenciaCodigo: schema.string(),
+    ocorrenciaNome: schema.string(),
   });
 
   public messages: CustomMessages = {}
