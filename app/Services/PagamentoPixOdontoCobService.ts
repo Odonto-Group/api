@@ -25,7 +25,7 @@ export default class PagamentoPixOdontoCobService {
            .first() || new TbPagamentoPixOdontoCob
     }
 
-    async savePagamentoIndividual(id_associado: number, valor: number, pagamento: any, transaction: TransactionClientContract) {
+    async savePagamentoIndividual(id_associado: number, valor: number, pagamento: any, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract) {
         const pagamentoOdontoCob = new TbPagamentoPixOdontoCob
 
         pagamentoOdontoCob.cd_associado = id_associado
@@ -36,11 +36,12 @@ export default class PagamentoPixOdontoCobService {
         pagamentoOdontoCob.created_at = DateTime.now().toString()
         pagamentoOdontoCob.updated_at = DateTime.now().toString()
         pagamentoOdontoCob.valor = valor
+        pagamentoOdontoCob.dt_vencimento = dataPrimeiroVencimento.toString()
 
         await pagamentoOdontoCob.useTransaction(transaction).save();
     }
 
-    async savePagamentoEmpresa(idEmpresa: number, valor: number, pagamento: any, transaction: TransactionClientContract) {
+    async savePagamentoEmpresa(idEmpresa: number, valor: number, pagamento: any, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract) {
         const pagamentoOdontoCob = new TbPagamentoPixOdontoCob
 
         pagamentoOdontoCob.cd_empresa = idEmpresa
@@ -51,6 +52,7 @@ export default class PagamentoPixOdontoCobService {
         pagamentoOdontoCob.qr_code = pagamento.pix.base64
         pagamentoOdontoCob.copia_cola = pagamento.pix.copiaCola
         pagamentoOdontoCob.valor = valor
+        pagamentoOdontoCob.dt_vencimento = dataPrimeiroVencimento.toString()
         
         await pagamentoOdontoCob.useTransaction(transaction).save();
     }
@@ -58,7 +60,8 @@ export default class PagamentoPixOdontoCobService {
     async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: any, transaction: TransactionClientContract): Promise<TbPagamentoPixOdontoCob> {
         const pagamentoPixOdontoCob = await this.findByAssociado(associado.id_associado);
 
-        pagamentoPixOdontoCob.dt_pagamento = params.dataPagamento
+        pagamentoPixOdontoCob.dt_pagamento = DateTime.fromFormat(params.dataPagamento, 'dd/MM/yyyy').toString()
+        pagamentoPixOdontoCob.dt_cadastro = DateTime.now().toString()
         pagamentoPixOdontoCob.valor_pago = params.valor
         pagamentoPixOdontoCob.updated_at = DateTime.now().toString()
 

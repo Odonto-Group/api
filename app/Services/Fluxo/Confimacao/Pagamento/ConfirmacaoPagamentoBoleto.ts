@@ -48,7 +48,7 @@ export default class ConfirmacaoPagamentoBoleto implements FluxoConfirmacaoPagam
 
             transaction.commit();
 
-            return "Pagamento por Boleto registrado com sucesso." 
+            return "SUCESSO" 
         } else {
             const planoContent = {
                 NOMECLIENTE: associado.nm_associado,
@@ -57,7 +57,7 @@ export default class ConfirmacaoPagamentoBoleto implements FluxoConfirmacaoPagam
     
             await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
         
-            return "Nao foi possível registrar o pagamentos por Boleto." 
+            return "ERRO" 
             }
     }
 

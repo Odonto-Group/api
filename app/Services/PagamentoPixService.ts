@@ -5,13 +5,15 @@ import TbPagamentoPixOdontocob from "App/Models/TbPagamentoPixOdontoCob";
 
 export default class PagamentoPixService {
 
-    async savePagamentoEfetuado(associado: TbAssociado, params: any, pixOdontoCob: TbPagamentoPixOdontocob, transaction: TransactionClientContract) {
+    async savePagamentoEfetuado(associado: TbAssociado, pixOdontoCob: TbPagamentoPixOdontocob, transaction: TransactionClientContract) {
         const tbPagamentoPix = new TbPagamentoPix
 
-        tbPagamentoPix.cdAssociado = associado.id_associado
-        tbPagamentoPix.idPixOdontocob = pixOdontoCob.id_pix_odontocob
-        tbPagamentoPix.dtCadastro = pixOdontoCob.dt_cadastro
-        tbPagamentoPix.dtPagamento = pixOdontoCob.dt_pagamento
+        tbPagamentoPix.cd_associado = associado.id_associado
+        tbPagamentoPix.id_pix_odontocob = pixOdontoCob.id_pix_odontocob
+        tbPagamentoPix.dt_cadastro = pixOdontoCob.dt_cadastro
+        tbPagamentoPix.dt_pagamento = pixOdontoCob.dt_pagamento
+        tbPagamentoPix.dt_vencimento = pixOdontoCob.dt_vencimento
+        tbPagamentoPix.valor = pixOdontoCob.valor_pago
 
         await tbPagamentoPix.useTransaction(transaction).save();
     }

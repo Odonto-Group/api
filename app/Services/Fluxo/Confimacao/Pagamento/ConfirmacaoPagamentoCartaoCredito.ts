@@ -48,7 +48,7 @@ export default class ConfirmacaoPagamentoCartaoCredito implements FluxoConfirmac
 
             transaction.commit();
 
-            return "Pagamento Cartão de crédito registrado com sucesso." 
+            return "SUCESSO" 
         } else {
         const planoContent = {
             NOMECLIENTE: associado.nm_associado,
@@ -57,7 +57,7 @@ export default class ConfirmacaoPagamentoCartaoCredito implements FluxoConfirmac
 
         await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
         
-        return "Nao foi possível registrar o pagamentos por Cartão de crédito." 
+        return "ERRO" 
         }
     }
 

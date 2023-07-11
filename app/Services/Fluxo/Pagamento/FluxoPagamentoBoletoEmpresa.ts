@@ -52,7 +52,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
 
             await this.pagamentoPixOdontoCobService.removePagamentoEmpresaPix(tipoPessoa.idEmpresa, transaction);
 
-            await this.pagamentoPixOdontoCobService.savePagamentoEmpresa(tipoPessoa.idEmpresa, empresa.nu_vl_mensalidade, pagamento, transaction);
+            await this.pagamentoPixOdontoCobService.savePagamentoEmpresa(tipoPessoa.idEmpresa, empresa.nu_vl_mensalidade, pagamento, dataPrimeiroVencimento, transaction);
             
             const planoContent = { 
                 NOMEPLANO: nomePlano,

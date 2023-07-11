@@ -34,7 +34,7 @@ export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagament
 
           await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
 
-          await this.pagamentoPixService.savePagamentoEfetuado(associado, params, pix, transaction);
+          await this.pagamentoPixService.savePagamentoEfetuado(associado, pix, transaction);
 
           const responsavelFinanceiro = associado.responsavelFinanceiro[0];
 
@@ -44,7 +44,7 @@ export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagament
 
           transaction.commit();
 
-          return "Pagamento Pix registrado com sucesso." 
+          return "SUCESSO" 
         } else {
           const planoContent = {
             NOMECLIENTE: associado.nm_associado,
@@ -55,7 +55,7 @@ export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagament
 
           await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
         
-          return "Nao foi possível registrar o pagamentos por Pix." 
+          return "ERRO" 
         }
     }
 

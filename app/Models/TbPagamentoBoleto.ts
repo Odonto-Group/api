@@ -1,6 +1,6 @@
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
-export default class PagamentoBoleto extends BaseModel {
+export default class TbPagamentoBoleto extends BaseModel {
   public static table = 'tb_pgtoboleto';
 
   @column({ isPrimary: true })

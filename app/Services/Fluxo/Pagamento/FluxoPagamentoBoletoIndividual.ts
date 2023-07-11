@@ -51,7 +51,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
             await this.pagamentoPixOdontoCobService.removePagamentoIndividualPix(tipoPessoa.idAssociado, transaction);
 
-            await this.pagamentoPixOdontoCobService.savePagamentoIndividual(tipoPessoa.idAssociado, associado.nu_vl_mensalidade, pagamento, transaction);
+            await this.pagamentoPixOdontoCobService.savePagamentoIndividual(tipoPessoa.idAssociado, associado.nu_vl_mensalidade, pagamento, dataPrimeiroVencimento, transaction);
             
             const planoContent = { 
                 NOMEPLANO: nomePlano,
