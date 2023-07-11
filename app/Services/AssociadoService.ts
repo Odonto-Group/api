@@ -8,11 +8,12 @@ import { DateTime } from 'luxon';
 
 export default class AssociadoService {
   
-  async updateAssociadoPagamentoEfetuado(associado: TbAssociado) {
+  async updateAssociadoPagamentoEfetuado(associado: TbAssociado, transaction: TransactionClientContract) {
       const dataPagamento = DateTime.now().toString()
 
       await TbAssociado.query()
         .where('id_associado', associado.id_associado)
+        .useTransaction(transaction)
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 

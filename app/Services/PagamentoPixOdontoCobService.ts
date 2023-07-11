@@ -31,8 +31,8 @@ export default class PagamentoPixOdontoCobService {
         pagamentoOdontoCob.cd_associado = id_associado
         pagamentoOdontoCob.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
         pagamentoOdontoCob.id_pix_odontocob = pagamento.pix.id
-        pagamentoOdontoCob.qrCode = pagamento.pix.base64
-        pagamentoOdontoCob.copiaCola = pagamento.pix.copiaCola
+        pagamentoOdontoCob.qr_code = pagamento.pix.base64
+        pagamentoOdontoCob.copia_cola = pagamento.pix.copiaCola
         pagamentoOdontoCob.created_at = DateTime.now().toString()
         pagamentoOdontoCob.updated_at = DateTime.now().toString()
         pagamentoOdontoCob.valor = valor
@@ -48,8 +48,8 @@ export default class PagamentoPixOdontoCobService {
         pagamentoOdontoCob.created_at = DateTime.now().toString()
         pagamentoOdontoCob.updated_at = DateTime.now().toString()
         pagamentoOdontoCob.id_pix_odontocob = pagamento.pix.id
-        pagamentoOdontoCob.qrCode = pagamento.pix.base64
-        pagamentoOdontoCob.copiaCola = pagamento.pix.copiaCola
+        pagamentoOdontoCob.qr_code = pagamento.pix.base64
+        pagamentoOdontoCob.copia_cola = pagamento.pix.copiaCola
         pagamentoOdontoCob.valor = valor
         
         await pagamentoOdontoCob.useTransaction(transaction).save();
@@ -62,7 +62,7 @@ export default class PagamentoPixOdontoCobService {
         pagamentoPixOdontoCob.valor_pago = params.valor
         pagamentoPixOdontoCob.updated_at = DateTime.now().toString()
 
-        pagamentoPixOdontoCob.useTransaction(transaction).save()
+        await pagamentoPixOdontoCob.useTransaction(transaction).save()
 
         return pagamentoPixOdontoCob;
     }

@@ -1,27 +1,27 @@
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class TbPagamentoPix extends BaseModel {
-  public static tableName = 'tb_pgtopix'
+  public static tableName = 'tb_pgtoPix'
 
   @column({ isPrimary: true })
   public id: number
 
-  @column()
+  @column({columnName: "cdAssociado"})
   public cdAssociado: number
 
-  @column()
+  @column({columnName: "idPixOdontocob"})
   public idPixOdontocob: string
 
-  @column()
+  @column({columnName: "dtCadastro"})
   public dtCadastro: string
 
-  @column()
+  @column({columnName: "dtVencimento"})
   public dtVencimento: string
 
   @column()
   public valor: number
 
-  @column()
+  @column({columnName: "dtPagamento"})
   public dtPagamento: string
 
   @column()

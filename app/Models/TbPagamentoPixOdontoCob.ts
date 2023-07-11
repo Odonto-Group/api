@@ -27,11 +27,11 @@ export default class TbPagamentoPixOdontocob extends BaseModel {
   @column({columnName: "valor_pago"})
   public valor_pago: number
 
-  @column({columnName: "copiaCola"})
-  public copiaCola: string
+  @column({columnName: "copia_cola"})
+  public copia_cola: string
 
-  @column({columnName: "qrCode"})
-  public qrCode: string
+  @column({columnName: "qr_code"})
+  public qr_code: string
 
   @column({columnName: "updated_at"})
   public updated_at: string

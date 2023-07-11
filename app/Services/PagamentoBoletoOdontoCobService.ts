@@ -6,19 +6,19 @@ import { DateTime } from "luxon";
 
 export default class PagamentoBoletoOdontoCobService {
 
-    async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: Record<string, any>, transaction: TransactionClientContract): Promise<TbPagamentoBoletoOdontoCob> {
-        let pagamentoBoletoOdontoCob = await this.findByNossoNumero(associado.id_associado);
+    async savePagamentoEfetuadoOdontoCob(nossoNumero: string, params: Record<string, any>, transaction: TransactionClientContract): Promise<TbPagamentoBoletoOdontoCob> {
+        let pagamentoBoletoOdontoCob = await this.findByNossoNumero(nossoNumero);
 
-        pagamentoBoletoOdontoCob.dt_pagamento = params.data
+        pagamentoBoletoOdontoCob.dt_pagamento = DateTime.fromFormat(params.data, 'dd/MM/yyyy').toString()
         pagamentoBoletoOdontoCob.vl_valorpago = pagamentoBoletoOdontoCob.nu_valoremissao
         pagamentoBoletoOdontoCob.nu_statusboleto = 1
 
-        pagamentoBoletoOdontoCob.useTransaction(transaction).save();
+        await pagamentoBoletoOdontoCob.useTransaction(transaction).save();
 
         return pagamentoBoletoOdontoCob;
     }
 
-    async findByNossoNumero(nossoNumero: number) {
+    async findByNossoNumero(nossoNumero: string) {
         return await TbPagamentoBoletoOdontoCob.query()
         .where('nossoNumero', nossoNumero)
         .first() || new TbPagamentoBoletoOdontoCob

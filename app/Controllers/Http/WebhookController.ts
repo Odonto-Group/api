@@ -32,16 +32,19 @@ export default class WebhookController {
 
   async index({ request }: HttpContextContract) {
     const params = await request.validate(WebhookBoletoValidator)
-    let response = ""
+    let response = {
+      mensagem: ''
+    }
 
     await Database.transaction(async (transaction) => {
         try {
-            response = await this.confirmacaoPagamentoBoleto.confirmarPagamento(params, transaction)
+            response.mensagem = await this.confirmacaoPagamentoBoleto.confirmarPagamento(params, transaction)
 
             transaction.commit();
         } catch (error) {
-            transaction.rollback();
-            throw error;
+          response.mensagem = "ERRO"
+          transaction.rollback();
+          throw error;
         }
         })
 
@@ -50,16 +53,19 @@ export default class WebhookController {
 
   async creditCardPayment({ request }: HttpContextContract) {
     const params = await request.validate(WebhookCartaoCreditoValidator)
-    let response = ""
+    let response = {
+      mensagem: ''
+    }
 
     await Database.transaction(async (transaction) => {
       try {
-          response = await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(params, transaction)
+          response.mensagem = await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(params, transaction)
 
           transaction.commit();
       } catch (error) {
-          transaction.rollback();
-          throw error;
+        response.mensagem = "ERRO"
+        transaction.rollback();
+        throw error;
       }
       })
 
@@ -68,14 +74,17 @@ export default class WebhookController {
 
   async pixPayment({ request }: HttpContextContract) {
     const params = await request.validate(WebhookPixValidator)
-    let response = ""
+    let response = {
+      mensagem: ''
+    }
 
     await Database.transaction(async (transaction) => {
       try {
-        response = await this.confirmacaoPagamentoPix.confirmarPagamento(params, transaction)
-        
+        response.mensagem = await this.confirmacaoPagamentoPix.confirmarPagamento(params, transaction)
+
         transaction.commit();
       } catch (error) {
+        response.mensagem = "ERRO"
         transaction.rollback();
         throw error;
       }

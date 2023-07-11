@@ -5,14 +5,12 @@ import AssociadoService from "App/Services/AssociadoService";
 import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
 import { MailSenderService } from "App/Services/MailSenderService";
 import SmsService from "App/Services/SmsService";
-import WebhookPixValidator from "App/Validators/WebhookPixValidator";
 import { TransactionClientContract } from "@ioc:Adonis/Lucid/Database";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import Env from '@ioc:Adonis/Core/Env'
 import ErroEmailContent from "App/interfaces/ErroEmailContent.interface";
 import TbAssociado from "App/Models/TbAssociado";
 import TbResponsavelFinanceiro from "App/Models/TbResponsavelFinanceiro";
-
 
 @inject()
 export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagamentoStrategy {
@@ -31,11 +29,10 @@ export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagament
     async confirmarPagamento(params: any, transaction: TransactionClientContract): Promise<string> {
         const associado = await this.associadoService.findAssociadoByCpf(params.pagadorCpfCnpj);
 
-        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
-
+        if (associado && associado.cd_status === 0) {
           const pix = await this.pagamentoPixOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
 
-          await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+          await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
 
           await this.pagamentoPixService.savePagamentoEfetuado(associado, params, pix, transaction);
 
@@ -53,6 +50,8 @@ export default class ConfirmacaoPagamentoPix implements FluxoConfirmacaoPagament
             NOMECLIENTE: associado.nm_associado,
             TIPO_PAGAMENTO: FormaPagamento.PIX
           } as ErroEmailContent;
+
+          // todo email com mais dados.
 
           await this.mailSenderService.sendEmailErro(this.emailDefaultTeste || this.emailSuporteOdontoGroup, 'Erro pagamento OdontoGroup.', planoContent)
         

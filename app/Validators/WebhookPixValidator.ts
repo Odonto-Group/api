@@ -7,10 +7,10 @@ export default class WebhookPixValidator {
   public schema = schema.create({
     pagadorCpfCnpj: schema.string(),
     dataPagamento: schema.string(),
-    valor: schema.number(),
-    pixId: schema.number(),
-    pagamentoId: schema.string(),
-    pagadorNome: schema.string(),
+    valor: schema.string(),
+    pixId: schema.number.optional(),
+    pagamentoId: schema.string.optional(),
+    pagadorNome: schema.string.optional(),
   });
 
   public messages: CustomMessages = {}

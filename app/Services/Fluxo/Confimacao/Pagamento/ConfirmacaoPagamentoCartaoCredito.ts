@@ -34,21 +34,21 @@ export default class ConfirmacaoPagamentoCartaoCredito implements FluxoConfirmac
 
         if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
 
-        await this.pagamentoCartaoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
+            await this.pagamentoCartaoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
 
-        await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+            await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
 
-        await this.pagamentoCartaoService.savePagamentoEfetuado(associado, params, transaction);
+            await this.pagamentoCartaoService.savePagamentoEfetuado(associado, params, transaction);
 
-        const responsavelFinanceiro = associado.responsavelFinanceiro[0];
+            const responsavelFinanceiro = associado.responsavelFinanceiro[0];
 
-        await this.enviarEmailPagamento(associado, responsavelFinanceiro);
+            await this.enviarEmailPagamento(associado, responsavelFinanceiro);
 
-        this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
+            this.smsService.enviaSmsResponsavelPagamentoEfetuado(responsavelFinanceiro, associado)
 
-        transaction.commit();
+            transaction.commit();
 
-        return "Pagamento Cartão de crédito registrado com sucesso." 
+            return "Pagamento Cartão de crédito registrado com sucesso." 
         } else {
         const planoContent = {
             NOMECLIENTE: associado.nm_associado,

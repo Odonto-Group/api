@@ -32,11 +32,11 @@ export default class ConfirmacaoPagamentoBoleto implements FluxoConfirmacaoPagam
     async confirmarPagamento(params: any, transaction: TransactionClientContract): Promise<string> {
         const associado = await this.associadoService.findAssociadoByNossoNumeroBoleto(params.nossoNumero);
 
-        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
+    if (associado && associado.cd_status == 0) {
 
-            const pagamentoOdontoCob = await this.pagamentoBoletoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
+            const pagamentoOdontoCob = await this.pagamentoBoletoOdontoCobService.savePagamentoEfetuadoOdontoCob(params.nossoNumero, params, transaction);
 
-            await this.associadoService.updateAssociadoPagamentoEfetuado(associado)
+            await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
 
             await this.pagamentoBoletoService.savePagamentoEfetuado(associado, params, pagamentoOdontoCob, transaction);
 

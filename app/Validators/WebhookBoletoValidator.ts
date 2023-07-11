@@ -8,10 +8,10 @@ export default class WebhookPixValidator {
     data: schema.string(),
     boletoId: schema.number(),
     nossoNumero: schema.number(),
-    seuNumero: schema.string(),
+    seuNumero: schema.string.optional(),
     pagadorDocumentoNumero: schema.string(),
-    ocorrenciaCodigo: schema.string(),
-    ocorrenciaNome: schema.string(),
+    ocorrenciaCodigo: schema.string.optional(),
+    ocorrenciaNome: schema.string.optional(),
   });
 
   public messages: CustomMessages = {}

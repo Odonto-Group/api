@@ -13,12 +13,12 @@ export default class PagamentoBoletoService {
         tbPagamentoBoleto.id_banco_pb = 54 // Bradesco
         tbPagamentoBoleto.nu_nossonum = params.nossoNumero
         tbPagamentoBoleto.nu_IdBolSimples = params.boletoId
-        tbPagamentoBoleto.nu_valoremissao = pagamentoOdontoCob.vl_valorpago
+        tbPagamentoBoleto.nu_valoremissao = pagamentoOdontoCob.nu_valoremissao
         tbPagamentoBoleto.dt_vencimento = pagamentoOdontoCob.dt_pagamento
         tbPagamentoBoleto.dt_emissao = pagamentoOdontoCob.dt_emissao
         tbPagamentoBoleto.dt_pagamento = DateTime.now().toString()
         tbPagamentoBoleto.nu_statusboleto = 0
-        tbPagamentoBoleto.nu_unico = 0
+        tbPagamentoBoleto.nu_unico = pagamentoOdontoCob.nu_unico
         tbPagamentoBoleto.vl_valorpago = pagamentoOdontoCob.vl_valorpago
 
         await tbPagamentoBoleto.useTransaction(transaction).save();

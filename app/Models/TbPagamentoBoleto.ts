@@ -15,7 +15,7 @@ export default class PagamentoBoleto extends BaseModel {
   @column()
   public nu_nossonum: string
 
-  @column()
+  @column({columnName: "nu_IdBolSimples"})
   public nu_IdBolSimples: string
 
   @column()
