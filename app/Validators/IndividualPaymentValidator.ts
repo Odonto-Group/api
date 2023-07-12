@@ -40,7 +40,6 @@ export default class PayloadValidator {
     }),
     vencimentoDebito: schema.string.optional(),
     vencimentoBoleto: schema.string.optional(),
-    celularAssociado: schema.string(),
     dependentes: schema.array().members(
       schema.object().members({
         nome: schema.string(),
@@ -51,7 +50,6 @@ export default class PayloadValidator {
         rg: schema.string(),
         idOrgaoExpedidor: schema.number(),
         idOrgaoExpedidorUf: schema.number(),
-        idUf: schema.number(),
         cns: schema.string(),
         dataNascimento: schema.string(),
         nomeMae: schema.string(),
@@ -71,10 +69,7 @@ export default class PayloadValidator {
       endereco: schema.string(),
       numero: schema.string(),
       complemento: schema.string.optional(),
-      bairro: schema.string(),
-      cidade: schema.string(),
-      idUf: schema.number(),
-      telefone: schema.string(),
+      bairro: schema.string()
     }),
     cartaoCredito: schema.object.optional().members({
         codigoSeguranca: schema.string(),
