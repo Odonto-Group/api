@@ -17,5 +17,7 @@ export default interface RetornoGeracaoPagamentoEmpresa {
     nome: string,
     email: string,
     idEmpresa: number,
-    valorPagamento: string
+    valorPagamento: string,
+    pagamentoStatus: number,
+    ddd: string
 }

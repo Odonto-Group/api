@@ -17,5 +17,7 @@ export default interface RetornoGeracaoPagamentoIndividual {
     nome: string,
     email: string,
     idAssociado: number,
-    valorPagamento: string
+    valorPagamento: string,
+    pagamentoStatus: number,
+    ddd: string
 }

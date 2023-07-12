@@ -186,6 +186,8 @@ export default class IndividualPaymentController {
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
+    returnPayment.ddd = associado.nu_dddCel
+    returnPayment.pagamentoStatus = associado.cd_status
 
     return returnPayment;
   }
