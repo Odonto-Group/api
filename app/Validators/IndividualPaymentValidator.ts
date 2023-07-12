@@ -40,7 +40,7 @@ export default class PayloadValidator {
     }),
     vencimentoDebito: schema.string.optional(),
     vencimentoBoleto: schema.string.optional(),
-    dependentes: schema.array().members(
+    dependentes: schema.array.optional().members(
       schema.object().members({
         nome: schema.string(),
         cpf: schema.string({}, [
@@ -76,7 +76,7 @@ export default class PayloadValidator {
         numero: schema.string(),
         nome: schema.string(),
         expiracao: schema.string(),
-        bandeira: schema.string(),
+        bandeira: schema.string.optional(),
     }),
 
   })

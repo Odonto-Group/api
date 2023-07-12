@@ -104,7 +104,7 @@ export default class IndividualPaymentController {
 
     let valorMensalidade = this.calculaValorMensalidade(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 
-    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes.length);
+    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes == undefined ? 0 : params.dependentes.length);
     
     const valorContrato = valorMensalidade * quantidadeVidas;
 
