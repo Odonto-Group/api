@@ -8,7 +8,7 @@ import { MailSenderService } from "App/Services/MailSenderService";
 import { inject } from '@adonisjs/core/build/standalone';
 import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
-import { PaymentStatus } from "App/Enums/BeneficiaryStatus";
+import { PaymentStatus } from "App/Enums/PaymentStatus";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import P4XService from "App/Services/P4XService";
@@ -59,7 +59,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
 
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
                 paymentStatus = PaymentStatus.PAGO;
-                await this.associadoService.ativarPlanoAssociado(associado, transaction, beneficiaryStatus);
+                await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
 
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado
