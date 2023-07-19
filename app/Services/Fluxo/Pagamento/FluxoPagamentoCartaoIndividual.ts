@@ -8,6 +8,7 @@ import { MailSenderService } from "App/Services/MailSenderService";
 import { inject } from '@adonisjs/core/build/standalone';
 import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPagamentoIndividual.interface";
 import { FormaPagamento } from "App/Enums/FormaPagamento";
+import { PaymentStatus } from "App/Enums/BeneficiaryStatus";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import P4XService from "App/Services/P4XService";
@@ -39,9 +40,12 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
         const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
+
+        let paymentStatus = PaymentStatus.PENDENTE;
     
         const retorno = {
-            formaPagamento: FormaPagamento.CARTAO_CREDITO
+            formaPagamento: FormaPagamento.CARTAO_CREDITO,
+            paymentStatus: paymentStatus
         } as RetornoGeracaoPagamentoIndividual
 
         const pagamento = await this.p4XService.geraPagamentoP4XCartaoCredito(body)
@@ -54,7 +58,8 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
 
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
-                await this.associadoService.ativarPlanoAssociado(associado, transaction, 2);
+                paymentStatus = PaymentStatus.PAGO;
+                await this.associadoService.ativarPlanoAssociado(associado, transaction, beneficiaryStatus);
 
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado
@@ -78,6 +83,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
             }
     
             retorno.linkPagamento = linkPagamento
+            retorno.paymentStatus = paymentStatus
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }
