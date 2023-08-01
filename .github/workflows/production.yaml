@@ -82,7 +82,7 @@ jobs:
             tar xfv production-artifact.tar
             rm -rf production-artifact.tar
             # Criar .env para prod e alterar aqui. Usar outra porta diferente de dev. i.e: 3344
-            cp .env.example .env
+            cp .env.prod .env
             screen -XS api-prod quit
             yarn install --production --non-interactive
             screen -SL api-prod -dm forever server.js
