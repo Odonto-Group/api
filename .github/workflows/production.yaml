@@ -71,7 +71,7 @@ jobs:
           ARGS: "-avz"
           SOURCE: ""
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_USER: "apiv2"
           TARGET: /home/odontogroup2/apiv2.odontogroup.com.br/www/build
           EXCLUDE: ""
           SCRIPT_BEFORE: ""
