@@ -104,7 +104,7 @@ export default class IndividualPaymentController {
 
     let valorMensalidade = this.calculaValorMensalidade(formaPagamento.vl_valor, params.formaPagamento.gpPagto, formaPagamento.nu_PagUnico);
 
-    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes.length);
+    let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes == undefined ? 0 : params.dependentes.length);
     
     const valorContrato = valorMensalidade * quantidadeVidas;
 
@@ -186,6 +186,7 @@ export default class IndividualPaymentController {
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/1/${associado.id_associado}`
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
+    returnPayment.ddd = associado.nu_dddCel
 
     return returnPayment;
   }

@@ -147,6 +147,8 @@ export default class CompanyPaymentController {
     returnPayment.nomeVendedor = nomeVendedor
     returnPayment.linkProposta = `https://www7.odontogroup.com.br/adminVendas/public/doc_impressao/2/${empresa.id_cdempresa}`
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
+    returnPayment.ddd = empresa.nu_dddcel
+    returnPayment.pagamentoStatus = empresa.cd_status
 
     return returnPayment;
   }

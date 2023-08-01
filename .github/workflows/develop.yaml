@@ -83,4 +83,4 @@ jobs:
             cp .env.dev .env
             screen -XS api-dev quit
             yarn install --production --non-interactive
-            screen -S api-dev -dm forever server.js
+            screen -SL api-dev -dm forever server.js

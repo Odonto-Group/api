@@ -3,10 +3,7 @@ import { schema, rules } from '@ioc:Adonis/Core/Validator'
 export default class PayloadValidator {
   public schema = schema.create({
     token: schema.string(),
-    cpf: schema.string({}, [
-      rules.minLength(11),
-      rules.regex(/^\d{11}$/),
-    ]),
+    cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
     idBanco: schema.string.optional(),
     conta: schema.string.optional(),
     agencia: schema.string.optional(),
@@ -16,7 +13,7 @@ export default class PayloadValidator {
     cep: schema.string(),
     orgao: schema.number.optional(),
     idUf: schema.number(),
-    primeiraBoleto: schema.number.optional(),
+    primeiraBoleto: schema.boolean.optional(),
     endereco: schema.string(),
     numeroCasa: schema.string(),
     complemento: schema.string.optional(),
@@ -24,8 +21,8 @@ export default class PayloadValidator {
     cidade: schema.string(),
     celular: schema.string(),
     nomeMae: schema.string(),
-    cns: schema.string(),
-    rg: schema.string(),
+    cns: schema.string.optional(),
+    rg: schema.string.optional(),
     idSexo: schema.number(),
     idEstadoCivil: schema.number(),
     idFontePagadora: schema.number.optional(),
@@ -40,19 +37,14 @@ export default class PayloadValidator {
     }),
     vencimentoDebito: schema.string.optional(),
     vencimentoBoleto: schema.string.optional(),
-    celularAssociado: schema.string(),
-    dependentes: schema.array().members(
+    dependentes: schema.array.optional().members(
       schema.object().members({
         nome: schema.string(),
-        cpf: schema.string({}, [
-          rules.minLength(11),
-          rules.regex(/^\d{11}$/),
-        ]),
-        rg: schema.string(),
+        cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
+        rg: schema.string.optional(),
         idOrgaoExpedidor: schema.number(),
         idOrgaoExpedidorUf: schema.number(),
-        idUf: schema.number(),
-        cns: schema.string(),
+        cns: schema.string.optional(),
         dataNascimento: schema.string(),
         nomeMae: schema.string(),
         idSexo: schema.number(),
@@ -60,10 +52,7 @@ export default class PayloadValidator {
       })
     ),
     responsavelFinanceiro: schema.object().members({
-      cpf: schema.string({}, [
-        rules.minLength(11),
-        rules.regex(/^\d{11}$/),
-      ]),
+      cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
       nome: schema.string(),
       dataNascimento: schema.string(),
       email: schema.string(),
@@ -72,17 +61,13 @@ export default class PayloadValidator {
       numero: schema.string(),
       complemento: schema.string.optional(),
       bairro: schema.string(),
-      cidade: schema.string(),
-      idUf: schema.number(),
-      telefone: schema.string(),
     }),
     cartaoCredito: schema.object.optional().members({
-        codigoSeguranca: schema.string(),
-        numero: schema.string(),
-        nome: schema.string(),
-        expiracao: schema.string(),
-        bandeira: schema.string(),
+      codigoSeguranca: schema.string(),
+      numero: schema.string(),
+      nome: schema.string(),
+      expiracao: schema.string(),
+      bandeira: schema.string.optional(),
     }),
-
   })
 }
