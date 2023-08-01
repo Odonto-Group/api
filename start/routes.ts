@@ -37,12 +37,25 @@ Route.group(() => {
   Route.get('getLeads/:pageNumber/:itemsPerPage', 'LeadsController.index')
   Route.get('/getOneLeadStatus/:lead', 'LeadsController.getOneLeadStatus')
   Route.get('/status', 'LeadsController.getLeadStatus')
-  Route.post('/update', 'LeadsController.update')
+  Route.post('/store', 'LeadsController.store')
+  Route.post('/update', 'LeadsController.update') 	
 }).prefix('/leads').middleware('auth:api')
 
-Route.post('leads/store', 'LeadsController.store');
+Route.group(() => {
+  Route.get('/individual/getPlanValue/:state/:token?', 'IndividualPlanController.index')
+  Route.get('/individual/getPlanDetails/:token', 'IndividualPlanController.getPlanDetails')
+  Route.get('/company/getPlanValue/:state/:token?', 'CompanyPlanController.index')
+  Route.get('/company/getPlanDetails/:token', 'CompanyPlanController.getPlanDetails')
+}).prefix('/info')
 
+Route.group(() => {
+  Route.post('/individual/plan', 'IndividualPaymentController.index')
+  Route.post('/company/plan/old', 'CompanyPaymentController.index')
+  Route.post('/company/plan', 'CompanyPaymentController.fluxoPagamentoPlanoEmpresa')
+}).prefix('/payment')
 
-
-
-
+Route.group(() => {
+  Route.post('/boleto', 'WebhookController.index')
+  Route.post('/cartao', 'WebhookController.creditCardPayment')
+  Route.post('/pix', 'WebhookController.pixPayment')
+}).prefix('/webhooks/payment')

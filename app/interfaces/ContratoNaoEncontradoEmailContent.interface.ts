@@ -1,0 +1,3 @@
+interface ContratoNaoEncontradoEmailContent {
+    CONTRATOID: number
+}

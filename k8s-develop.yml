@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-develop
+spec:
+  selector:
+    matchLabels:
+      app: api-develop
+  template:
+    metadata:
+      labels:
+        app: api-develop
+    spec:
+      containers:
+      - name: api-develop
+        image: registry.gitlab.com/very-tech/odontogroup:$COMMIT_SHA
+        resources: {}
+        ports:
+        - containerPort: 3333
+      imagePullSecrets: 
+        - name: gitlab-very
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-develop
+spec:
+  selector:
+    app: api-develop
+  ports:
+  - port: 3333
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+  name: api-dev
+  labels:
+    name: api-dev
+spec:
+    rules:
+    - host: api-dev.odontogroup.verytecnologia.com.br
+      http:
+        paths:
+        - backend:
+            serviceName: api-develop
+            servicePort: 3333
+          path: /
+    tls:
+    - hosts:
+      - api-dev.odontogroup.verytecnologia.com.br
+      secretName: api-develop
+

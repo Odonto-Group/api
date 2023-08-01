@@ -2,11 +2,12 @@
   "extends": "adonis-preset-ts/tsconfig.json",
   "include": [
     "**/*"
-  ],
+, "app/Exceptions/.ts"  ],
   "exclude": [
     "node_modules",
     "build"
   ],
+  "esModuleInterop": true,
   "compilerOptions": {
     "outDir": "build",
     "rootDir": "./",
