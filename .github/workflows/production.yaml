@@ -40,7 +40,6 @@ jobs:
           tar cf ../production-artifact.tar .
           cd ..
           # NPM não efetua copia do diretorio email para build
-          mkdir email
           tar r -f production-artifact.tar email/
 
       - name: Archive artifacts
@@ -64,7 +63,7 @@ jobs:
         run: ls
         working-directory: ./
 
-      - name: Deploy to Staging server
+      - name: Deploy to Production server
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
