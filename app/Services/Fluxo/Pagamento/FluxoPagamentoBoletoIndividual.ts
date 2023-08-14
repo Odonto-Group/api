@@ -65,8 +65,8 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
             await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             
             const pix = {
-                copiaCola: pagamento.pix.copiaCola,
-                qrCode: pagamento.pix.base64
+                copiaCola: pagamento.pix ? pagamento.pix.copiaCola : null,
+                qrCode: pagamento.pix ? pagamento.pix.base64: null
             } as Pix
 
             retorno.pix = pix
@@ -117,7 +117,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
             pagadorCelular: responsavelFinanceiro.nu_dddRespFin.toString(),
             smsEnvio: false,
             nossoNumero: nossoNumero,
-            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8',
+            convenioId: '618aadf0-b8d8-4aeb-aecf-7fcd0ae747cf',
             incluirPix: true,
 
             };
