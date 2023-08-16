@@ -58,6 +58,7 @@ export default class PayloadValidator {
       email: schema.string(),
       cep: schema.string(),
       endereco: schema.string(),
+      cidade: schema.string(),
       numero: schema.string(),
       complemento: schema.string.optional(),
       bairro: schema.string(),
