@@ -10,7 +10,7 @@ export default class PagamentoBoletoService {
         const tbPagamentoBoleto = new TbPagamentoBoleto
 
         tbPagamentoBoleto.cd_associado_pb = associado.id_associado
-        tbPagamentoBoleto.id_banco_pb = 54 // Bradesco
+        tbPagamentoBoleto.id_banco_pb = 69 // ITAU
         tbPagamentoBoleto.nu_nossonum = params.nossoNumero
         tbPagamentoBoleto.nu_IdBolSimples = params.boletoId
         tbPagamentoBoleto.nu_valoremissao = pagamentoOdontoCob.nu_valoremissao

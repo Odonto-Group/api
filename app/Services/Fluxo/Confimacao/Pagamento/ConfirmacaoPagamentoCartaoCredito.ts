@@ -29,14 +29,14 @@ export default class ConfirmacaoPagamentoCartaoCredito implements FluxoConfirmac
         private pagamentoCartaoService: PagamentoCartaoService
       ) {} 
 
-    async confirmarPagamento(params: any, transaction: TransactionClientContract): Promise<string> {
-        const associado = await this.associadoService.findAssociadoById(params.compradorId);
+    async confirmarPagamento(params: any, associado:TbAssociado, paymentStatus:number, transaction: TransactionClientContract): Promise<string> {
+        //const associado = await this.associadoService.findAssociadoById(params.compradorId);
 
-        if (associado.cd_status && associado.cd_status != 0  && associado.cd_status != 2) {
+        if (paymentStatus != 0  && paymentStatus != 2) {
 
             await this.pagamentoCartaoOdontoCobService.savePagamentoEfetuadoOdontoCob(associado, params, transaction);
-
-            await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
+//TODO: ALTERAR STATUS PARA CARTAO DE CREDITO
+            //await this.associadoService.updateAssociadoPagamentoEfetuado(associado, transaction)
 
             await this.pagamentoCartaoService.savePagamentoEfetuado(associado, params, transaction);
 

@@ -1,10 +1,11 @@
+import { GrupoPagamento } from 'App/Enums/GrupoPagamento';
 import TbFormasPagamentoEmpresa from 'App/Models/TbFormasPagamentoEmpresa';
 import TbFormasPagamentoIndividual from 'App/Models/TbFormasPagamentoIndividual';
 
 export default class FormasPagamentoService {
 
   async findFormaPagamentoIndividual(idProdutoComercial: number, idBanco: number, formaPagamento: any): Promise<TbFormasPagamentoIndividual | null> {
-    if (formaPagamento.gpPagto == 2) {
+    if (formaPagamento.gpPagto == GrupoPagamento.DEBITO_EM_CONTA) {
       return await TbFormasPagamentoIndividual
       .query()
       .preload('produtoComercial')

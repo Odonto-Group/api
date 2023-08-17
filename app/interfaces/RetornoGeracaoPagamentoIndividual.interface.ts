@@ -1,5 +1,6 @@
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import { PaymentStatus } from "App/Enums/PaymentStatus";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 
 export default interface RetornoGeracaoPagamentoIndividual {
     linkProposta: string;
@@ -10,6 +11,7 @@ export default interface RetornoGeracaoPagamentoIndividual {
     dataVencimento: string;
     linkPagamento: string,
     formaPagamento: FormaPagamento,
+    grupoPagamento: GrupoPagamento,
     paymentStatus: PaymentStatus, 
     agencia: string,
     conta: string,

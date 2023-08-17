@@ -15,6 +15,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 
 @inject()
 export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStrategy {
@@ -37,7 +38,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
-        const retorno = {} as RetornoGeracaoPagamentoIndividual
+        const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
 
         if (pagamento) {
             
@@ -82,17 +83,15 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
     async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime): Promise<TipoPessoaBoletoIndividual> {
         const uf = await this.ufService.findUfById(associado.id_UF_a)
 
-        const nome = responsavelFinanceiro.nm_RespFinanc.split(' ')
-
         const nossoNumero = `2${Math.floor(Math.random() * 900000) + 100000}${associado.id_associado}0`;
 
         const body = {
             pagadorDocumentoTipo: 1,
             pagadorDocumentoNumero: responsavelFinanceiro.nu_CPFRespFin,
-            pagadorNome: nome[0] + nome[nome.length - 1],
-            pagadorEndereco: 'XXX',
-            pagadorBairro: 'XXX',
-            pagadorCidade: 'XXX',
+            pagadorNome: responsavelFinanceiro.nm_RespFinanc,
+            pagadorEndereco: responsavelFinanceiro.tx_EndLograd,
+            pagadorBairro: responsavelFinanceiro.tx_EndBairro,
+            pagadorCidade: responsavelFinanceiro.tx_EndCidade,
             pagadorUf: uf.sigla,
             pagadorCep: responsavelFinanceiro.nu_CEP,
             dataVencimento: dataPrimeiroVencimento.toString(),

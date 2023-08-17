@@ -62,6 +62,8 @@ export default class PayloadValidator {
       numero: schema.string(),
       complemento: schema.string.optional(),
       bairro: schema.string(),
+      idUf: schema.number(),
+      telefone: schema.string(),
     }),
     cartaoCredito: schema.object.optional().members({
       codigoSeguranca: schema.string(),
