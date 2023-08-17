@@ -6,45 +6,45 @@ export default class TbPagamentoCartao extends BaseModel {
   @column({ isPrimary: true })
   public id_pgtocartao: number
 
-  @column()
+  @column({columnName: "cd_associado_pc"})
   public cd_associado_pc: number
 
-  @column()
+  @column({columnName: "tid"})
   public tid: string
 
-  @column()
-  public dt_cadastro: Date
+  @column({columnName: "dt_cadastro"})
+  public dt_cadastro: string
 
-  @column()
+  @column({columnName: "mensagem"})
   public mensagem: string
 
-  @column()
+  @column({columnName: "bandeira"})
   public bandeira: string
 
-  @column()
+  @column({columnName: "parcela"})
   public parcela: number
 
-  @column()
+  @column({columnName: "nu_numcartao"})
   public nu_numcartao: string
 
-  @column()
+  @column({columnName: "cod_autorizacao"})
   public cod_autorizacao: string
 
-  @column()
+  @column({columnName: "nu_mesvalidade"})
   public nu_mesvalidade: string
 
-  @column()
+  @column({columnName: "nu_anovalidade"})
   public nu_anovalidade: string
 
-  @column()
+  @column({columnName: "vl_valor"})
   public vl_valor: number
 
-  @column()
+  @column({columnName: "nu_cvv"})
   public nu_cvv: string
 
-  @column()
+  @column({columnName: "nu_stattransacao"})
   public nu_stattransacao: number
 
-  @column()
+  @column({columnName: "codigoRetorno"})
   public codigoRetorno: string
 }

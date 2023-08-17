@@ -41,7 +41,7 @@ export default class PagamentoBoletoOdontoCobService {
         const pagamento = new TbPagamentoBoletoOdontoCob
         pagamento.cd_cliente                 = idClient; // PEGAR ID_ASSOCIADO OU ID_CDEMPRESA
         pagamento.dt_emissao                 = DateTime.now().toString()
-        pagamento.id_banco_pbo               = 54;
+        pagamento.id_banco_pbo               = 69;//ITAU
         pagamento.nu_idboleto_odontocob      = geraOc.id;
         pagamento.nu_valoremissao            = geraOc.registro.titulo.valorNominal;
         pagamento.dt_vencimento              = dataPrimeiroVencimento.toString();
