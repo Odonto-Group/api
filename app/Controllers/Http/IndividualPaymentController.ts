@@ -25,6 +25,7 @@ import DataExpiracaoInvalida from 'App/Exceptions/DataExpiracaoInvalida';
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import FluxoPagamentoDebitoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoDebitoIndividual';
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 import FileService from 'App/Services/FileService';
 import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
@@ -147,16 +148,16 @@ export default class IndividualPaymentController {
   
     let returnPayment = {} as RetornoGeracaoPagamento
 
-    if(params.formaPagamento.gpPagto == 2) { //DEBITO EM CONTA
+    if(params.formaPagamento.gpPagto == GrupoPagamento.DEBITO_EM_CONTA) { //DEBITO EM CONTA
 
       returnPayment = await this.fluxoPagamentoDebito.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
-    } else if (params.formaPagamento.gpPagto == 4) { //  CONSIGNADO NAO SERA FEITO AGORA
+    } else if (params.formaPagamento.gpPagto == GrupoPagamento.CONSIGNADO) { //  CONSIGNADO NAO SERA FEITO AGORA
 
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
-    } else if (params.formaPagamento.gpPagto == 3) { // BOLETO
+    } else if (params.formaPagamento.gpPagto == GrupoPagamento.BOLETO) { // BOLETO
 
       returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
-    } else if (params.formaPagamento.gpPagto == 1)  { //CARTAO
+    } else if (params.formaPagamento.gpPagto == GrupoPagamento.CARTAO_CREDITO)  { //CARTAO
 
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
     } else {
@@ -257,7 +258,7 @@ export default class IndividualPaymentController {
   }
 
   calculaValorMensalidade(valorMensalidade: number, gpPagto: number, pagamentoUnico) {
-    return gpPagto == 3 && pagamentoUnico ? valorMensalidade * 12 : valorMensalidade;
+    return gpPagto == GrupoPagamento.BOLETO && pagamentoUnico ? valorMensalidade * 12 : valorMensalidade;
   }
 
   calculaNumeroVidas(quantidadeVidas: number, dependentes: number) {
@@ -266,19 +267,19 @@ export default class IndividualPaymentController {
 
   calcularDataExpiracao(params: any): DateTime {
     switch(params.formaPagamento.gpPagto) {
-      case 1: 
+      case GrupoPagamento.CARTAO_CREDITO: 
         return DateTime.now().plus({ days: 7 })
-      case 2:
+      case GrupoPagamento.DEBITO_EM_CONTA:
         if (params.chkPrimeiraBoleto) {
           return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy")
         } else {
           return DateTime.fromFormat(params.vencimentoDebito, "dd/MM/yyyy")
         }
 
-      case 3:
+      case GrupoPagamento.BOLETO:
         return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy")
         
-      case 4: 
+      case GrupoPagamento.CONSIGNADO: 
         if (params.chkPrimeiraBoleto) {
           return DateTime.fromFormat(params.vencimentoBoleto, "dd/MM/yyyy");
         } else {

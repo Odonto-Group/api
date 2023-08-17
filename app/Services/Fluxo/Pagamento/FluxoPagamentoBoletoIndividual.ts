@@ -15,6 +15,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 
 @inject()
 export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStrategy {
@@ -37,7 +38,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
-        const retorno = {} as RetornoGeracaoPagamentoIndividual
+        const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
 
         if (pagamento) {
             

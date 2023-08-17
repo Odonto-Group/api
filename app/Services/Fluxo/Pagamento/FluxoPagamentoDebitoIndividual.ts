@@ -13,6 +13,7 @@ import formatNumberBrValue from "App/utils/FormatNumber";
 import Env from '@ioc:Adonis/Core/Env'
 import FluxoPagamentoBoletoIndividual from "./FluxoPagamentoBoletoIndividual";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 
 @inject()
 export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStrategy {
@@ -31,7 +32,7 @@ export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStr
 
         await this.pagamentoDebitoService.savePagamentoDebito(params, associado, dataPrimeiroVencimento, transaction)
 
-        let returnPayment = {} as RetornoGeracaoPagamentoIndividual
+        let returnPayment = {grupoPagamento: GrupoPagamento.DEBITO_EM_CONTA} as RetornoGeracaoPagamentoIndividual
 
         if (params.primeiraBoleto) { // DEBITO COM PRIMEIRA NO BOLETO
             returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.PRIMEIRA_NO_BOLETO, boletoUnico: 1})

@@ -19,6 +19,8 @@ import creditCardType from 'credit-card-type';
 import AssociadoService from "App/Services/AssociadoService";
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
+import ConfirmacaoPagamentoCartaoCredito from "App/Services/Fluxo/Confimacao/Pagamento/ConfirmacaoPagamentoCartaoCredito";
 
 @inject()
 export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStrategy {
@@ -33,7 +35,8 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         private p4XService: P4XService,
         private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
         private mailSenderService: MailSenderService,
-        private associadoService: AssociadoService
+        private associadoService: AssociadoService,
+        private confirmacaoPagamentoCartaoCredito: ConfirmacaoPagamentoCartaoCredito
     ){}
 
     async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
@@ -45,6 +48,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
     
         const retorno = {
             formaPagamento: FormaPagamento.CARTAO_CREDITO,
+            grupoPagamento: GrupoPagamento.CARTAO_CREDITO,
             paymentStatus: paymentStatus
         } as RetornoGeracaoPagamentoIndividual
 
@@ -58,8 +62,12 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
 
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
-                paymentStatus = PaymentStatus.PAGO;
+                paymentStatus = PaymentStatus.PRE_CADASTRO;// No caso de cartão status 1 é considerado pago TODO: Refatorar para status 2 quando refazer o admin
+                
+                
                 await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
+
+                /* response.mensagem =  */await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(pagamento, associado,paymentStatus, transaction)
 
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado
