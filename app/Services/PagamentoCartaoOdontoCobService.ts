@@ -34,9 +34,9 @@ export default class PagamentoCartaoOdontoCobService {
         pagamentoCartaoOdontoCob.dt_vencimento = pagamentoCartaoOdontoCob.dt_vencimento || associado.dt_inicio_vigencia
         pagamentoCartaoOdontoCob.pagamentoId = params.pagamentoId
         pagamentoCartaoOdontoCob.dt_pagamento = DateTime.now().toString()
-        pagamentoCartaoOdontoCob.nsu = params.nsu
-        pagamentoCartaoOdontoCob.autorizacaoCodigo = params.autorizacaoCodigo || params.autorizacao
-        pagamentoCartaoOdontoCob.cartaoId = params.nsu
+        pagamentoCartaoOdontoCob.nsu = params.transacao.nsu
+        pagamentoCartaoOdontoCob.autorizacaoCodigo = params.transacao.autorizacaoCodigo || params.transacao.autorizacao
+        pagamentoCartaoOdontoCob.cartaoId = params.transacao.nsu
 
         pagamentoCartaoOdontoCob.useTransaction(transaction).save();
     }
