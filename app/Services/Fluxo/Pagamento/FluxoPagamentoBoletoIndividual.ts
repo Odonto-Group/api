@@ -15,6 +15,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobService";
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
+import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 
 @inject()
 export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStrategy {
@@ -37,7 +38,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
         const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
-        const retorno = {} as RetornoGeracaoPagamentoIndividual
+        const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
 
         if (pagamento) {
             
@@ -65,8 +66,8 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
             await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)
             
             const pix = {
-                copiaCola: pagamento.pix.copiaCola,
-                qrCode: pagamento.pix.base64
+                copiaCola: pagamento.pix ? pagamento.pix.copiaCola : null,
+                qrCode: pagamento.pix ? pagamento.pix.base64: null
             } as Pix
 
             retorno.pix = pix
@@ -82,17 +83,15 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
     async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime): Promise<TipoPessoaBoletoIndividual> {
         const uf = await this.ufService.findUfById(associado.id_UF_a)
 
-        const nome = responsavelFinanceiro.nm_RespFinanc.split(' ')
-
         const nossoNumero = `2${Math.floor(Math.random() * 900000) + 100000}${associado.id_associado}0`;
 
         const body = {
             pagadorDocumentoTipo: 1,
             pagadorDocumentoNumero: responsavelFinanceiro.nu_CPFRespFin,
-            pagadorNome: nome[0] + nome[nome.length - 1],
-            pagadorEndereco: 'XXX',
-            pagadorBairro: 'XXX',
-            pagadorCidade: 'XXX',
+            pagadorNome: responsavelFinanceiro.nm_RespFinanc,
+            pagadorEndereco: responsavelFinanceiro.tx_EndLograd,
+            pagadorBairro: responsavelFinanceiro.tx_EndBairro,
+            pagadorCidade: responsavelFinanceiro.tx_EndCidade,
             pagadorUf: uf.sigla,
             pagadorCep: responsavelFinanceiro.nu_CEP,
             dataVencimento: dataPrimeiroVencimento.toString(),
@@ -117,7 +116,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
             pagadorCelular: responsavelFinanceiro.nu_dddRespFin.toString(),
             smsEnvio: false,
             nossoNumero: nossoNumero,
-            convenioId: 'ecf1e024-e1a5-4efa-8399-a081a13bf3d8',
+            convenioId: '618aadf0-b8d8-4aeb-aecf-7fcd0ae747cf',
             incluirPix: true,
 
             };

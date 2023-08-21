@@ -57,7 +57,7 @@ export default class TbResponsavelFinanceiro extends BaseModel {
   setCelularAttribute(value: string){
     value = value ? value.replace(/\D/g, "") : "00000000000"
     this.nu_dddRespFin = value.substring(0, 2);
-    this.nu_telRespFin = value.substring( 2, 10);
+    this.nu_telRespFin = value.substring( 2, 11);
   }
 
 }

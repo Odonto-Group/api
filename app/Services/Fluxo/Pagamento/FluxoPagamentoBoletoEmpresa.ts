@@ -125,7 +125,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         tipoPessoa.idEmpresa = empresa.id_cdempresa
         tipoPessoa.numeroProsposta = empresa.nr_proposta
         tipoPessoa.primeiroNome = empresa.nm_responsavel.split(' ')[0]
-        tipoPessoa.email = 'carlos.a.queiroz@gmail.com';
+        tipoPessoa.email = 'suporte@odontogroup.com.br';
         tipoPessoa.bodyPagamento = bodyPagamento
 
         return tipoPessoa;

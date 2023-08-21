@@ -39,6 +39,6 @@ export default class TbRespFinanceiro extends BaseModel {
   setCelularAttribute(value: string){
     value = value ? value.replace(/\D/g, "") : "00000000000"
     this.nu_dddCelRespFin = value.substring(0, 2);
-    this.nu_celRespFin = value.substring( 2, 10);
+    this.nu_celRespFin = value.substring( 2, 11);
   }
 }

@@ -30,9 +30,9 @@ export default class PagamentoPixOdontoCobService {
 
         pagamentoOdontoCob.cd_associado = id_associado
         pagamentoOdontoCob.dt_cadastro = DateTime.local().toFormat('yyyy/mm/dd')
-        pagamentoOdontoCob.id_pix_odontocob = pagamento.pix.id
-        pagamentoOdontoCob.qr_code = pagamento.pix.base64
-        pagamentoOdontoCob.copia_cola = pagamento.pix.copiaCola
+        pagamentoOdontoCob.id_pix_odontocob = pagamento.pix ? pagamento.pix.id : null
+        pagamentoOdontoCob.qr_code = pagamento.pix ? pagamento.pix.base64 :null
+        pagamentoOdontoCob.copia_cola = pagamento.pix ? pagamento.pix.copiaCola : null
         pagamentoOdontoCob.created_at = DateTime.now().toString()
         pagamentoOdontoCob.updated_at = DateTime.now().toString()
         pagamentoOdontoCob.valor = valor
