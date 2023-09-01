@@ -109,7 +109,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         const cartaoNumeroFormatado = params.cartaoCredito.numero.replaceAll(" ", "");
         return {
             "id": associado.nr_proposta,
-            "valor": 0.1,
+            "valor": associado.nu_vl_mensalidade,
             "comprador": {
               "id": associado.id_associado,
               "documentoNumero": responsavelFinanceiro.nu_CPFRespFin,
