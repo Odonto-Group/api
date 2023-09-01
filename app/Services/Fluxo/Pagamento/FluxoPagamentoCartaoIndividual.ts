@@ -67,7 +67,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
                 
                 await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
 
-                /* response.mensagem =  */await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(pagamento, associado,paymentStatus, transaction)
+                /* response.mensagem = await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(pagamento, associado,paymentStatus, transaction) */
 
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado
