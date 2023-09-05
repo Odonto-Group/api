@@ -59,7 +59,7 @@ export default class AssociadoService {
  
   async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
-    const uf = await TbUf.findOrFail(params.idOrgaoExpedidor)
+    const uf = await TbUf.findOrFail(params.idOrgaoExpedidorUf)
     
     associado.nm_associado = params.nomeTitular ? params.nomeTitular.toUpperCase() : "";
     associado.nu_cpf = params.cpf ? params.cpf.replace(/\D/g, "") : "";
