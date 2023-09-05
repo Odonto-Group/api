@@ -227,6 +227,7 @@ export default class IndividualPlanController {
     let dataVencimento = this.criarDataVencimento()
 
     return {
+      type: 'individual',
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
       corretora: tokenBanco.corretora,
