@@ -224,11 +224,12 @@ export default class CompanyPlanController {
     let dataVencimento = this.criarDataVencimento()
 
     return {
+      type: 'bussiness',
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
       corretora: tokenBanco.corretora,
       parceiro: tokenBanco.parceiro,
-      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
+      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoEmpresa,
       listaFormaPagamentos: formasPagamento,
       equipes: equipe,
       angariadores: angariador,
