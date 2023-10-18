@@ -28,7 +28,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
     private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
     private urlP4xLinkPagamento = Env.get('URL_P4X_PAGAMENTO_CARTAO') as string
     private bandeiraPadrao = Env.get('BANDEIRA_PADRAO')
-    private ambienteLocal = Env.get('NODE_ENV') == 'development'
+    private ambienteLocal = Env.get('NODE_ENV') == 'development';
 
     constructor(
         private ufService: UfService,
