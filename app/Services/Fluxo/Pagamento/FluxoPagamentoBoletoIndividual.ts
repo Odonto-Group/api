@@ -31,7 +31,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, formaPagamento, boletoUnico}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, formaPagamento: FormaPagamento, boletoUnico: number}): Promise<RetornoGeracaoPagamentoIndividual> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, formaPagamento, boletoUnico}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, idPlanoS4E:number, formaPagamento: FormaPagamento, boletoUnico: number}): Promise<RetornoGeracaoPagamentoIndividual> {
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
         
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
