@@ -12,6 +12,7 @@ import { PaymentStatus } from "App/Enums/PaymentStatus";
 import { DateTime } from "luxon";
 import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import P4XService from "App/Services/P4XService";
+import S4EService from "App/Services/S4EService";
 import { TipoTransacao } from "App/Enums/TipoTransacao";
 import Env from '@ioc:Adonis/Core/Env'
 import { SituacaoRetornoCartao } from "App/Enums/SituacaoRetornoCartao";
@@ -21,6 +22,8 @@ import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 import ConfirmacaoPagamentoCartaoCredito from "App/Services/Fluxo/Confimacao/Pagamento/ConfirmacaoPagamentoCartaoCredito";
+import SituacaoPagamentoCartaoDesconhecidaException from "App/Exceptions/SituacaoPagamentoCartaoDesconhecidaException";
+import { format } from "date-fns";
 
 @inject()
 export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStrategy {
@@ -28,9 +31,10 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
     private emailDefault = Env.get('EMAIL_ENVIO_DEFAULT')
     private urlP4xLinkPagamento = Env.get('URL_P4X_PAGAMENTO_CARTAO') as string
     private bandeiraPadrao = Env.get('BANDEIRA_PADRAO')
-    private ambienteLocal = Env.get('NODE_ENV') == 'development'
+    private ambienteLocal = Env.get('NODE_ENV') == 'development';
 
     constructor(
+        private S4EService: S4EService,
         private ufService: UfService,
         private p4XService: P4XService,
         private pagamentoCartaoOdontoCobService: PagamentoCartaoOdontoCobService,
@@ -39,7 +43,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         private confirmacaoPagamentoCartaoCredito: ConfirmacaoPagamentoCartaoCredito
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, idPlanoS4E:number, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
         const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
@@ -62,6 +66,9 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
             await this.pagamentoCartaoOdontoCobService.savePagamento(associado, pagamento, dataD7, linkPagamento, transaction)
 
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
+                let dataDependente = format(associado.dt_nasc, 'dd/MM/yyyy');
+                let dataRespFinanc = format(responsavelFinanceiro.dt_NascRespFin, 'dd/MM/yyyy');
+
                 paymentStatus = PaymentStatus.PRE_CADASTRO;// No caso de cartão status 1 é considerado pago TODO: Refatorar para status 2 quando refazer o admin
                 
                 
@@ -72,6 +79,83 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
                 const planoContent = {
                     NOMECLIENTE: associado.nm_associado
                 } as PagamentoEmailContent;
+
+                const associadoBody = {
+                
+                    parcelaRetidaComissao: "0",
+                    incluirMensalidades: "1",
+                    parceiro: {
+                      codigo: 20945,
+                      tipoCobranca: 0,
+                      adesionista: 0,
+                      maxMensalidadeId: "1"
+                    },
+                    responsavelFinanceiro: {
+                      codigoEmpresa: associado.cd_CodContratoS4E,
+                      nome: responsavelFinanceiro.nm_RespFinanc,
+                      dataNascimento: dataRespFinanc,
+                      cpf: responsavelFinanceiro.nu_CPFRespFin,
+                      sexo: associado.id_sexo_a == 1 ? 0 : 1,//0 - Feminino, 1 - Masculino
+                      cd_orientacao_sexual: 0,
+                      cd_ident_genero: 0,
+                      agencia: 0,
+                      agencia_dv: 0,
+                      conta: "0",
+                      conta_dv: 0,
+                      contaOperacao: 0,//TODO adicionar opção poupança
+                      diaVencimento: dataPrimeiroVencimento.toFormat('dd'),
+                      tipoPagamento: 579,//Tipo pagamento - 2-CARTÃO DE CRÉDITO - P4X
+                      dataAssinaturaContrato: dataPrimeiroVencimento.toFormat('dd/MM/yyyy'),
+                      numeroProposta: associado.nr_proposta,
+                      endereco: {
+                        cep: responsavelFinanceiro.nu_CEP,
+                        tipoLogradouro: "803",//TODO dominio tipoLogradouro
+                        logradouro: responsavelFinanceiro.tx_EndLograd,
+                        numero: responsavelFinanceiro.tx_EndNumero,
+                        complemento: responsavelFinanceiro.tx_EndCompl,
+                        bairroId: 7261,//TODO dominio bairro
+                        municipioId: 5005,//TODO dominio municipio
+                        ufId: responsavelFinanceiro.id_uf_rf,
+                        descricaoUf: "DF"//TODO
+                      },
+                      /* contatos: [
+                        {
+                          tipo: 50,
+                          dado: responsavelFinanceiro.ds_emailRespFin
+                        },
+                        {
+                            tipo: 8,
+                            dado: associado.nu_dddCel+associado.nu_Celular
+                          }
+                      ] */
+                    },
+                    cartao: {
+                        codSeguranca: params.cartaoCredito.codigoSeguranca,
+                        pagamentoId: pagamento.pagamentoId,
+                        tokenCartao: pagamento.cartaoId
+                    },
+                    dependentes: [
+                      {
+                        nome: associado.nm_associado,
+                        dataNascimento: dataDependente,
+                        cpf: associado.nu_cpf,
+                        sexo: associado.id_sexo_a == 1 ? 0 : 1,//0 - Feminino, 1 - Masculino
+                        grauParentesco: associado.id_parentesco_a,
+                        plano: idPlanoS4E,
+                        numeroProposta: associado.nr_proposta,
+                        planoValor: String(associado.nu_vl_mensalidade),
+                        nomeMae: associado.nm_mae,
+                        carenciaAtendimento: 3,
+                        cdOrientacaoSexual: 0,
+                        cdIdentidadeGenero: 0,
+                        mmyyyY1Pagamento: Number(dataPrimeiroVencimento.toFormat('yyyy/MM').replace('/', '')),
+                        funcionarioCadastro: 0
+                      }//TODO Dependentes
+                    ]
+                  
+            }
+
+                await this.S4EService.includeAssociado(associadoBody);
 
                 await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
             } else if (pagamento.situacao == SituacaoRetornoCartao.NAO_APROVADA) {
