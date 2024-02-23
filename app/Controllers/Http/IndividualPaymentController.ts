@@ -119,7 +119,7 @@ export default class IndividualPaymentController {
 
     //await this.emailConsignado(params, associado)
 
-    const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao, responsavelFinanceiroBanco, transaction, produtoComercial.nm_prodcomerc)
+    const returnPayment =  await this.executaPagamento(params, associado, dataExpiracao, responsavelFinanceiroBanco, transaction, produtoComercial.id_ProdutoS4E_c, produtoComercial.nm_prodcomerc)
   
     // if (arquivos) {
     //   await this.salvarArquivos(dependentes, arquivos, associado);
@@ -144,22 +144,23 @@ export default class IndividualPaymentController {
       dataPrimeiroVencimento: DateTime,
       responsavelFinanceiro: TbResponsavelFinanceiro,
       transaction: TransactionClientContract,
+      idPlanoS4E: number,
       nomePlano: string): Promise<RetornoGeracaoPagamento> {
   
     let returnPayment = {} as RetornoGeracaoPagamento
 
     if(params.formaPagamento.gpPagto == GrupoPagamento.DEBITO_EM_CONTA) { //DEBITO EM CONTA
 
-      returnPayment = await this.fluxoPagamentoDebito.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
+      returnPayment = await this.fluxoPagamentoDebito.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, params})
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.CONSIGNADO) { //  CONSIGNADO NAO SERA FEITO AGORA
 
       throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.BOLETO) { // BOLETO
 
-      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
+      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.CARTAO_CREDITO)  { //CARTAO
 
-      returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, params})
+      returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, params})
     } else {
       throw new MetodoDePagamentoInvalidoException()
     }

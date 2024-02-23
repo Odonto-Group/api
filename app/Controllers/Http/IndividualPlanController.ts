@@ -260,8 +260,7 @@ export default class IndividualPlanController {
   criarDataVencimento() {
     let datas = [] as any;
     let todayIm = DateTime.local().toFormat('yyyy-MM-dd');
-    let nextValue = DateTime.local().plus({ days: 1 }).toFormat('yyyy-MM-dd');
-    let nextSelect = DateTime.local().plus({ days: 1 }).toFormat('yyyy/MM/dd');
+    let nextValue = DateTime.local().plus({ days: 4 }).toFormat('yyyy-MM-dd');
 
     let month = DateTime.local().month;
     let year = DateTime.local().year;
@@ -288,10 +287,8 @@ export default class IndividualPlanController {
       dia += 5;
       i++;
     } while (dia < 30);
-
-    let expiryDates = datas.filter(data => data.value > todayIm).slice(0, 3);
-
-    expiryDates.unshift({ value: nextValue, select: nextSelect });
+    
+    let expiryDates = datas.filter(data => data.value > todayIm && data.value > nextValue).slice(0, 3);
 
     return expiryDates;
   }
