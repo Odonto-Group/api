@@ -15,6 +15,6 @@ export default class OuvidoriaController {
 
     await this.mailSenderService.sendOuvidoria(data);
 
-    return response.json({ message: 'Reclamação enviada' });
+    return response.json({ message: 'Mensagem enviada!' });
   }
 }
