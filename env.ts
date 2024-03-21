@@ -21,4 +21,7 @@ export default Env.rules({
   APP_NAME: Env.schema.string(),
   DRIVE_DISK: Env.schema.enum(['local'] as const),
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
-})
+
+  // EMAILS
+  EMAIL_ODONTO_OUV: Env.schema.string({ format: 'email' }),
+});
