@@ -61,5 +61,9 @@ Route.group(() => {
 }).prefix('/webhooks/payment');
 
 Route.group(() => {
+  Route.get('/getAssertivaInfo/:cpf', 'AssertivaController.getAssertivaInfo')
+}).prefix('/assertiva');
+
+Route.group(() => {
   Route.post('/', 'OuvidoriaController.receiveForm');
 }).prefix('/ouvidoria');
