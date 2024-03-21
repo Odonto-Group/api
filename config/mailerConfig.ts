@@ -2,7 +2,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import Env from '@ioc:Adonis/Core/Env'
 
 class MailerConfig {
-  private transporter: Transporter;
+  private readonly transporter: Transporter;
 
   constructor() {
     this.transporter = this.buildTransporter()

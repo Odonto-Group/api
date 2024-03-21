@@ -18,7 +18,7 @@
 |
 */
 
-import Route from '@ioc:Adonis/Core/Route'
+import Route from '@ioc:Adonis/Core/Route';
 
 Route.get('/', async () => {
   return { hello: 'world' }
@@ -58,4 +58,12 @@ Route.group(() => {
   Route.post('/boleto', 'WebhookController.index')
   Route.post('/cartao', 'WebhookController.creditCardPayment')
   Route.post('/pix', 'WebhookController.pixPayment')
-}).prefix('/webhooks/payment')
+}).prefix('/webhooks/payment');
+
+Route.group(() => {
+  Route.get('/getAssertivaInfo/:cpf', 'AssertivaController.getAssertivaInfo')
+}).prefix('/assertiva');
+
+Route.group(() => {
+  Route.post('/', 'OuvidoriaController.receiveForm');
+}).prefix('/ouvidoria');
