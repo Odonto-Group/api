@@ -13,7 +13,7 @@ export default class AssertivaController {
 
     const data = await this.assertivaService.getAssertivaCPFDetails(request.params().cpf);
 
-    if (data.status === 500 || data.status === 404 || data.erro) {
+    if (data.status !== 200 || data.erro) {
       return response.json({ message: 'Problema ao buscar informações!' });
     }
 
