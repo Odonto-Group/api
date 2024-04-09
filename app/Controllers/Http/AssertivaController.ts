@@ -16,7 +16,6 @@ export default class AssertivaController {
     if (data.status === 500 || data.status === 404 || data.erro) {
       return response.json({ message: 'Problema ao buscar informações!' });
     }
-
     return response.json({nome: data.resposta.dadosCadastrais.nome, dataNascimento: data.resposta.dadosCadastrais.dataNascimento, maeNome: data.resposta.dadosCadastrais.maeNome});
   }
 }
