@@ -111,7 +111,7 @@ export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStr
                         grauParentesco: associado.id_parentesco_a,
                         plano: idPlanoS4E,
                         numeroProposta: associado.nr_proposta,
-                        planoValor: String(associado.nu_vl_mensalidade),
+                        planoValor: String(associado.nu_vl_mensalidade).replace('.', ','),
                         nomeMae: associado.nm_mae,
                         carenciaAtendimento: 3,
                         cdOrientacaoSexual: 0,
