@@ -5,6 +5,7 @@ import TbFormasPagamentoIndividual from 'App/Models/TbFormasPagamentoIndividual'
 export default class FormasPagamentoService {
 
   async findFormaPagamentoIndividual(idProdutoComercial: number, idBanco: number, formaPagamento: any): Promise<TbFormasPagamentoIndividual | null> {
+    console.log('entrou errado', formaPagamento.gpPagto);
     if (formaPagamento.gpPagto == GrupoPagamento.DEBITO_EM_CONTA) {
       return await TbFormasPagamentoIndividual
       .query()
@@ -16,6 +17,7 @@ export default class FormasPagamentoService {
       .where('tb_banco.id_banco', idBanco)
       .first();
     } else {
+      console.log('entrou');
       return await TbFormasPagamentoIndividual
       .query()
       .preload('produtoComercial')
