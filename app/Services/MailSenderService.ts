@@ -184,6 +184,105 @@ export class MailSenderService {
       throw new ErroAoEnviarEmailException(to);
     }
   };
+  async sendEmailAdesaoConsignado(
+    to: string,
+    subject: string,
+    contentView: AdesaoEmailContent
+  ) {
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `AdesaoTemplate.html`);
+    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `capa-gdf.jpg`));
+    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `linkedin-logo.png`));
+    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `ANS.png`));
+    const link = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `link.svg`));
+    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `odonto-group.png`));
+    const face = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `facebook.svg`));
+    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `instagram-logo.png`));
+    const whats = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `whatsapp.svg`));
+    const telefone = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `telephone.svg`));
+    const android = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `Google-Play.png`));
+    const apple = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `Apple.png`));
+
+    const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
+
+    // Substituir os campos dinâmicos no HTML
+    let finalHtmlContent = htmlContent;
+
+    for (const key in contentView) {
+      const value = contentView[key];
+      finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+
+    const mailOptions = {
+      from: Env.get('MAIL_FROM'),
+      bcc: Env.get('MAIL_BCC'),
+      to,
+      subject,
+      html: finalHtmlContent,
+      attachments: [
+        {
+          filename: 'vista-lateral-da-mulher-feliz-gengibre-beleza-vestido-1.png',
+          content: capa,
+          cid: 'capa' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'linkedin-logo.png',
+          content: linkedin,
+          cid: 'linkedin' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'instagram-logo.png',
+          content: instagram,
+          cid: 'instagram' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'odonto-group.png',
+          content: odontoGroup,
+          cid: 'odontoGroup' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'telephone.svg',
+          content: telefone,
+          cid: 'telefone' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'link.svg',
+          content: link,
+          cid: 'link' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'whatsapp.svg',
+          content: whats,
+          cid: 'whats' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'facebook.svg',
+          content: face,
+          cid: 'face' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'Google-Play.png',
+          content: android,
+          cid: 'android' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'Apple.png',
+          content: apple,
+          cid: 'apple' // Identificador para referenciar a imagem no HTML
+        },
+        {
+          filename: 'ANS.png',
+          content: ans,
+          cid: 'ans' // Identificador para referenciar a imagem no HTML
+        }
+      ]
+    };
+
+    try {
+      await mailerConfig.sendMail(mailOptions);
+    } catch (error) {
+      throw new ErroAoEnviarEmailException(to);
+    }
+  };
 
   async sendEmailAdesaoSemLinkPagamento(
     to: string,

@@ -18,7 +18,7 @@ export default class TbTokenIdParc extends BaseModel {
   @column({columnName: 'nu_IdParceiro_tk'})
   public nu_IdParceiro_tk: number
 
-  @column()
+  @column({columnName:  'cd_Codtokenidparc'})
   public cd_Codtokenidparc: string
 
   @column()

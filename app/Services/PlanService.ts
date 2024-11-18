@@ -1,5 +1,6 @@
 import PlanoNaoEncontrado from 'App/Exceptions/PlanoNaoEncontrado';
 import TbParceiro from 'App/Models/TbParceiro';
+import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 
 
 export default class PlanService {
@@ -32,6 +33,31 @@ export default class PlanService {
     }
 
     return parceiro;
+  }
+  async getPlansbysellerId(vendedorId: number, produtoComercial:number): Promise<any> {
+    const result = await TbTokenIdParc
+        .query()
+        .select(
+            'tt.id_tokenidparc',
+            'tt.nu_cdVendedor4E_tk',
+            'tt.nu_cdCorretoraS4E_tk',
+            'tt.nu_IdParceiro_tk',
+            'tt.cd_Codtokenidparc'
+        )
+        .from('tb_tokenidparc as tt')
+        .innerJoin('tb_parceiro as tp', 'tp.id_parceiro', 'tt.nu_IdParceiro_tk')
+        .innerJoin('tb_vendedor as tv', 'tv.nu_cdVendedorS4E', 'tt.nu_cdVendedor4E_tk')
+        .innerJoin('tb_ProdutoComercial as tpc', 'tpc.id_prodcomerc', 'tp.id_prodcomerc_pr')
+        .where('tpc.id_prodcomerc', produtoComercial)
+        .where('tv.id_vendedor', vendedorId)
+        .andWhere('tt.status_token', 1)
+        .distinct()
+        .firstOrFail()
+
+    /* if (!result?.produtoComercial.formasPagamentoIndividual[0]?.vl_valor) {
+      throw new PlanoNaoEncontrado();
+    } */
+    return result;
   }
 
   async getBasicPlanIndividual(sigla: string, idCategoria: number[]): Promise<TbParceiro> {

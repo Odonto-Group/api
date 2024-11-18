@@ -44,8 +44,14 @@ Route.group(() => {
 Route.group(() => {
   Route.get('/individual/getPlanValue/:state/:token?', 'IndividualPlanController.index')
   Route.get('/individual/getPlanDetails/:token', 'IndividualPlanController.getPlanDetails')
+  Route.get('/servidor/getPlanDetails/:token', 'ServerPlanController.getPlanDetails')
   Route.get('/company/getPlanValue/:state/:token?', 'CompanyPlanController.index')
+  Route.get('/getPlansSeller', 'IndividualPlanController.getPlansBySeller')
   Route.get('/company/getPlanDetails/:token', 'CompanyPlanController.getPlanDetails')
+  Route.get('/orgao','OrgaoController.getOrgaoInfo')
+  Route.get('/orgaoId','OrgaoController.getOrgaobyId')
+  Route.get('/orgaoFP','OrgaoController.getOrgaobyFP')
+  Route.get('/AssociadoServidor','GDFAssertivaController.getDadosAssociado')
 }).prefix('/info')
 
 Route.group(() => {

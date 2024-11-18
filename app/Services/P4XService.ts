@@ -28,6 +28,7 @@ export default class P4XService {
                 return false;
             }
         } catch (erro) {
+            console.log('erro: ', erro);
             return false
         }
     }
@@ -37,6 +38,7 @@ export default class P4XService {
             const token = await this.geraToken();
 
             const linkPagamentoCartao = `${this.urlBaseP4x}/pagamentos/cartaocredito`
+            console.log('url: ', linkPagamentoCartao);
             
             const response = await axios.post(linkPagamentoCartao, body, {
                 headers: {
@@ -48,11 +50,36 @@ export default class P4XService {
             if (response.status === 200) {
                 return response.data;
             } else {
+                console.log('erro response: ', response);
                 return false;
             }
         } catch (erro) {
-            console.log(erro);
+            //console.log('deu erro catch:', erro);            
+            return false
+        }
+        
+    }
+    async cancelaPagamentoP4XCartaoCredito(body: any) {
+        try {
+            const token = await this.geraToken();
+
+            const linkPagamentoCartao = `${this.urlBaseP4x}/pagamentos/cartaocredito/${body.pagamentoId}/cancelar`
             
+            const response = await axios.post(linkPagamentoCartao, {
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                console.log('erro response: ', response);
+                return false;
+            }
+        } catch (erro) {
+            //console.log('deu erro catch:', erro);            
             return false
         }
         

@@ -57,7 +57,7 @@ export default class AssociadoService {
   }
 
  
-  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
+  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number,GDF:boolean, transaction: TransactionClientContract) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
     const uf = await TbUf.findOrFail(params.idOrgaoExpedidorUf)
     
@@ -103,7 +103,7 @@ export default class AssociadoService {
     associado.cd_status = 0;
     associado.st_mail = 0;
 
-    associado.nr_proposta = gerarNumeroProposta()
+    associado.nr_proposta = GDF ? params.proposta : gerarNumeroProposta()
     associado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
 
     await associado.useTransaction(transaction).save()

@@ -18,6 +18,7 @@ import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
 import { RequestContract } from '@ioc:Adonis/Core/Request';
 import FluxoPagamentoBoletoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoletoIndividual';
 import FluxoPagamentoCartaoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoCartaoIndividual';
+import FluxoPagamentoConsignadoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoConsignadoIndividual';
 import RetornoGeracaoPagamento from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import MetodoDePagamentoInvalidoException from 'App/Exceptions/MetodoDePagamentoInvalidoException';
 import TbDependente from 'App/Models/TbDependente';
@@ -32,6 +33,7 @@ import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPaga
 import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidator';
 import Env from '@ioc:Adonis/Core/Env'
 import Drive from '@ioc:Adonis/Core/Drive'
+import LogService from 'App/Services/Log/Log';
 
 @inject()
 export default class IndividualPaymentController {
@@ -45,17 +47,29 @@ export default class IndividualPaymentController {
       , private fluxoPagamentoBoleto: FluxoPagamentoBoletoIndividual
       , private fluxoPagamentoCartao: FluxoPagamentoCartaoIndividual
       , private fluxoPagamentoDebito: FluxoPagamentoDebitoIndividual
-      , private fileService: FileService) {} 
+      , private fluxopagamentoConsignado: FluxoPagamentoConsignadoIndividual
+      , private logService: LogService
+      , private fileService: FileService) {
+        this.logService = new LogService();
+      }
 
   async index({ request, response }: HttpContextContract) {
     let retorno = {}
+    const entrada = request.all();
+    const tipoRequisicao = 'Pagamento';
+    const Id = entrada.proposta || 0;
+
+    this.logService.writeLog(Id, tipoRequisicao, { type: 'entrada', data: entrada });
+
     await Database.transaction(async (transaction) => {
       try {
         retorno = await this.fluxoPagamentoPlano(request, transaction);
+        this.logService.writeLog(Id == 0 ? retorno.numeroProposta : Id , tipoRequisicao, { type: 'saida', data: retorno });
         transaction.commit();
 
         return retorno;
       } catch (error) {
+        this.logService.writeLog(Id, tipoRequisicao, { type: 'erro', data: error });
         transaction.rollback();
         throw error;
       }
@@ -69,9 +83,13 @@ export default class IndividualPaymentController {
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
     const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
     const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
+    const teste = request.all();
+    console.log('entrada teste:', teste);
     const params = await request.validate(IndividualPaymentValidator)
     const token = params.token
     const arquivos = request.allFiles()
+
+    console.log('Chegou e validou:', params);
 
     // await Drive.put(caminhoArquivo + nomeArquivo, "teste")
 
@@ -81,13 +99,14 @@ export default class IndividualPaymentController {
 
     const tokenParceiro = await this.tokenService.findTokenParceiroIndividual(token);
 
-    const parceiro = tokenParceiro.parceiro
+    const parceiro = tokenParceiro.parceiro;
     
     const produtoComercial = parceiro.produtoComercial
-
+    const produtosGDF = [993,998,999,1000];
     const associado = await this.associadoService.findAssociadoByCpf(params.cpf);
+    const GDF = produtosGDF.includes(produtoComercial.id_prodcomerc);
 
-    if (associado.cd_status && associado.cd_status != 0) {
+    if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();
     }
 
@@ -98,7 +117,7 @@ export default class IndividualPaymentController {
     }
 
     let dataExpiracao = this.calcularDataExpiracao(params);
-
+    
     if (dataExpiracao.startOf('day') < DateTime.now().startOf('day')) {
       throw new DataExpiracaoInvalida();
     }
@@ -107,9 +126,9 @@ export default class IndividualPaymentController {
 
     let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes == undefined ? 0 : params.dependentes.length);
     
-    const valorContrato = valorMensalidade * quantidadeVidas;
+    const valorContrato = GDF && params.valor_Mensalidade ? params.valor_Mensalidade : valorMensalidade * quantidadeVidas;
 
-    await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, transaction);
+    await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, GDF, transaction);
     
     this.responsavelFinanceiroService.deleteResponsavelFinanceiroByIdAssociado(associado.id_associado, transaction)
 
@@ -152,14 +171,13 @@ export default class IndividualPaymentController {
     if(params.formaPagamento.gpPagto == GrupoPagamento.DEBITO_EM_CONTA) { //DEBITO EM CONTA
 
       returnPayment = await this.fluxoPagamentoDebito.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, params})
-    } else if (params.formaPagamento.gpPagto == GrupoPagamento.CONSIGNADO) { //  CONSIGNADO NAO SERA FEITO AGORA
-
-      throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
+    } else if (params.formaPagamento.gpPagto == GrupoPagamento.CONSIGNADO) { //  CONSIGNADO
+      returnPayment = await this.fluxopagamentoConsignado.iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, formaPagamento: FormaPagamento.CONSIGNADO, params})
+      //throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.BOLETO) { // BOLETO
 
       returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.CARTAO_CREDITO)  { //CARTAO
-
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, params})
     } else {
       throw new MetodoDePagamentoInvalidoException()
