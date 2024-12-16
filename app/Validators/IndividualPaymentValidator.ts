@@ -4,6 +4,7 @@ export default class PayloadValidator {
   public schema = schema.create({
     token: schema.string(),
     cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
+    verifica: schema.boolean.optional(),
     idBanco: schema.string.optional(),
     conta: schema.string.optional(),
     agencia: schema.string.optional(),
@@ -54,6 +55,8 @@ export default class PayloadValidator {
         nomeMae: schema.string(),
         idSexo: schema.number(),
         idParentesco: schema.number(),
+        plano:schema.string.optional(),
+        valor_plano:schema.string.optional(),
       })
     ),
     responsavelFinanceiro: schema.object().members({

@@ -5,6 +5,7 @@ import Env from '@ioc:Adonis/Core/Env'
 import ErroInclusaoAssociadoS4EException from 'App/Exceptions/ErroInclusaoAssociadoS4EException'
 import EnderecoS4e from 'App/interfaces/EnderecoS4e'
 import EnderecoValidator from 'App/Validators/EnderecoValidator'
+import ErroConsultaCepS4EException from 'App/Exceptions/ErroConsultaCepS4EException'
 
 @inject()
 export default class S4EService {
@@ -34,7 +35,6 @@ export default class S4EService {
   async includeAssociadoPJ(body: any) {
     try {
       const response = await axios.post(`${this.s4eIncludePj}vendedor/NovoUsuarioPJ?token=${this.s4eTokenV1}`, body)
-      console.log("retorno", response);
       if (response.status === 200) {
         return response.data
       } else {
@@ -48,31 +48,41 @@ export default class S4EService {
 
   async getEnderecoByCep(cep: string): Promise<EnderecoS4e> {
   try {
-    // Fazendo a requisição para a API externa
     const response = await axios.post(`${this.s4eIncludePj}redeatendimento/Endereco?token=${this.s4eTokenV1}&cep=${cep}`)
-    console.log("Retorno da API:", response.data.dados);
+    console.log("Retorno da consulta do cep:", response.data.dados);
 
-    // Verifica o status da resposta
     if (response.status !== 200) {
       throw new Error('Erro ao buscar endereço')
     }
 
-    // Acessando os dados da propriedade "dados"
     const endereco = response.data.dados;
 
-    // Validando os dados recebidos com o EnderecoValidator
     const enderecoValidado = await  await validator.validate({
       schema: new EnderecoValidator().schema,
       data: endereco
     });
 
-    // Retorna o endereço validado
     return enderecoValidado;
 
   } catch (error) {
     console.error('Erro ao buscar endereço por CEP:', error.message)
-    // Caso seja um erro geral, lança a exceção personalizada
-    throw new ErroInclusaoAssociadoS4EException()
+    throw new ErroConsultaCepS4EException()
+  }
+}
+
+async includeEmpresa(body: any) {
+  try {
+    const response = await axios.post(`${this.s4eIncludePj}empresa/NovaEmpresa`, body);
+    console.log('retorno Api:', response);
+    if (response.data.codigo === 1) {
+      return response.data;
+    } else {
+      console.log('retorno Api com erro: ', response);
+      throw new Error('Erro ao incluir empresa: ' + response.data.mensagem);
+    }
+  } catch (error) {
+    console.log('error message includeEmpresa: ', error.message);
+    throw new Error('Erro ao incluir empresa: ' + error.message);
   }
 }
 

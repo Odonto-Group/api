@@ -25,7 +25,8 @@ export default class GDFAssertivaController {
         throw new ServidorNaoEncontrado()
       } else {
         const servidor = await this.Assertiva.getAssertivaCPFDetails(params.cpf);
-        if (servidor.resposta){
+        console.log('consulta assertiva: ', servidor);
+        if (servidor){
           associado = {
             nome: servidor.resposta.dadosCadastrais.nome,
             cpf: servidor.resposta.dadosCadastrais.cpf.replace(/[.-]/g, ''),
@@ -38,20 +39,25 @@ export default class GDFAssertivaController {
             numero: servidor.resposta.enderecos[0]?.numero,
             complemento: servidor.resposta.enderecos[0]?.complemento
           }
+        } else {
+          associado = {
+            cpf: params.cpf.trim(),
+          }
         }
       }
     } else{
+      console.log('data: ', data.$extras);
       associado = {
-        nome: data.NOME,
-        cpf: data.CPF,
-        data_nasc: data.DATA_NASCIMENTO,
-        sexo: data.SEXO,
-        telefone: data.CELULAR1,
-        email: data.EMAIL1,
-        nome_mae: data.MAE_NOME,
-        cep: data.ENDERECO_01_CEP,
-        numero: data.NUMERO1,
-        complemento: data.COMPLEMENTO1
+        nome: data.$extras.NOME,
+        cpf: data.$extras.CPF,
+        data_nasc: data.$extras.DATA_NASCIMENTO,
+        sexo: data.$extras.SEXO,
+        telefone: data.$extras.CELULAR1,
+        email: data.$extras.EMAIL1,
+        nome_mae: data.$extras.MAE_NOME,
+        cep: data.$extras.ENDERECO_01_CEP,
+        numero: data.$extras.NUMERO1,
+        complemento: data.$extras.COMPLEMENTO1
       }
     }
     return response.json(associado);

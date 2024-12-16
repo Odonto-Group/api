@@ -1,239 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Seu título aqui</title>
-	<style type="text/css">
-    @font-face {
-      font-family: 'Poppins';
-      src: url('static/Poppins-Regular.ttf') format('truetype');
-    }
-
-		body {
-			margin: 0;
-			padding: 0;
-			font-family: 'Poppins';
-			background-color: #fff;
-		}
-		.outer-container {
-			margin: 0 auto;
-			max-width: 778px;
-		}
-
-    .inner-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 10%;
-      padding-bottom: 5%;
-      padding-top: 5%;
-    }
-
-    .inner-inner-container {
-      text-align: left;
-    }
-
-		.container {
-			background-color: rgba(83, 151, 178, 0.06);
-			box-sizing: border-box;
-			margin-top: 10%;
-      max-width: 778px;
-			color: #fff;
-		}
-
-		h1, p {
-			margin: 0;
-			padding: 0;
-			font-size: 16px;
-			line-height: 1.5;
-			color: #fff;
-		}
-
-    .text_image_block {
-      display: flex;
-    }
-
-    .title_super {
-      font-weight: 800;
-      font-size: 26px;
-      color: #001359;
-      margin-left: 25%;
-    }
-
-    .icons_align {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-		.button {
-      display: block;
-      background-color: #282A62;
-      color: #fff !important;
-      text-align: center;
-      padding: 10px;
-      margin: 20px auto;
-      max-width: 200px;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-    
-		.footer_box {
-      width: 100%;
-			background-color: #282A62;
-			padding: 20px;
-			font-size: 12px;
-			line-height: 1.5;
-			text-align: center;
-      margin-bottom: 5%;
-		}
-
-    p {
-      color: #001359;
-      font-size: 16px;
-      line-height: 24px;
-      font-weight: 400;
-    }
-
-    .title {
-      font-weight: 700;
-      font-size: 20px;
-      color: #001359;
-    }
-
-    .footer_text {
-      font-size: 16px;
-      font-weight: 400;
-      color: #fff !important;
-      white-space: nowrap;
-    }
-
-    .footer_text_mini {
-      font-size: 12px;
-      font-weight: 400;
-      color: #fff !important;
-    }
-    
-    .block_footer { 
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .block_footer_icons { 
-      display: flex;
-      gap: 15px;
-      padding-top: 20px;
-      justify-content: left;
-    }
-
-    .block_footer_images {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .images_block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .title_mini {
-      font-weight: 700;
-      font-size: 16px;
-      color: #001359;
-    }
-    .text_mini {
-      font-size: 16px;
-      color: #001359;
-    }
-
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo à Odontogroup</title>
 </head>
-<body>
-	<div class="outer-container">
-		<div class="container">
-			<img src="cid:capa" alt="Descrição da imagem" style="display:block; margin:0 auto; width: 779px;">
-      <div class="inner-container">
-        <div class="inner-inner-container">
-          <p>Olá <span class="title_mini">{{NOMECLIENTE}}</span>,</p>
+<body style="margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #fff;">
+
+  <div style="margin: 0 auto; max-width: 778px;">
+    <div style="background-color: rgba(83, 151, 178, 0.06); box-sizing: border-box; margin-top: 10%; max-width: 778px;">
+      <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/capa-gdf.jpg" alt="Descrição da imagem" style="display: block; margin: 0 auto; width: 779px;">
+
+      <div style="padding: 10%; padding-top: 5%; padding-bottom: 5%;">
+        <div style="text-align: left;">
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">Olá <span style="font-weight: 700; font-size: 16px;">{{NOMECLIENTE}}</span>,</p>
           <br><br>
-          <p>É com grande alegria que lhe damos as boas-vindas à família Odontogroup! Estamos muito felizes por você ter escolhido o nosso plano odontológico e confiado em nós para cuidar do seu sorriso. </p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">
+            É com grande alegria que lhe damos as boas-vindas à família Odontogroup! Estamos muito felizes por você ter escolhido o nosso plano odontológico e confiado em nós para cuidar do seu sorriso.
+          </p>
           <br>
-          <p>Nosso plano é um produto feito em Brasília, pensado especialmente para os brasilienses. Com isso, você terá acesso à maior rede credenciada da cidade, garantindo que possa encontrar um profissional de qualidade pertinho de você. Além disso, oferecemos um serviço exclusivo de concierge para nossos beneficiários, facilitando o agendamento de consultas e o atendimento às suas necessidades.</p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">
+            Nosso plano é um produto feito em Brasília, pensado especialmente para os brasilienses. Com isso, você terá acesso à maior rede credenciada da cidade, garantindo que possa encontrar um profissional de qualidade pertinho de você. Além disso, oferecemos um serviço exclusivo de concierge para nossos beneficiários, facilitando o agendamento de consultas e o atendimento às suas necessidades.
+          </p>
           <br>
-          <p>O plano que você adquiriu foi: <span class="title_mini">{{NOMEPLANO}}</span></p>
-          <p>Método de pagamento: <span class="title_mini">{{METODOPAGAMENTO}}</span></p>
-          <p>O valor do plano adquirido: <span class="title_mini">{{VALORPLANO}}</span></p>
-          <p>Data de início de cobertura: <span class="title_mini">{{DATAVENCIMENTO}}</span></p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">O plano que você adquiriu foi: <span style="font-weight: 700; font-size: 16px;">{{NOMEPLANO}}</span></p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">Método de pagamento: <span style="font-weight: 700; font-size: 16px;">{{METODOPAGAMENTO}}</span></p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">O valor do plano adquirido: <span style="font-weight: 700; font-size: 16px;">{{VALORPLANO}}</span></p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">Data de início de cobertura: <span style="font-weight: 700; font-size: 16px;">{{DATAVENCIMENTO}}</span></p>
           <br><br>
-          <p><a href="https://www7.odontogroup.com.br/adminVendasCa/public/doc_impressaoResumo/1/{{LINKPAGAMENTO}}/down">Clique aqui</a> acesse e imprima sua proposta de adesão. Em anexo, segue o guia de leitura contratual com as orientações quanto ao plano contratado, ele é de leitura obrigatória.</p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">
+            <a href="https://www7.odontogroup.com.br/adminVendasCa/public/doc_impressaoResumo/1/{{LINKPAGAMENTO}}/down" style="color: #001359; text-decoration: underline;">Clique aqui</a> acesse e imprima sua proposta de adesão. Em anexo, segue o guia de leitura contratual com as orientações quanto ao plano contratado, ele é de leitura obrigatória.
+          </p>
           <br><br>
-          <div class="text_image_block">
-            <div>
-              <span class="title_mini">Acesso ao Aplicativo do Beneficiário:</span>
+
+          <!-- Conteúdo sobre o aplicativo -->
+          <p style="font-weight: 700; font-size: 16px; color: #001359;">Acesso ao Aplicativo do Beneficiário:</p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">
+            Para facilitar ainda mais sua experiência, disponibilizamos um aplicativo exclusivo. Siga o passo a passo abaixo para acessá-lo:
+          </p>
+          <br>
+          <p style="font-weight: 700; font-size: 16px; color: #001359;">Baixe o Aplicativo:</p>
+          <p style="color: #001359; font-size: 16px; line-height: 24px; font-weight: 400;">
+            Acesse a Google Play Store ou a Apple App Store e procure por “Odontogroup Associado”.
+          </p>
+          <div style="text-align: center;">
+            <a href="https://play.google.com/store/apps/details?id=com.odontogroup.associado">
+              <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/Google-Play.png" alt="Google Play" style="height: 45px; margin-right: 10px;">
+            </a>
+            <a href="https://apps.apple.com/br/app/odontogroup-associado/id1437832550">
+              <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/Apple.png" alt="Apple Store" style="height: 45px;">
+            </a>
+          </div>
+          <br>
+          <span style="font-weight: 700; font-size: 16px; color: #001359;">Crie sua Conta:</span><span style="font-size: 16px; color: #001359;"> Abra o aplicativo e clique em “Primeiro Acesso”. Insira seus dados pessoais conforme solicitado.</span>
               <br><br>
-              <span class="text_mini"> Para facilitar ainda mais sua experiência, disponibilizamos um aplicativo exclusivo. Siga o passo a passo abaixo para acessá-lo:</span>
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Ative sua Conta:</span><span style="font-size: 16px; color: #001359;"> Verifique seu e-mail para ativar sua conta. Clique no link de ativação.</span>
               <br><br>
-              <span class="title_mini">Baixe o Aplicativo:</span><span class="text_mini"> Acesse a Google Play Store ou a Apple App Store e procure por “Odontogroup Associado”.</span>
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Login:</span><span style="font-size: 16px; color: #001359;"> Após ativar sua conta, faça login com seu cpf e senha.</span>
               <br><br>
-              <div class="icons_align" style="text-align: center;">
-                <img src="cid:android" href="https://play.google.com/store/apps/details?id=com.odontogroup.associado" style="height: 45px; margin-bottom: 20px;">
-                <img src="cid:apple" href="https://apps.apple.com/br/app/odontogroup-associado/id1437832550" style="margin-left: 10px; height: 45px; margin-bottom: 20px;">
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Explore os Recursos:</span><span style="font-size: 16px; color: #001359;"> Navegue pelo aplicativo para acessar informações sobre sua rede credenciada e muito mais!</span>
+              <br><br>
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Carteirinha</span>
+              <br>
+              <span style="font-size: 16px; color: #001359;"> No aplicativo, você ainda terá acesso à sua carteirinha digital, com todos os dados do seu plano, para que você possa apresentá-la aos prestadores.</span>
+              <br><br>
+              <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+                <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/carteirinha_frente.jpg" style="height: 120px; margin-bottom: 20px;">
+                <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/carteirinha_verso.jpg" style="margin-left: 10px; height: 120px; margin-bottom: 20px;">
               </div>
-              <span class="title_mini">Crie sua Conta:</span><span class="text_mini"> Abra o aplicativo e clique em “Primeiro Acesso”. Insira seus dados pessoais conforme solicitado.</span>
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Rede Credenciada</span>
+              <br>
+              <span style="font-size: 16px; color: #001359;"> Temos uma ampla rede credenciada, com mais de 35 mil especialistas em todo o Brasil. Possuímos também uma das maiores redes de Brasília. Clique no link botão abaixo e confira a nossa rede credenciada: </span>
               <br><br>
-              <span class="title_mini">Ative sua Conta:</span><span class="text_mini"> Verifique seu e-mail para ativar sua conta. Clique no link de ativação.</span>
+              <div style="display: flex; align-items: center; justify-content: center; text-align: center;">
+                <a href="https://prod.odontogroup.com.br/rede-credenciada?utm_campaign=email_boas-vindas_-_gdf&utm_medium=email&utm_source=RD+Station" style="display: block; background-color: #282A62; color: #fff !important; text-align: center; padding: 10px; margin: 20px auto; text-decoration: none; border-radius: 4px;">CONFIRA NOSSA REDE CREDENCIADA</a>
+              </div>
+              <!-- <span style="font-weight: 700; font-size: 16px; color: #001359;">Ativação do Plano:</span><span style="font-size: 16px; color: #001359;"> Seu plano será ativado em até 48 horas após a confirmação da sua compra.</span>
+              <br><br> -->
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Telemedicina</span>
+              <br>
+              <span style="font-size: 16px; color: #001359;"> O seu plano conta com um exclusivo serviço de Telemedicina. Nele, você terá acesso à atendimento clínico médico, com tele consultas, prescrição de exames e atestados médicos. 24 horas por dia e 7 dias por semana. </span>
               <br><br>
-              <span class="title_mini">Login:</span><span class="text_mini"> Após ativar sua conta, faça login com seu cpf e senha.</span>
+              <span style="font-size: 16px; color: #001359;"> Para utilizar o seu benefício de Telemedicina, ligue para o número 0800 648 8100.</span>
               <br><br>
-              <span class="title_mini">Explore os Recursos:</span><span class="text_mini"> Navegue pelo aplicativo para acessar informações sobre sua rede credenciada e muito mais!</span>
+              <span style="font-weight: 700; font-size: 16px; color: #001359;">Dúvidas e Suporte:</span><span style="font-size: 16px; color: #001359;"> Nossa equipe está à disposição para ajudá-lo em qualquer dúvida ou necessidade. Não hesite em nos contatar através dos seguintes contatos:</span>
               <br><br>
-              <span class="title_mini">Informações Importantes:</span>
-              <br><br>
-              <span class="title_mini">Ativação do Plano:</span><span class="text_mini"> Seu plano será ativado em até 48 horas após a confirmação da sua compra.</span>
-              <br><br>
-              <span class="title_mini">Telemedicina:</span><span class="text_mini"> Para utilizar o seu benefício de Telemedicina, ligue para o número 0800 648 8100.</span>
-              <br><br>
-              <span class="title_mini">Dúvidas e Suporte:</span><span class="text_mini"> Nossa equipe está à disposição para ajudá-lo em qualquer dúvida ou necessidade. Não hesite em nos contatar através dos seguintes contatos:</span>
-              <br><br>
-              <div class="icons_align" style="text-align: center; color: #001359">
-                <img src="cid:telefone" href="tel:+556134210000" style="height: 30px;">
-                <img src="cid:whats" href="https://wa.me/556140072028?text=Olá,sou servidor do GDF e gostaria de auxilio com o meu plano odontológico." style="margin-left: 60px; height: 30px;">
+              <div style="display: flex; align-items: center; justify-content: center; text-align: center; color: #001359">
+                <div>
+                  <a href="tel:+556134210000">
+                    <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/telephone.svg" style="height: 30px;">
+                  </a>
+                  <div style="color: #000000; font-size: 15px;">(61) 3421-0000</div>
+                </div>
+                <div style="margin-left: 30px;">
+                  <a href="https://wa.me/556140072028?text=Olá,sou servidor do GDF e gostaria de auxilio com o meu plano odontológico.">
+                    <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/whatsapp.svg" style="height: 30px;">
+                  </a>
+                  <div style="color: #000000; font-size: 15px;">(61) 4007-2028</div>
+                </div>
               </div>
               <p style="font-size: 12px; text-align: center;">Atendimento de segunda à sexta-feira 8h às 18h (horário Brasília)</p>
             </div>
-          </div>
-          <br><br><br>
-          <p>Estamos ansiosos para cuidar do seu sorriso e proporcionar a você uma experiência odontológica de excelência.</p>
           <br>
-          <p>Agradecemos pela sua confiança e desejamos um excelente início nesta nova jornada!</p>
+          <p style="font-size: 16px; font-weight: 400; color: #001359;">Estamos ansiosos para cuidar do seu sorriso e proporcionar a você uma experiência odontológica de excelência.</p>
           <br>
-          <p>Atenciosamente,</p>
-          <br><br>
-          <span class="title_mini">Equipe Odontogroup Sistema de Saúde</span>
+          <p style="font-size: 16px; font-weight: 400; color: #001359;">Agradecemos pela sua confiança e desejamos um excelente início nesta nova jornada!</p>
+          <br>
+          <p style="font-size: 16px; font-weight: 700; color: #001359;">Equipe Odontogroup Sistema de Saúde</p>
         </div>
       </div>
-		
-      <div class="footer_box">
-        <table style="width: 100%; display: block;"></table>
-          <td style="text-align: left;">
-            <img src="cid:instagram" href=" https://www.instagram.com/odontogroupoficial" style="width: 26px; height: 26px; padding: 10px;">
-            <img src="cid:face" href=" https://www.facebook.com/odontogroupoficial" style="width: 26px; height: 26px; color: #FFF; padding: 10px;">
-            <img src="cid:link" href=" https://www.odontogroup.com.br" style="width: 26px; height: 26px; color: #FFF; padding: 10px;">
-            <img src="cid:whats" href="https://wa.me/556140072028?text=Olá,sou servidor do GDF e gostaria de auxilio com o meu plano odontológico." style="width: 26px; height: 26px; color: #FFF; padding: 10px;">
-            <img src="cid:linkedin" href="https://www.linkedin.com/company/odontogroupoficial" style="width: 26px; height: 26px; padding: 10px;">
-          </td>
-        </table>
-        <hr style="border: 1px solid #FFF; width: 100%;"/>
-        <table style="width: 100%; display: flex; justify-content: center;">
-            <td style="text-align: left;">
-              <img src="cid:odontoGroup" style="width: 250px; height: auto;">
-            </td>
-        </table>
-      </div>
+    <!-- Rodapé -->
+    <div style="width: 100%; background-color: #282A62; padding: 20px; font-size: 12px; line-height: 1.5; text-align: center; margin-bottom: 5%;">
+      <a href="https://www.instagram.com/odontogroupoficial" target="_blank" style="text-decoration: none; margin-right: 10px;">
+        <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/instagram-logo.png" alt="Instagram" style="width: 26px; height: 26px;">
+      </a>
+      <a href="https://www.facebook.com/odontogroupoficial" target="_blank" style="text-decoration: none; margin-right: 10px;">
+        <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/facebook.png" alt="Facebook" style="width: 26px; height: 26px;">
+      </a>
+      <a href="https://www.odontogroup.com.br" target="_blank" style="text-decoration: none; margin-right: 10px;">
+        <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/Internet.png" style="width: 26px; height: 26px;">
+      </a>
+      <a href="https://wa.me/556140072028?text=Olá,sou servidor do GDF e gostaria de auxilio com o meu plano odontológico." target="_blank" style="text-decoration: none; margin-right: 10px;">
+        <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/WhatsApp.png" style="width: 26px; height: 26px;">
+      </a>
+      <a href="https://www.linkedin.com/company/odontogroupoficial" target="_blank" style="text-decoration: none;">
+        <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/linkedin-logo.png" alt="LinkedIn" style="width: 26px; height: 26px; ">
+      </a>
+      <hr style="border: 1px solid #FFF; margin: 20px 0;">
+      <img src="https://www.odontogroup.com.br/vendas/images/emailGDF/odonto-group.png" alt="Odontogroup" style="width: 250px; height: auto;">
     </div>
   </div>
+
 </body>
 </html>

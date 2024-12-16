@@ -13,25 +13,20 @@ export default class OrgaoController {
     
     const params = request.all();
     const data = await this.orgaoService.getOrgaoWithMatricCodOrgao(params.matric, params.codOrgao);
-    console.log('retorno', data.$extras);
     
     return response.json(data.$extras);
   }
   
   async getOrgaobyId({ request, response }: HttpContextContract) {
     const params = request.all();
-    console.log('chegou:', params);
     const data = await this.orgaoService.getOrgaoWithCodOrgao(params.id);
-    console.log('retorno', data.$original);
     
     return response.json(data.$original);
   }
 
   async getOrgaobyFP({ request, response }: HttpContextContract) {
-    
     const params = request.all();
     const data = await this.orgaoService.getOrgaoWithFP(params.id);
-    console.log('retorno', data);
     
     return response.json(data);
   }

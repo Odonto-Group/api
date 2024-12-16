@@ -19,18 +19,30 @@ class LogService {
     return `${timestamp}-${tipoRequisicao}-${id}.json`;
   }
 
-  private getLogDirectory(tipoLog: string): string {
+  private getLogDirectory(tipoLog: string, local: string): string {
     let logDirectory = this.baseLogDirectory;
-
-    if (tipoLog === 'erro') {
-      logDirectory = path.join(this.baseLogDirectory, 'erros');
-    } else if (tipoLog === 'saida') {
-      logDirectory = path.join(this.baseLogDirectory, 'saidas');
-    } else if (tipoLog === 'entrada') {
-      logDirectory = path.join(this.baseLogDirectory, 'entradas');
-    } else if (tipoLog === 'api') {
-        logDirectory = path.join(this.baseLogDirectory, 'RetornosApi');
-      }
+    if (local === 'individual'){
+      if (tipoLog === 'erro') {
+        logDirectory = path.join(this.baseLogDirectory, 'individual', 'erros');
+      } else if (tipoLog === 'saida') {
+        logDirectory = path.join(this.baseLogDirectory, 'individual', 'saidas');
+      } else if (tipoLog === 'entrada') {
+        logDirectory = path.join(this.baseLogDirectory, 'individual', 'entradas');
+      } else if (tipoLog === 'api') {
+          logDirectory = path.join(this.baseLogDirectory, 'individual', 'RetornosApi');
+        }
+    } else if (local === 'empresarial') {
+      if (tipoLog === 'erro') {
+        logDirectory = path.join(this.baseLogDirectory, 'PME', 'erros');
+      } else if (tipoLog === 'saida') {
+        logDirectory = path.join(this.baseLogDirectory, 'PME', 'saidas');
+      } else if (tipoLog === 'entrada') {
+        logDirectory = path.join(this.baseLogDirectory, 'PME', 'entradas');
+      } else if (tipoLog === 'api') {
+          logDirectory = path.join(this.baseLogDirectory, 'PME', 'RetornosApi');
+        }
+    }
+    
 
     if (!fs.existsSync(logDirectory)) {
       fs.mkdirSync(logDirectory, { recursive: true });
@@ -40,7 +52,7 @@ class LogService {
   }
 
   public writeLog(id: string, tipoRequisicao: string, data: any): void {
-    const logDirectory = this.getLogDirectory(data.type);
+    const logDirectory = this.getLogDirectory(data.type, data.local);
     const fileName = this.getLogFileName(id, tipoRequisicao);
     const logPath = path.join(logDirectory, fileName);
 

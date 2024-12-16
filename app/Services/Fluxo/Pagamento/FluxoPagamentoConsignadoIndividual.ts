@@ -9,12 +9,10 @@ import RetornoGeracaoPagamentoIndividual from "App/interfaces/RetornoGeracaoPaga
 import { FormaPagamento } from "App/Enums/FormaPagamento";
 import { DateTime } from "luxon";
 import { PaymentStatus } from "App/Enums/PaymentStatus";
-import NaoFoiPossivelCriarPagamento from "App/Exceptions/NaoFoiPossivelEfetuarPagamento";
 import Env from '@ioc:Adonis/Core/Env'
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 import { GrupoPagamento } from "App/Enums/GrupoPagamento";
-import PagamentoConsignadoService from "App/Services/PagamentoConsignado";
 import S4EService from "App/Services/S4EService";
 import { format } from "date-fns";
 import AssociadoService from "App/Services/AssociadoService";
@@ -22,6 +20,7 @@ import TokenService from "App/Services/TokenService";
 import OrgaoService from "App/Services/OrgaoService";
 import EnderecoS4e from "App/interfaces/EnderecoS4e";
 import LogService from "App/Services/Log/Log";
+import ProdutoComercialService from "App/Services/ProdutoComercialService";
 
 @inject()
 export default class FluxoPagamentoConsignadoIndividual implements FluxoPagamentoStrategy {
@@ -31,12 +30,13 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
     constructor(
         private associadoService: AssociadoService,
         private S4EService: S4EService,
-        private pagamentoConsignadoService: PagamentoConsignadoService,
+        //private pagamentoConsignadoService: PagamentoConsignadoService,
         private tokenService: TokenService,
         private ufService: UfService,
         private mailSenderService: MailSenderService,
         private orgaoService: OrgaoService,
-        private logService: LogService
+        private logService: LogService,
+        private produtoService: ProdutoComercialService
     ){this.logService = new LogService();}
 
     async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, formaPagamento, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, idPlanoS4E:number, formaPagamento: FormaPagamento, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
@@ -76,6 +76,8 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade),
                 METODOPAGAMENTO: formaPagamento
             } as AdesaoEmailContent;
+            const dataAdicionada = dataPrimeiroVencimento.plus({months: 1});
+            const dataCompetencia = Number(dataAdicionada.toFormat('yyyyMM'))
             const vendedor = await this.tokenService.findTokenParceiroIndividual(params.token);
             let dataDependente = format(associado.dt_nasc, 'yyyy-MM-dd');
             let dataRespFinanc = format(responsavelFinanceiro.dt_NascRespFin, 'yyyy-MM-dd');
@@ -99,7 +101,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 OutraIdentidadeGenero: "",
                 cns: "",
                 idExterno: "",		      
-                MMYYYY1Pagamento: Number(dataPrimeiroVencimento.toFormat('yyyy/MM').replace('/', '')),		      
+                MMYYYY1Pagamento: dataCompetencia,		      
                 observacaoUsuario: "",
                 funcionarioCadastro: 0,
                 dataCadastroLoteContrato: ""
@@ -110,36 +112,61 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 };
                 dependentes.push(dependent);
                 const dependents = params.dependentes;
-                console.log('array dependentes: ', dependents);
-                
+                const produtosDependentes:number[] = [];
                 if (Array.isArray(dependents)) {
-                    dependents.forEach(item => {
-                        const nascimento = parseDate(item.dataNascimento);
-                        const dependent = {
-                            nome: item.nome,
-                            dataNascimento: format( nascimento, 'yyyy-MM-dd'),
-                            cpf: item.cpf,
-                            cns: item.cns ?? '',
-                            sexo: item.idSexo == 1 ? 0 : 1,
-                            tipo: item.idParentesco,
-                            plano: !params.dependenteSamePlan && idPlanoS4E == 124 ? 119 : idPlanoS4E,
-                            numeroProposta: Number(associado.nr_proposta),
-                            planoValor: !params.dependenteSamePlan && idPlanoS4E == 124 ? "22,90" : String(associado.nu_vl_mensalidade / params.qtdVidas).replace('.', ','),
-                            nomeMae: item.nomeMae,
-                            numeroCarteira: "",
-                            carenciaAtendimento: 0,
-                            rcaId: 0,
-                            cd_orientacao_sexual: 0,
-                            OutraOrientacaoSexual: "",
-                            cd_ident_genero: 0,
-                            OutraIdentidadeGenero: "",
-                            idExterno: "",	
-                            MMYYYY1Pagamento: Number(dataPrimeiroVencimento.toFormat('yyyy/MM').replace('/', '')),                            
-                            funcionarioCadastro: 0,
-                            dataCadastroLoteContrato: ""
-                        };
-                        dependentes.push(dependent);
-                    });
+                    for (const item of dependents) {
+                      let planoId = 0;
+                      let valor = "";
+                      if (item.plano) {
+                        if (idPlanoS4E == 124 && !produtosDependentes.includes(item.plano)){
+                            produtosDependentes.push(item.plano);
+                        }
+                        const plano = await this.produtoService.getById(item.plano);
+                        if (plano != null) {
+                          planoId = plano.id_ProdutoS4E_c;
+                        }
+                        valor = item.valor_plano;
+                      } else {
+                        if (idPlanoS4E == 124) {
+                            if (!produtosDependentes.includes(994)) {
+                                produtosDependentes.push(994);
+                            }
+                            planoId = 119;
+                            valor = "22,90";
+                        } else{
+                            planoId = idPlanoS4E;
+                            valor = String(associado.nu_vl_mensalidade / params.qtdVidas).replace('.', ',');
+                        }
+                      }
+                    if (idPlanoS4E == 124 && !produtosDependentes.includes(item.plano)){
+                        produtosDependentes.push(item.plano);
+                    }
+                    const nascimento = parseDate(item.dataNascimento);
+                    const dependent = {
+                        nome: item.nome,
+                        dataNascimento: format( nascimento, 'yyyy-MM-dd'),
+                        cpf: item.cpf,
+                        cns: item.cns ?? '',
+                        sexo: item.idSexo == 1 ? 0 : 1,
+                        tipo: item.idParentesco == 10 ? 3 : 4,
+                        plano: planoId,
+                        numeroProposta: Number(associado.nr_proposta),
+                        planoValor: valor,
+                        nomeMae: item.nomeMae,
+                        numeroCarteira: "",
+                        carenciaAtendimento: 0,
+                        rcaId: 0,
+                        cd_orientacao_sexual: 0,
+                        OutraOrientacaoSexual: "",
+                        cd_ident_genero: 0,
+                        OutraIdentidadeGenero: "",
+                        idExterno: "",	
+                        MMYYYY1Pagamento: dataCompetencia,                            
+                        funcionarioCadastro: 0,
+                        dataCadastroLoteContrato: ""
+                    };
+                    dependentes.push(dependent);
+                    };
                 } else {
                     console.error("dependents não é um array:", dependents);
                 }
@@ -147,10 +174,9 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
             const endereco: EnderecoS4e  = await this.S4EService.getEnderecoByCep(responsavelFinanceiro.nu_CEP);
             const Orgao = await this.orgaoService.getOrgaoWithCodOrgao(params.orgao);
             const TokenV1 = Env.get('S4E_TOKEN_V1');
-            console.log('chegou');
             const associadoBody = {
                 token: TokenV1,
-                dados:{             
+                dados:{
                     parcelaRetidaComissao: "0",
                     incluirMensalidades: "1",
                     parceiro: {
@@ -181,7 +207,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
 		              dataApresentacao: "",
                       diaVencimento: dataPrimeiroVencimento.toFormat('dd'),
 		              tipoPagamento: 529,
-                      origemVenda: 13,                      
+                      origemVenda: 13,
 		              departamento: Orgao.nu_CodDeptoEmpS4E_o,
                       observacaoAssociado: "",
                       codSistemaExterno: "",
@@ -199,6 +225,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                         uf: String(endereco.IdUf),
                         descricaoUf: endereco.Uf
                       },
+                      fl_AlteraSituacao: 0,
                       contatoResponsavelFinanceiro: [
                             {
                                 "tipo": 8,
@@ -216,11 +243,26 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
             }
             try{
                 const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
-                this.logService.writeLog(params.proposta, 'FluxoPagamento', { type: 'api', data: associadoPJ });
+                this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'api', data: associadoPJ });
                 if (associadoPJ){
-                    const bodyCrm = {
+                    if (associadoPJ.codigo == 3){
+                        throw new Error(associadoPJ.mensagem);
+                    }
+                    /* const bodyCrm = {
                         token: TokenV1,
                         motivoDetalhadoId: 611,
+                        descricao: `Nova Adesão Servidor GDF`,
+                        tipoUsuario: 3,
+                        usuarioId: 7021,
+                        tipoSolicitanteId: 3,
+                        solicitanteId: 7021,
+                        arquivo: "",
+                        extensao: "",
+                        mostraPortal: 0,
+                        situacaoChamado: 1
+                    } */
+                    //const criarCrm = await this.S4EService.includeCrm(bodyCrm);
+                    /* if(criarCrm) {
                         descricao: `Nova Adesão Servidor GDF 
                                         Dados:
                                         nome: ${associado.nm_associado},
@@ -233,29 +275,19 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                                         valorTotal: ${associado.nu_vl_mensalidade},
                                         dependentes: ${dependentes}; 
                                     `,
-                        tipoUsuario: 3,
-                        usuarioId: 7021,
-                        tipoSolicitanteId: 3,
-                        solicitanteId: 7021,
-                        arquivo: "",
-                        extensao: "",
-                        mostraPortal: 0,
-                        situacaoChamado: 1 
-                    }
-                    const criarCrm = await this.S4EService.includeCrm(bodyCrm);
-                    if(criarCrm) {
-                        
-                    }
+                    } */
                 }
-            }catch(error){
-                console.log('error message: ', error.message);
-                this.logService.writeLog(params.proposta, 'FluxoPagamento', { type: 'erro', data: error });
+            } catch(error) {
+                console.log('error message: ', error);
+                this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'erro', data: error });
+                throw new Error(error.message);
             }
-            
+
             const paymentStatus = PaymentStatus.EXPORTADO;
             await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
-            //await this.mailSenderService.sendEmailAdesaoConsignado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)            
-            
+            await this.mailSenderService.sendEmailAdesaoConsignado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, produtosDependentes, planoContent)            
+            //throw new Error('teste e-mail');
+
             retorno.formaPagamento = formaPagamento;
             retorno.paymentStatus = paymentStatus;
         return retorno
@@ -304,9 +336,9 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
     
         tipoPessoa.idAssociado = associado.id_associado;
-        tipoPessoa.numeroProsposta = associado.nr_proposta
-        tipoPessoa.primeiroNome = associado.nm_associado.split(' ')[0]
-        tipoPessoa.email = associado.ds_email    
+        tipoPessoa.numeroProsposta = associado.nr_proposta;
+        tipoPessoa.primeiroNome = associado.nm_associado.split(' ')[0];
+        tipoPessoa.email = associado.ds_email;
         tipoPessoa.bodyPagamento = body;
 
         return tipoPessoa

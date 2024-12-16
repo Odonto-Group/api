@@ -7,6 +7,10 @@ import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
 import FileService from './FileService';
 import { inject } from '@adonisjs/core/build/standalone';
 import AdesaoEmailContent from 'App/interfaces/AdesaoEmailContent.interface';
+import { GrupoPagamento } from 'App/Enums/GrupoPagamento';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import TbAssociado from 'App/Models/TbAssociado';
+import ErroInclusaoEmailContent from 'App/interfaces/ErroEmailContent.interface';
 
 @inject()
 export class MailSenderService {
@@ -187,102 +191,86 @@ export class MailSenderService {
   async sendEmailAdesaoConsignado(
     to: string,
     subject: string,
+    idContrato: number,
+    idContratoDependent: number[] | null,
     contentView: AdesaoEmailContent
   ) {
-    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `AdesaoTemplate.html`);
-    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `capa-gdf.jpg`));
-    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `linkedin-logo.png`));
-    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `ANS.png`));
-    const link = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `link.svg`));
-    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `odonto-group.png`));
-    const face = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `facebook.svg`));
-    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `instagram-logo.png`));
-    const whats = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `whatsapp.svg`));
-    const telefone = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `telephone.svg`));
-    const android = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `Google-Play.png`));
-    const apple = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'Consignado', `Apple.png`));
+    const htmlFilePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'email',
+      'adesao',
+      'Consignado',
+      `AdesaoTemplate.html`
+    );
 
+    // Anexar contrato principal
+    const file = await this.fileService.buscarContrato(idContrato);
+    if (!file) {
+      return ErroAoEnviarEmailException;
+    };
+    const regularAttachments = [
+      {
+        filename: 'contrato.pdf',
+        content: file,
+      },
+    ];
+  
+    if (idContratoDependent) {
+      for (const id of idContratoDependent) {
+        const dependentFile = await this.fileService.buscarContrato(id);
+        if (dependentFile) {
+          regularAttachments.push({
+            filename: `contratoDependente${id}.pdf`,
+            content: dependentFile,
+          });
+        }
+      }
+    }
+  
+    const attachments = [...regularAttachments];
+  
     const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
-
-    // Substituir os campos dinâmicos no HTML
     let finalHtmlContent = htmlContent;
-
     for (const key in contentView) {
       const value = contentView[key];
-      finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      finalHtmlContent = finalHtmlContent.replace(
+        new RegExp(`{{${key}}}`, 'g'),
+        value
+      );
     }
-
+  
     const mailOptions = {
       from: Env.get('MAIL_FROM'),
-      bcc: Env.get('MAIL_BCC'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
       to,
       subject,
       html: finalHtmlContent,
-      attachments: [
-        {
-          filename: 'vista-lateral-da-mulher-feliz-gengibre-beleza-vestido-1.png',
-          content: capa,
-          cid: 'capa' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'linkedin-logo.png',
-          content: linkedin,
-          cid: 'linkedin' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'instagram-logo.png',
-          content: instagram,
-          cid: 'instagram' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'odonto-group.png',
-          content: odontoGroup,
-          cid: 'odontoGroup' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'telephone.svg',
-          content: telefone,
-          cid: 'telefone' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'link.svg',
-          content: link,
-          cid: 'link' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'whatsapp.svg',
-          content: whats,
-          cid: 'whats' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'facebook.svg',
-          content: face,
-          cid: 'face' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'Google-Play.png',
-          content: android,
-          cid: 'android' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'Apple.png',
-          content: apple,
-          cid: 'apple' // Identificador para referenciar a imagem no HTML
-        },
-        {
-          filename: 'ANS.png',
-          content: ans,
-          cid: 'ans' // Identificador para referenciar a imagem no HTML
-        }
-      ]
+      attachments,
     };
-
+  
     try {
       await mailerConfig.sendMail(mailOptions);
     } catch (error) {
       throw new ErroAoEnviarEmailException(to);
     }
-  };
+  }
+  
+  async findFilesById(directory: string, id: string): Promise<string[]> {
+    try {
+        // Lê o conteúdo do diretório
+        const files = await fs.promises.readdir(directory);
+
+        // Filtra os arquivos que contêm o ID no nome
+        const matchingFiles = files.filter(file => file.includes(id));
+
+        return matchingFiles;
+    } catch (error) {
+        console.error('Erro ao ler o diretório:', error);
+        throw error;
+    }
+  }
 
   async sendEmailAdesaoSemLinkPagamento(
     to: string,
@@ -348,17 +336,115 @@ export class MailSenderService {
     }
   };
 
+  async sendMailError(associado: TbAssociado, grupo: number, id: string){
+    
+    const GrupoPagamentoToFormaPagamentoMap: Record<GrupoPagamento, FormaPagamento> = {
+      [GrupoPagamento.BOLETO]: FormaPagamento.BOLETO,
+      [GrupoPagamento.CARTAO_CREDITO]: FormaPagamento.CARTAO_CREDITO,
+      [GrupoPagamento.DEBITO_EM_CONTA]: FormaPagamento.DEBITO_EM_CONTA,
+      [GrupoPagamento.CONSIGNADO]: FormaPagamento.CONSIGNADO,
+    };
+    if (!Object.values(GrupoPagamento).includes(grupo)) {
+      throw new Error(`GrupoPagamento inválido: ${grupo}`);
+    }
+
+    const grupoPagamentoNome = grupo as GrupoPagamento;
+    const formaPagamentoNome = GrupoPagamentoToFormaPagamentoMap[grupoPagamentoNome];
+    const telefone = '(' + associado.nu_dddCel + ') ' + associado.$extras.nu_Celular;
+  
+    const emailConfig = {
+      NOMECLIENTE: associado.nm_associado,
+      CPF: associado.nu_cpf,
+      EMAIL: associado.ds_email,
+      TELEFONE: telefone,
+      TIPO_PAGAMENTO: formaPagamentoNome
+    } as ErroInclusaoEmailContent;
+    await this.sendEmailErroInclusao('erick.calza@odontogroup.com.br', 'erro na inclusão do associado', emailConfig, id);
+  }
+
+  async sendEmailErroInclusao(
+    to: string,
+    subject: string,
+    contentView: ErroInclusaoEmailContent,
+    id: string,
+  ) {
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ErroInclusao.html`);
+    const pastaLog = path.join(__dirname, '..', '..', 'logs', 'individual');
+
+    const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
+
+    // Substituir os campos dinâmicos no HTML
+    let finalHtmlContent = htmlContent;
+
+    const attachments: any = [];
+    const logEntrada = await this.findFilesById(pastaLog + '/entradas', id);
+    const logApi = await this.findFilesById(pastaLog + '/RetornosApi', id);
+    const logSaida = await this.findFilesById(pastaLog + '/saidas', id);
+    const logErros = await this.findFilesById(pastaLog + '/erros', id);
+    console.log('Retornos Logs: ', logEntrada[0], logApi[0], logSaida[0], logErros[0]);
+    if (logEntrada[0]) {
+      const entrada = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'entradas', logEntrada[0]));
+      const arquivo = {
+        filename: id + '_Entrada.json', 
+        content: entrada
+      }
+      attachments.push(arquivo);
+    }
+    if (logApi[0]) {
+      const RetornoApi = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'RetornosApi', logApi[0]));
+      const arquivo = {
+        filename: id + '_RetornoApi.json', 
+        content: RetornoApi
+      }
+      attachments.push(arquivo);
+    }
+    if (logSaida[0]) {
+      const saida = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'saidas', logSaida[0]));
+      const arquivo = {
+        filename: id + '_Saida.json', 
+        content: saida
+      }
+      attachments.push(arquivo);
+    }
+    if (logErros[0]) {
+      const erro = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'erros', logErros[0]));
+      const arquivo = {
+        filename: id + '_Erro.json', 
+        content: erro
+      }
+      attachments.push(arquivo);
+    }
+    for (const key in contentView) {
+      const value = contentView[key];
+      finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+
+    const mailOptions = {
+      from: Env.get('MAIL_FROM'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
+      to,
+      subject,
+      html: finalHtmlContent,
+      attachments: attachments
+    };
+
+    try {
+      await mailerConfig.sendMail(mailOptions);
+    } catch (error) {
+      throw new ErroAoEnviarEmailException(to);
+    }
+  }; 
   async sendEmailErro(
     to: string,
     subject: string,
     contentView: ErroEmailContent,
   ) {
-    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `ErroPagamentoSuporte.html`);
-    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `capa-mulher.png`));
-    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `linkedin-logo.png`));
-    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `ANS.png`));
-    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `odonto-group.png`));
-    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `instagram-logo.png`));
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ErroInclusao.html`);
+    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `capa-mulher.png`));
+    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `linkedin-logo.png`));
+    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ANS.png`));
+    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `odonto-group.png`));
+    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `instagram-logo.png`));
 
     const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
 
@@ -372,7 +458,7 @@ export class MailSenderService {
 
     const mailOptions = {
       from: Env.get('MAIL_FROM'),
-      bcc: Env.get('MAIL_BCC'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
       to,
       subject,
       html: finalHtmlContent,

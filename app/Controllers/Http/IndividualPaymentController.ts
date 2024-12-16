@@ -34,6 +34,8 @@ import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidato
 import Env from '@ioc:Adonis/Core/Env'
 import Drive from '@ioc:Adonis/Core/Drive'
 import LogService from 'App/Services/Log/Log';
+import { MailSenderService } from 'App/Services/MailSenderService';
+import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
 
 @inject()
 export default class IndividualPaymentController {
@@ -49,32 +51,36 @@ export default class IndividualPaymentController {
       , private fluxoPagamentoDebito: FluxoPagamentoDebitoIndividual
       , private fluxopagamentoConsignado: FluxoPagamentoConsignadoIndividual
       , private logService: LogService
+      , private mailService: MailSenderService
       , private fileService: FileService) {
         this.logService = new LogService();
       }
 
-  async index({ request, response }: HttpContextContract) {
-    let retorno = {}
+  async index({ request, response }: HttpContextContract) {   
     const entrada = request.all();
     const tipoRequisicao = 'Pagamento';
-    const Id = entrada.proposta || 0;
+    const Id = entrada.proposta || entrada.cpf;
 
-    this.logService.writeLog(Id, tipoRequisicao, { type: 'entrada', data: entrada });
+    this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'entrada', data: entrada });
 
     await Database.transaction(async (transaction) => {
       try {
-        retorno = await this.fluxoPagamentoPlano(request, transaction);
-        this.logService.writeLog(Id == 0 ? retorno.numeroProposta : Id , tipoRequisicao, { type: 'saida', data: retorno });
+        const retorno = await this.fluxoPagamentoPlano(request, transaction);
+        this.logService.writeLog(Id , tipoRequisicao, { local:'individual', type: 'saida', data: retorno });
         transaction.commit();
 
         return retorno;
       } catch (error) {
-        this.logService.writeLog(Id, tipoRequisicao, { type: 'erro', data: error });
-        transaction.rollback();
+        this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error });
+        const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
+        await this.associadoService.updateAssociadoIncompleto(associado, transaction);
+        transaction.commit();
+        
+        await this.mailService.sendMailError(associado, entrada.formaPagamento.gpPagto, Id);
+        
         throw error;
       }
     })
-    return retorno;
   }
 
   private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
@@ -104,13 +110,17 @@ export default class IndividualPaymentController {
     const produtoComercial = parceiro.produtoComercial
     const produtosGDF = [993,998,999,1000];
     const associado = await this.associadoService.findAssociadoByCpf(params.cpf);
-    const GDF = produtosGDF.includes(produtoComercial.id_prodcomerc);
+    let GDF = false;
+    if(!params.verifica){
+      GDF = produtosGDF.includes(produtoComercial.id_prodcomerc);
+    } 
+    
 
     if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();
     }
 
-    const formaPagamento = await this.formasPagamentoService.findFormaPagamentoIndividual(produtoComercial.id_prodcomerc, params.idBanco, params.formaPagamento)
+    const formaPagamento = await this.formasPagamentoService.findFormaPagamentoIndividual(produtoComercial.id_prodcomerc, params.idBanco ? Number(params.idBanco) : 1, params.formaPagamento)
     
     if (!formaPagamento) {
       throw new FormaPagamentoNaoEncontrada();
