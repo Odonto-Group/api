@@ -36,13 +36,17 @@ export default class S4EService {
     try {
       const response = await axios.post(`${this.s4eIncludePj}vendedor/NovoUsuarioPJ?token=${this.s4eTokenV1}`, body)
       if (response.status === 200) {
-        return response.data
+        if(response.data.codigo == 1){
+          return response.data
+        } else {
+          throw new Error('Erro na inclusão do associadoPJ, mensagem:' + response.data.menssagem);
+        }
       } else {
-        return false
+        throw new Error('Erro na inclusão do associadoPJ' + response.status);
       }
     } catch (error) {
       console.log('error message includeAssociadoPJ: ', error.message);
-      throw new ErroInclusaoAssociadoS4EException()
+      throw new Error('Erro na inclusão do associadoPJ, mensagem:' + error.message);
     }
   }
 
@@ -73,7 +77,6 @@ export default class S4EService {
 async includeEmpresa(body: any) {
   try {
     const response = await axios.post(`${this.s4eIncludePj}empresa/NovaEmpresa`, body);
-    console.log('retorno Api:', response);
     if (response.data.codigo === 1) {
       return response.data;
     } else {
@@ -111,6 +114,23 @@ async includeEmpresa(body: any) {
     } catch (error) {
       console.log('error message includeAssociadoPJ: ', error.message);
       throw new ErroInclusaoAssociadoS4EException()
+    }
+  }
+  async includeDependents(body: any) {
+    try {
+      const response = await axios.post(`${this.s4eIncludePj}vendedor/NovoDependente`, body)
+      if (response.status === 200) {
+        if(response.data.codigo == 1){
+          return response.data
+        } else {
+          throw new Error('Erro na inclusão dos Dependentes, mensagem:' + response.data.mensagem);
+        }
+      } else {
+        throw new Error('Erro na inclusão dos Dependentes' + response.status);
+      }
+    } catch (error) {
+      console.log('error message includeAssociadoPJ: ', error.message);
+      throw new Error('Erro na inclusão dos Dependentes, mensagem:' + error.message);
     }
   }
 }

@@ -44,6 +44,7 @@ Route.group(() => {
   Route.get('/individual/getPlanValue/:state/:token?', 'IndividualPlanController.index')
   Route.get('/individual/getPlanDetails/:token', 'IndividualPlanController.getPlanDetails')
   Route.get('/servidor/getPlanDetails/:token', 'ServerPlanController.getPlanDetails')
+  Route.get('/dependente/getPlansSeller', 'ServerPlanController.getPlanGdfInfo')
   Route.get('/company/getPlanValue/:state/:token?', 'CompanyPlanController.index')
   Route.get('/getPlansSeller', 'IndividualPlanController.getPlansBySeller')
   Route.get('/company/getPlanDetails/:token', 'CompanyPlanController.getPlanDetails')
@@ -61,6 +62,10 @@ Route.group(() => {
 }).prefix('/payment')
 
 Route.group(() => {
+  Route.post('/servidor/dependent', 'DependentController.index')
+}).prefix('/include')
+
+Route.group(() => {
   Route.post('/boleto', 'WebhookController.index')
   Route.post('/cartao', 'WebhookController.creditCardPayment')
   Route.post('/pix', 'WebhookController.pixPayment')
@@ -75,5 +80,8 @@ Route.group(() => {
 }).prefix('/ouvidoria');
 Route.group(() => {
   Route.get('/mailGdf', 'SendMailController.sendMailGdfTest');
+  Route.get('/mailUser', 'SendMailController.sendMailUser');
+  Route.get('/mailAllUsers', 'SendMailController.sendMailAllUsers');
   Route.get('/ErrorMail', 'SendMailController.ErrorMail');
+  Route.post('/createCarencia', 'CarenciaController.testeCarencia');
 }).prefix('/test');

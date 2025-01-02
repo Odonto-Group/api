@@ -139,12 +139,13 @@ export default class CompanyPaymentController {
 
     await this.saveFuncionario(params, empresa, produtoComercial, transaction);
 
-    let retunPayment = await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, planoId: produtoComercial.id_prodcomerc, formaPagamento: FormaPagamento.BOLETO_EMPRESA, params})
+    let retunPayment = await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, produtoComercial, formaPagamento: FormaPagamento.BOLETO_EMPRESA, params})
 
     return this.criarRetornoPagamento(retunPayment, empresa, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc,  tokenParceiro.vendedor.tx_nome, dataPrimeiroVencimento);
   }
 
   private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoEmpresa, empresa: TbEmpresa, quantidadeVidas: number, valorContrato: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
+    console.log('chegou aqui');
     returnPayment.idEmpresa = empresa.id_cdempresa
     returnPayment.dataCadastro = empresa.DT_CADASTRO
     returnPayment.email = empresa.ds_email
@@ -159,7 +160,7 @@ export default class CompanyPaymentController {
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
     returnPayment.ddd = empresa.nu_dddcel
     returnPayment.pagamentoStatus = empresa.cd_status
-
+    console.log('enviou: ', returnPayment);
     return returnPayment;
   }
 

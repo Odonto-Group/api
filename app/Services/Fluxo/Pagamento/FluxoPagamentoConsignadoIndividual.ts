@@ -248,34 +248,55 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                     if (associadoPJ.codigo == 3){
                         throw new Error(associadoPJ.mensagem);
                     }
-                    /* const bodyCrm = {
+                    const bodyCrm = {
                         token: TokenV1,
-                        motivoDetalhadoId: 611,
+                        motivoDetalhadoId: 603, //611,
                         descricao: `Nova Adesão Servidor GDF`,
                         tipoUsuario: 3,
-                        usuarioId: 7021,
+                        usuarioId: 71708, //7021,
                         tipoSolicitanteId: 3,
-                        solicitanteId: 7021,
+                        solicitanteId: 71708, //7021,
                         arquivo: "",
                         extensao: "",
-                        mostraPortal: 0,
+                        mostraPortal: 1,
                         situacaoChamado: 1
-                    } */
-                    //const criarCrm = await this.S4EService.includeCrm(bodyCrm);
-                    /* if(criarCrm) {
-                        descricao: `Nova Adesão Servidor GDF 
-                                        Dados:
-                                        nome: ${associado.nm_associado},
-                                        Cpf: ${associado.nu_cpf},
-                                        Sexo: ${associado.id_sexo_a == 1 ? "Masculino" : "Feminino"},
-                                        Matricula: ${associado.nu_MatriculaFuncional},
-                                        orgao: ${Orgao.tx_NmOrgao},
-                                        situação: ${associado.cd_situacao},
-                                        planoId: ${params.idPlanoS4E},
-                                        valorTotal: ${associado.nu_vl_mensalidade},
-                                        dependentes: ${dependentes}; 
-                                    `,
-                    } */
+                    }
+                    const newCrm = await this.S4EService.includeCrm(bodyCrm);
+                    console.log('Crm criado: ', newCrm);
+                    if (newCrm.codigo == 1) {
+                        const bodyOcorrencia = {
+                            token: TokenV1,
+                            ocorrencia:{
+                                protocolo: newCrm?.dados?.protocolo,
+                                usuario: 71708, //7021,
+                                tipoUsuario: 3,
+                                descricao: `Nova Adesão Servidor GDF 
+                                                Dados:
+                                                  nome: ${associado.nm_associado},
+                                                  Cpf: ${associado.nu_cpf},
+                                                  Sexo: ${associado.id_sexo_a == 1 ? "Masculino" : "Feminino"},
+                                                  Matricula: ${associado.nu_MatriculaFuncional},
+                                                  orgao: ${Orgao.tx_NmOrgao},
+                                                  situação: ${associado.cd_situacao},
+                                                  planoId: ${params.idPlanoS4E},
+                                                  valorTotal: ${associado.nu_vl_mensalidade},
+                                                  dependentes: ${dependentes}; 
+                                            `,
+                                status: 1,
+                                arquivo: ""
+                            }
+                            
+                        }
+                        const newOcorrencia = await this.S4EService.includeOcorrencia(bodyOcorrencia);
+                        console.log('nova ocorrencia retorno: ', newOcorrencia);
+                        if (newOcorrencia.codigo == 3){
+                            const mensagem = `erro ao criar novo Ocorrencia no Crm: ${newCrm?.dados?.protocolo} com os dados do Associado, Erro: ${newOcorrencia.mensagem}`;
+                            throw new Error(mensagem);
+                        }
+                        
+                    } else {
+                        throw new Error('erro ao criar novo Crm com os dados do Associado, Erro: ' + newCrm.mensagem);
+                    }
                 }
             } catch(error) {
                 console.log('error message: ', error);

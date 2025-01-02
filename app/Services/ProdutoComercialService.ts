@@ -6,4 +6,12 @@ export default class ProdutoComercialService {
 
     return produtoComercial;
   }
+  async getByS4eId(produtoId: string): Promise<TbProdutoComercial | null> {
+    const produtoComercial = await TbProdutoComercial.query()
+        .where('id_ProdutoS4E_c', produtoId)
+        .orderBy('id_prodcomerc', 'desc')
+        .first();
+
+    return produtoComercial;
+}
 }

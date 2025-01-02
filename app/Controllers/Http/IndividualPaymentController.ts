@@ -111,11 +111,11 @@ export default class IndividualPaymentController {
     const produtosGDF = [993,998,999,1000];
     const associado = await this.associadoService.findAssociadoByCpf(params.cpf);
     let GDF = false;
-    if(!params.verifica){
-      GDF = produtosGDF.includes(produtoComercial.id_prodcomerc);
-    } 
-    
-
+    let testValue = false;
+    if(produtosGDF.includes(produtoComercial.id_prodcomerc)){
+      testValue = true;
+      GDF = params.verifica ? params.verifica : false;
+    }
     if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();
     }
@@ -136,7 +136,7 @@ export default class IndividualPaymentController {
 
     let quantidadeVidas = this.calculaNumeroVidas(1, params.dependentes == undefined ? 0 : params.dependentes.length);
     
-    const valorContrato = GDF && params.valor_Mensalidade ? params.valor_Mensalidade : valorMensalidade * quantidadeVidas;
+    const valorContrato = testValue && params.valor_Mensalidade ? params.valor_Mensalidade : valorMensalidade * quantidadeVidas;
 
     await this.associadoService.buildAssociado(associado, params, formaPagamento, valorContrato, dataExpiracao, tokenParceiro.vendedor.id_vendedor, GDF, transaction);
     

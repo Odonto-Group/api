@@ -21,6 +21,9 @@ import TokenService from "App/Services/TokenService";
 import ProdutoComercialService from "App/Services/ProdutoComercialService";
 import EnderecoS4e from "App/interfaces/EnderecoS4e";
 import ApiV3Service from "App/Services/ApiV3";
+import { format, parse } from "date-fns";
+import { PaymentStatus } from "App/Enums/PaymentStatus";
+
 
 @inject()
 export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrategy {
@@ -42,7 +45,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         private orgaoService: OrgaoService
     ){}
 
-    async iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano, planoId, formaPagamento, params}: {empresa: TbEmpresa, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, planoId: number, formaPagamento: FormaPagamento, params: any}): Promise<RetornoGeracaoPagamentoEmpresa> {
+    async iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano, produtoComercial, formaPagamento, params}: {empresa: TbEmpresa, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, produtoComercial: any, formaPagamento: FormaPagamento, params: any}): Promise<RetornoGeracaoPagamentoEmpresa> {
         let tipoPessoa = {} as TipoPessoaBoletoEmpresa
 
         tipoPessoa = await this.criaBodyPessoaJuridica(empresa, dataPrimeiroVencimento, empresa.nu_vl_mensalidade);
@@ -81,10 +84,10 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
             const endereco: EnderecoS4e  = await this.S4eService.getEnderecoByCep(empresa.nu_CEP);
             const TokenV1 = Env.get('S4E_TOKEN_V1');
             const centroCusto = await this.getCentroCusto(endereco.IdUf);
-            console.log('chegou aqui: ', centroCusto);
-            const produto = await this.getPlano(planoId);
+            //console.log('chegou aqui: ', produtoComercial);
+            console.log('formas de pagamento: ', produtoComercial.formasPagamentoEmpresa[0].vl_valor);
+            const mensalidade = Number(produtoComercial.formasPagamentoEmpresa[0].vl_valor);
             const mesAno = await this.formatarMesAno(empresa.DT_CADASTRO);
-            console.log('mesAno: ', mesAno);
             const celular = empresa.nu_dddcel + empresa.nu_celular;
             const telefone = empresa.nu_dddfixo1 + empresa.nu_telfixo1;
             const bodyEmpresa = {
@@ -95,7 +98,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                     tipoEmpresa: 2,
                     inclusaoPortal: 2,
                     responsavelLegal: empresa.nm_responsavel,
-                    centroCusto: centroCusto, //fazer logica para dependender do estado da empresa
+                    centroCusto: centroCusto,
                     acessoAoPortal: "1",
                     dataContrato: empresa.DT_CADASTRO,
                     matricula: 0,
@@ -150,13 +153,13 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                     email: empresa.ds_email,
                     precoPlano: [
                         {
-                            plano: produto.id_ProdutoS4E_c,
+                            plano: produtoComercial.id_ProdutoS4E_c,
                             numeroContrato: "",
                             dataAssinaturaContrato: empresa.DT_CADASTRO,
-                            valorTitular: empresa.nu_vl_mensalidade,
-                            valorDependente: empresa.nu_vl_mensalidade,
-                            valorAgregado: empresa.nu_vl_mensalidade,
-                            valorFixo: empresa.nu_vl_mensalidade,
+                            valorTitular: mensalidade,
+                            valorDependente: mensalidade,
+                            valorAgregado: mensalidade,
+                            valorFixo: mensalidade,
                             exigeAdesao: 0,
                             alteraPrecoPlano: 0
                         }
@@ -164,20 +167,16 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                 }
             }
             try {
-                console.log('dados a enviar: ', bodyEmpresa);
-                console.log('plano: ', bodyEmpresa.empresa.precoPlano[0]);
                 const empresaS4e = await this.S4eService.includeEmpresa(bodyEmpresa);
-                console.log('retorno do s4e: ', empresaS4e);
                 if (empresaS4e) {
-                    await this.ApiV3Service.createCarenciaPME(empresaS4e.dados, empresa.DT_CADASTRO)
+                    await this.ApiV3Service.createCarenciaPME(empresaS4e.dados, empresa.DT_CADASTRO);
                     for (const funcionario of params.funcionarios) {
-                        const associadoBody = await this.criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, TokenV1);
-                        //console.log('dados do associado: ', associadoBody);
-                        const associadoPJ = await this.S4eService.includeAssociadoPJ(associadoBody);
-                        console.log('Associado PJ:', associadoPJ);
+                        const associadoBody = await this.criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, empresaS4e.dados, produtoComercial.id_ProdutoS4E_c, mensalidade ,TokenV1);
+                        await this.S4eService.includeAssociadoPJ(associadoBody);
                     }
                 }
-                
+                const paymentStatus = PaymentStatus.EXPORTADO;
+                await this.empresaService.ativarPlanoEmpresa(empresa, transaction, paymentStatus);
                 const pix = {
                     copiaCola: pagamento.pix.copiaCola,
                     qrCode: pagamento.pix.base64
@@ -187,35 +186,34 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                 retorno.linkPagamento = linkPagamento;
                 retorno.formaPagamento = formaPagamento
 
+
+
             } catch(error) {
                 throw Error(error.message)
             }   
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }
-        return retorno
+        return retorno;
     }
 
-    async processDependentes(params, associado, dataPrimeiroVencimento) {
-        const dependents = params.dependentes;
+    async processDependentes(associado, dataPrimeiroVencimento, planoId, valor) {
+        const dependents = associado.dependentes;
         const deps: any[] = [];
-    
-        // Adicionando o próprio funcionário como dependente (tipo 1)
+        const nascimento = await this.parseDate(associado.dataNascimento);
+        console.log('nascimento dependente: ', nascimento);
         const dependent = {
             tipo: 1,
-            nome: associado.nm_associado,
-            dataNascimento: associado.dataNascimento,
-            cpf: associado.nu_cpf,
-            sexo: associado.id_sexo_a === 1 ? 0 : 1, // 0 - Feminino, 1 - Masculino
-            plano: associado.idPlanoS4E,
-            planoValor: associado.idPlanoS4E === 124 
-                ? "30" 
-                : String(associado.nu_vl_mensalidade / params.qtdVidas).replace('.', ','),
-            nomeMae: associado.nm_mae,
+            nome: associado.nome,
+            dataNascimento: nascimento,
+            cpf: associado.cpf,
+            sexo: associado.idSexo === 1 ? 0 : 1, // 0 - Feminino, 1 - Masculino
+            plano: planoId,
+            planoValor: valor,
+            nomeMae: associado.nomeMae,
             numeroCarteira: "",
             carenciaAtendimento: 0,
             rcaId: 0,
-            numeroProposta: Number(associado.nr_proposta),
             cd_orientacao_sexual: 0,
             OutraOrientacaoSexual: "",
             cd_ident_genero: 0,
@@ -232,13 +230,9 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
     
         // Adicionando dependentes adicionais
         if (Array.isArray(dependents)) {
-            for (const item of dependents) {
-                const planoId = await this.getPlanoId(item.plano);
-                const valor = item.plano 
-                    ? item.valor_plano 
-                    : (planoId === 124 ? "22,90" : String(associado.nu_vl_mensalidade / params.qtdVidas).replace('.', ','));
-    
-                const nascimento = this.parseDate(item.dataNascimento);
+            for (const item of dependents) {    
+                const nascimento = await this.parseDate(item.dataNascimento);
+                console.log('nascimento dependente array: ', nascimento);
     
                 const newDependent = {
                     nome: item.nome,
@@ -384,16 +378,23 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         return idcentroCusto;
     }
 
-    parseDate(dateString) {
-        const [day, month, year] = dateString.split('/');
-        return new Date(`${year}-${month}-${day}T00:00:00`);
+    async parseDate(dateString: string){
+        const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+        console.log('data: ', dateString, parsedDate);
+        const formattedDate = format(parsedDate, "yyyy-MM-dd");
+        console.log('data final: ', formattedDate);
+        return formattedDate;
     }
     
-    async criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, TokenV1) {
-        const dependentes = await this.processDependentes(params, funcionario, dataPrimeiroVencimento);
-        const endereco = await this.S4eService.getEnderecoByCep(params.CEP);
-        const orgao = await this.orgaoService.getOrgaoWithCodOrgao(params.orgao);
+    async criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, codEmpresa, planoId, valor, TokenV1) {        
+        const CEP = funcionario.cep.replace('.', '').replace('-','');
+        const dependentes = await this.processDependentes(funcionario, dataPrimeiroVencimento, planoId, valor);
+        const endereco = await this.S4eService.getEnderecoByCep(CEP);
         const vendedor = await this.tokenService.findTokenParceiroIndividual(params.token);
+        const hoje = new Date();
+        const formattedDate = format(hoje, "yyyy-MM-dd");
+        const nascimento = await this.parseDate(funcionario.dataNascimento);
+        console.log('nascimento responsavel: ', nascimento);
     
         return {
             token: TokenV1,
@@ -407,32 +408,47 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                     maxMensalidadeId: "1",
                 },
                 responsavelFinanceiro: {
-                    codigoContrato: funcionario.cd_CodContratoS4E,
+                    codigoContrato: codEmpresa,
                     nome: funcionario.nome,
-                    dataNascimento: this.parseDate(funcionario.dataNascimento),
+                    dataNascimento: nascimento,
                     cpf: funcionario.cpf,
                     sexo: funcionario.id_sexo_a === 1 ? 0 : 1, // 0 - Feminino, 1 - Masculino
-                    identidadeNumero: params.rg,
+                    identidadeNumero: funcionario.rg,
                     identidadeOrgaoExpeditor: "SSP",
+                    enderecoBoleto: "",
+                    cd_orientacao_sexual: 0,
+                    OutraOrientacaoSexual: "",
+                    cd_ident_genero: 0,
+                    OutraIdentidadeGenero: "",
+                    agencia: 0,
+                    agencia_dv: 0,
+                    conta: 0,
+                    conta_dv: 0,
+                    contaOperacao: 0,
+                    matricula: funcionario.matriculaFuncional,
+                    dataApresentacao: "",
+                    diaVencimento: dataPrimeiroVencimento.toFormat('dd'),
+                    tipoPagamento: 529,
+                    origemVenda: 13,
+                    observacaoAssociado: "",
+                    codSistemaExterno: "",
+                    dataAssinaturaContrato: formattedDate,
+                    numeroProposta: funcionario.nr_proposta,
+                    senhaAssociado: "",
                     endereco: {
-                        cep: funcionario.CEP,
+                        cep: CEP,
                         tipoLogradouro: String(endereco.IdTipoLogradouro),
-                        logradouro: funcionario.tx_EndLograd,
-                        numero: funcionario.tx_EndNumero,
-                        complemento: funcionario.tx_EndCompl,
+                        logradouro: endereco.Logradouro,
+                        numero: funcionario.numero,
+                        complemento: funcionario.complemento,
                         bairro: String(endereco.IdBairro),
                         municipio: String(endereco.IdMunicipio),
                         uf: String(endereco.IdUf),
                         descricaoUf: endereco.Uf,
                     },
-                    diaVencimento: dataPrimeiroVencimento.toFormat('dd'),
-                    tipoPagamento: 529,
-                    origemVenda: 13,
-                    departamento: orgao.nu_CodDeptoEmpS4E_o,
-                    numeroProposta: funcionario.nr_proposta,
                     contatoResponsavelFinanceiro: [
-                        { tipo: 8, dado: params.responsavelFinanceiro.telefone },
-                        { tipo: 50, dado: params.responsavelFinanceiro.email },
+                        { tipo: 8, dado: funcionario.dddCelular + funcionario.celular },
+                        { tipo: 50, dado: funcionario.email },
                     ],
                 },
                 dependente: dependentes,

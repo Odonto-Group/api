@@ -11,6 +11,10 @@ import { GrupoPagamento } from 'App/Enums/GrupoPagamento';
 import { FormaPagamento } from 'App/Enums/FormaPagamento';
 import TbAssociado from 'App/Models/TbAssociado';
 import ErroInclusaoEmailContent from 'App/interfaces/ErroEmailContent.interface';
+import ApiV3Service from './ApiV3';
+import ProdutoComercialService from './ProdutoComercialService';
+import formatDateToBrazil from 'App/utils/formatDate';
+import formatNumberBrValue from 'App/utils/FormatNumber';
 
 @inject()
 export class MailSenderService {
@@ -22,6 +26,8 @@ export class MailSenderService {
   private readonly bccEmail: string;
 
   constructor(
+    private readonly produtoService: ProdutoComercialService,
+    private readonly ApiV3: ApiV3Service,
     private fileService: FileService
   ) {
     this.fromEmail = Env.get('MAIL_FROM');
@@ -269,6 +275,48 @@ export class MailSenderService {
     } catch (error) {
         console.error('Erro ao ler o diretório:', error);
         throw error;
+    }
+  }
+
+  async getmailGDF(cpf: string){
+    try{
+      const associado = await this.ApiV3.getDadosMail(cpf);      
+      const titular = associado.dados.find(x => x.CD_GRAU_PARENTESCO == 1);
+      if(titular){
+        const plano = await this.getPlanoS4e(titular.cd_plano);
+        const dependentsPlan: number[] = Array.from(
+          new Set(
+            associado.dados
+              .filter(x => x.CD_GRAU_PARENTESCO !== 1)
+              .map(x => x.cd_plano)
+          )
+        );
+        const dependentsPlanId: number[] = [];
+        for (const planId of dependentsPlan) {
+          const result = await this.getPlanoS4e(planId); 
+          dependentsPlanId.push(result.id_prodcomerc);
+        }
+        const mensalidade: number = associado.dados
+        .reduce((sum, x) => sum + x.vl_plano, 0);
+        const vigencia = formatDateToBrazil(titular.dt_assinatura_contrato);
+        const planoContent = {
+          NOMEPLANO: plano.nm_prodcomerc,
+          DATAVENCIMENTO: vigencia,
+          NOMECLIENTE: titular.NM_DEPENDENTE,
+          LINKPAGAMENTO: String(titular.CD_SEQUENCIAL),
+          VALORPLANO: formatNumberBrValue(mensalidade),
+          METODOPAGAMENTO: FormaPagamento.CONSIGNADO
+        } as AdesaoEmailContent;
+        console.log('plano: ', plano.id_prodcomerc);
+        console.log('dependentes planos: ', dependentsPlanId);
+        //await this.sendEmailAdesaoConsignado('erick.calza@odontogroup.com.br', 'Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
+        await this.sendEmailAdesaoConsignado(titular.email, 'Retificando E-mail: Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
+        return true;
+      } else {
+        throw new Error('não foi possivel enviar o email');
+      }
+    } catch(error) {
+      throw new Error('não foi possivel enviar o email' + error.message);
     }
   }
 
@@ -681,6 +729,33 @@ export class MailSenderService {
       await mailerConfig.sendMail(mailOptions);
     } catch (error) {
       throw new ErroAoEnviarEmailException(to);
+    }
+  }
+
+  async getPlano(plano) {
+    try {
+      const planoData = await this.produtoService.getById(plano);
+      if(planoData){
+        return planoData;
+      } else {
+        throw Error('Plano Não encontrado.' + plano);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar o plano:", error);
+      throw Error('Plano Não encontrado.' + plano);
+    }
+  }
+  async getPlanoS4e(plano) {
+    try {
+      const planoData = await this.produtoService.getByS4eId(plano);
+      if(planoData){
+        return planoData;
+      } else {
+        throw Error('Plano Não encontrado.' + plano);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar o plano:", error);
+      throw Error('Plano Não encontrado.' + plano);
     }
   }
 }

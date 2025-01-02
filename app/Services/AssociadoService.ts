@@ -19,7 +19,7 @@ export default class AssociadoService {
 
   async updateAssociadoIncompleto(associado: TbAssociado, transaction: TransactionClientContract) {
       const dataAlteracao = DateTime.now().toString()
-
+      console.log('Associado: ', associado)
       await TbAssociado.query()
         .where('id_associado', associado.id_associado)
         .useTransaction(transaction)

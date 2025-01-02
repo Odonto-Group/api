@@ -21,7 +21,7 @@ import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
 
 @inject()
-export default class CompanyPlanController {
+export default class ServerPlanController {
 
   constructor(
     private planService: PlanService,
@@ -52,7 +52,14 @@ export default class CompanyPlanController {
       valor: plan.produtoComercial.formasPagamentoIndividual[0].vl_valor
     }
   }
-  
+
+  async getPlanGdfInfo({ request, response }: HttpContextContract) {
+    
+    const params = request.all();
+    const data = await this.planService.getPlansbys4eId(params.vendedor, params.cdS4e);
+    
+    return response.json(data);
+  }
   async getPlanDetails({ request }: HttpContextContract) {
     const token = request.params().token
 
@@ -229,6 +236,7 @@ export default class CompanyPlanController {
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
       vendedorId: tokenBanco?.vendedor?.id_vendedor,
+      vendedorS4eId: tokenBanco?.vendedor?.nu_cdVendedorS4E,
       corretora: tokenBanco.corretora,
       parceiro: tokenBanco.parceiro,
       formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
