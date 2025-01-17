@@ -17,13 +17,12 @@ export default class AssociadoService {
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 
-  async updateAssociadoIncompleto(associado: TbAssociado, transaction: TransactionClientContract) {
+  async updateAssociadoIncompleto(associado: TbAssociado, status: number, transaction: TransactionClientContract) {
       const dataAlteracao = DateTime.now().toString()
-      console.log('Associado: ', associado)
       await TbAssociado.query()
         .where('id_associado', associado.id_associado)
         .useTransaction(transaction)
-        .update({ cd_status: 0, dt_alteraStatus: dataAlteracao})
+        .update({ cd_status: status, dt_alteraStatus: dataAlteracao})
   }
 
   async ativarPlanoAssociado(associado: TbAssociado, transaction: TransactionClientContract, cdStatus: number) {

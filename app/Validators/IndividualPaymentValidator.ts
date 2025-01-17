@@ -31,7 +31,9 @@ export default class PayloadValidator {
     idOrgaoExpedidor: schema.number(),
     idOrgaoExpedidorUf: schema.number(),
     perfil: schema.string.optional(),
-    matricula: schema.string.optional(),
+    matricula: schema.string.optional({}, [
+      rules.regex(/^[A-Za-z0-9]{8}$/)
+    ]),
     cargo: schema.string.optional(),
     formaPagamento: schema.object().members({
       gpPagto: schema.number(),

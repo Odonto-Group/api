@@ -13,7 +13,7 @@ export default class PagamentoConsignadoService {
     async savePagamento(associado: TbAssociado, pagamentoGerado: any, dataVencimento: DateTime, transaction: TransactionClientContract) {
         const pagamento = new TbPagamentoConsignado
         pagamento.cd_associado_con = associado.id_associado
-        pagamento.cd_tokenGdf = pagamentoGerado.pagamentoId
+        //pagamento.cd_tokenGdf = pagamentoGerado.pagamentoId
         pagamento.nu_valor = pagamentoGerado.compraValor
         pagamento.dt_vencimento = String(dataVencimento)
         pagamento.id_orgao_con = pagamentoGerado.orgao

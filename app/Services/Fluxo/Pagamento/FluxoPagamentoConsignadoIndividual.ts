@@ -21,6 +21,7 @@ import OrgaoService from "App/Services/OrgaoService";
 import EnderecoS4e from "App/interfaces/EnderecoS4e";
 import LogService from "App/Services/Log/Log";
 import ProdutoComercialService from "App/Services/ProdutoComercialService";
+import PagamentoConsignadoService from "App/Services/PagamentoConsignado";
 
 @inject()
 export default class FluxoPagamentoConsignadoIndividual implements FluxoPagamentoStrategy {
@@ -30,7 +31,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
     constructor(
         private associadoService: AssociadoService,
         private S4EService: S4EService,
-        //private pagamentoConsignadoService: PagamentoConsignadoService,
+        private pagamentoConsignadoService: PagamentoConsignadoService,
         private tokenService: TokenService,
         private ufService: UfService,
         private mailSenderService: MailSenderService,
@@ -45,24 +46,29 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento); */
 
         const retorno = {grupoPagamento: GrupoPagamento.CONSIGNADO} as RetornoGeracaoPagamentoIndividual
-
-       /*  const pagamento = {
-            pagamentoId: params.pagamento.pagamentoId,
-            compraValor: params.pagamento.compraValor,
-            orgao: params.pagamento.orgao,
-            fontePgd: params.pagamento.fontePgd,
-            perfil: params.pagamento.perfil,
-            vinculo: params.pagamento.vinculo,
-            Desc_cargo: params.pagamento.cargo,
-            matricula: params.pagamento.matricula
-        }; */
+        const dataAdicionada = dataPrimeiroVencimento.plus({months: 1}).set({ day: 1 });    
+        const pagamento = {
+            //pagamentoId: params.pagamento.pagamentoId,
+            compraValor: params.valor_Mensalidade,
+            orgao: params.orgao,
+            fontePgd: 5,
+            perfil: 4,
+            vinculo: 1,
+            Desc_cargo: '',
+            matricula: params.matricula
+        };
             //const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
             //await this.pagamentoConsignadoService.blAtivoFalseByCliente(associado.id_associado.toString())
 
             //await this.pagamentoConsignadoService.removeByClient(tipoPessoa.idAssociado, transaction);
-
-            //await this.pagamentoConsignadoService.savePagamento(associado, pagamento, dataPrimeiroVencimento, transaction);
+            if (!params.verifica) {
+                try{
+                    await this.pagamentoConsignadoService.savePagamento(associado, pagamento, dataAdicionada, transaction);
+                } catch (error) {
+                    throw new Error(error.message);
+                }
+            }
 
             //await this.pagamentoPixOdontoCobService.removePagamentoIndividualPix(tipoPessoa.idAssociado, transaction);
 
@@ -76,7 +82,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade),
                 METODOPAGAMENTO: formaPagamento
             } as AdesaoEmailContent;
-            const dataAdicionada = dataPrimeiroVencimento.plus({months: 1});
+            
             const dataCompetencia = Number(dataAdicionada.toFormat('yyyyMM'))
             const vendedor = await this.tokenService.findTokenParceiroIndividual(params.token);
             let dataDependente = format(associado.dt_nasc, 'yyyy-MM-dd');
@@ -242,20 +248,21 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 empresa:""
             }
             try{
+                this.logService.writeLog(params.proposta, 'FluxoPagamento-BodyApi', { local:'individual', type: 'api', data: associadoBody });
                 const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
-                this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'api', data: associadoPJ });
+                this.logService.writeLog(params.proposta, 'FluxoPagamento-RetornoApi', { local:'individual', type: 'api', data: associadoPJ });
                 if (associadoPJ){
-                    if (associadoPJ.codigo == 3){
+                    /* if (associadoPJ.codigo == 3){
                         throw new Error(associadoPJ.mensagem);
-                    }
-                    const bodyCrm = {
+                    } */
+                    /* const bodyCrm = {
                         token: TokenV1,
-                        motivoDetalhadoId: 603, //611,
+                        motivoDetalhadoId: 611,
                         descricao: `Nova Adesão Servidor GDF`,
-                        tipoUsuario: 3,
-                        usuarioId: 71708, //7021,
+                        tipoUsuario: 1,
+                        usuarioId: 7021,
                         tipoSolicitanteId: 3,
-                        solicitanteId: 71708, //7021,
+                        solicitanteId: 7021,
                         arquivo: "",
                         extensao: "",
                         mostraPortal: 1,
@@ -268,8 +275,8 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                             token: TokenV1,
                             ocorrencia:{
                                 protocolo: newCrm?.dados?.protocolo,
-                                usuario: 71708, //7021,
-                                tipoUsuario: 3,
+                                usuario: 7021,
+                                tipoUsuario: 1,
                                 descricao: `Nova Adesão Servidor GDF 
                                                 Dados:
                                                   nome: ${associado.nm_associado},
@@ -296,11 +303,11 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                         
                     } else {
                         throw new Error('erro ao criar novo Crm com os dados do Associado, Erro: ' + newCrm.mensagem);
-                    }
+                    } */
                 }
             } catch(error) {
                 console.log('error message: ', error);
-                this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'erro', data: error });
+                //this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'erro', data: error.message });
                 throw new Error(error.message);
             }
 

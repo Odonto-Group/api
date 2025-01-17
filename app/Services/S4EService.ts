@@ -39,14 +39,14 @@ export default class S4EService {
         if(response.data.codigo == 1){
           return response.data
         } else {
-          throw new Error('Erro na inclusão do associadoPJ, mensagem:' + response.data.menssagem);
+          throw new Error(response.data.mensagem);
         }
       } else {
         throw new Error('Erro na inclusão do associadoPJ' + response.status);
       }
     } catch (error) {
       console.log('error message includeAssociadoPJ: ', error.message);
-      throw new Error('Erro na inclusão do associadoPJ, mensagem:' + error.message);
+      throw new Error('Erro na inclusão do associadoPJ, mensagem: ' + error.message);
     }
   }
 

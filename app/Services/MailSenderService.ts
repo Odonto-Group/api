@@ -249,7 +249,7 @@ export class MailSenderService {
   
     const mailOptions = {
       from: Env.get('MAIL_FROM'),
-      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com', 'fiscais@odontogroup.com.br'],
       to,
       subject,
       html: finalHtmlContent,
@@ -310,7 +310,7 @@ export class MailSenderService {
         console.log('plano: ', plano.id_prodcomerc);
         console.log('dependentes planos: ', dependentsPlanId);
         //await this.sendEmailAdesaoConsignado('erick.calza@odontogroup.com.br', 'Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
-        await this.sendEmailAdesaoConsignado(titular.email, 'Retificando E-mail: Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
+        await this.sendEmailAdesaoConsignado(titular.email, 'Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
         return true;
       } else {
         throw new Error('não foi possivel enviar o email');
@@ -455,7 +455,8 @@ export class MailSenderService {
       attachments.push(arquivo);
     }
     if (logErros[0]) {
-      const erro = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'erros', logErros[0]));
+      const count = logErros.length;
+      const erro = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'erros', logErros[count - 1]));
       const arquivo = {
         filename: id + '_Erro.json', 
         content: erro

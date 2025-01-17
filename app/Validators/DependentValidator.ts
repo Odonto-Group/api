@@ -11,7 +11,7 @@ export default class DependentValidator {
       responsavelFinanceiro: schema.object().members({
         codigo: schema.number(),
         dataAssinaturaContrato: schema.string({}, [
-          rules.regex(/^\d{4}-\d{2}-\d{2}$/), // Validação para formato de data YYYY-MM-DD
+          rules.regex(/^\d{4}-\d{2}-\d{2}$/),
         ]),
       }),
       dependente: schema.array.optional().members(
@@ -20,15 +20,15 @@ export default class DependentValidator {
           nome: schema.string(),
           cpf: schema.string({}, [
             rules.minLength(11),
-            rules.regex(/^\d{11}$/), // Apenas dígitos
+            rules.regex(/^\d{11}$/),
           ]),
           sexo: schema.number(),
           plano: schema.number(),
           planoValor: schema.string({}, [
-            rules.regex(/^\d+(\.\d{1,2})?$/), // Validação para valores monetários
+            rules.regex(/^\d+(\.\d{1,2})?$/),
           ]),
           nomeMae: schema.string(),
-          numeroProposta: schema.string(),
+          numeroProposta: schema.string.optional(),
           carenciaAtendimento: schema.number.optional(),
           rcaId: schema.number.optional(),
           cd_orientacao_sexual: schema.number.optional(),
@@ -37,12 +37,12 @@ export default class DependentValidator {
           OutraIdentidadeGenero: schema.string.optional(),
           idExterno: schema.string.optional(),
           MMYYYY1Pagamento: schema.string({}, [
-            rules.regex(/^\d{6}$/), // Formato MMYYYY
+            rules.regex(/^\d{6}$/),
           ]),
           numeroCarteira: schema.string.optional(),
           observacaoUsuario: schema.string.optional(),
           dataNascimento: schema.string({}, [
-            rules.regex(/^\d{4}-\d{2}-\d{2}$/), // Validação para formato de data YYYY-MM-DD
+            rules.regex(/^\d{4}-\d{2}-\d{2}$/),
           ]),
           funcionarioCadastro: schema.number.optional(),
           dataCadastroLoteContrato: schema.string.optional(),
@@ -52,7 +52,7 @@ export default class DependentValidator {
         schema.object().members({
           tipo: schema.number(),
           dado: schema.string({}, [
-            rules.regex(/^\d{10,11}$/), // Telefone no formato 10 ou 11 dígitos
+            rules.regex(/^\d{10,11}$/),
           ]),
         })
       ),

@@ -1,1 +1,0 @@
-{"timestamp":"2024-11-22 15:30:20","data":{"flashToSession":false,"messages":{"errors":[{"rule":"regex","field":"dependentes.0.cpf","message":"regex validation failed"}]}}}

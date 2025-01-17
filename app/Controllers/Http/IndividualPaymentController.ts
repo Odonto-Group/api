@@ -13,7 +13,6 @@ import DependenteService from 'App/Services/DependenteService';
 import TbAssociado from 'App/Models/TbAssociado';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
 import SmsService from 'App/Services/SmsService';
-import { Exception } from '@adonisjs/core/build/standalone';
 import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database';
 import { RequestContract } from '@ioc:Adonis/Core/Request';
 import FluxoPagamentoBoletoIndividual from 'App/Services/Fluxo/Pagamento/FluxoPagamentoBoletoIndividual';
@@ -31,11 +30,9 @@ import FileService from 'App/Services/FileService';
 import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidator';
-import Env from '@ioc:Adonis/Core/Env'
-import Drive from '@ioc:Adonis/Core/Drive'
 import LogService from 'App/Services/Log/Log';
 import { MailSenderService } from 'App/Services/MailSenderService';
-import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
+
 
 @inject()
 export default class IndividualPaymentController {
@@ -56,7 +53,7 @@ export default class IndividualPaymentController {
         this.logService = new LogService();
       }
 
-  async index({ request, response }: HttpContextContract) {   
+  async index({ request }: HttpContextContract) {   
     const entrada = request.all();
     const tipoRequisicao = 'Pagamento';
     const Id = entrada.proposta || entrada.cpf;
@@ -71,9 +68,16 @@ export default class IndividualPaymentController {
 
         return retorno;
       } catch (error) {
-        this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error });
+        this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error.message });
         const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
-        await this.associadoService.updateAssociadoIncompleto(associado, transaction);
+        if (associado && associado.$original.length > 0){
+          if (typeof error.message === 'string' && error.message.includes('Titular já cadastrado e ativo no contrato.')){
+            await this.associadoService.updateAssociadoIncompleto(associado, 5, transaction);
+          } else {
+            await this.associadoService.updateAssociadoIncompleto(associado, 0, transaction);
+          }
+          
+        }        
         transaction.commit();
         
         await this.mailService.sendMailError(associado, entrada.formaPagamento.gpPagto, Id);
@@ -83,17 +87,17 @@ export default class IndividualPaymentController {
     })
   }
 
-  private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
-  private nomeArquivoIndividualDependente = Env.get('COMPROVANTE_VINCULO_INDIVIDUAL_DEPENDENTE_ARQUIVO')
+ // private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
+  //private nomeArquivoIndividualDependente = Env.get('COMPROVANTE_VINCULO_INDIVIDUAL_DEPENDENTE_ARQUIVO')
 
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
-    const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
-    const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
+    //const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
+    //const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
     const teste = request.all();
     console.log('entrada teste:', teste);
     const params = await request.validate(IndividualPaymentValidator)
     const token = params.token
-    const arquivos = request.allFiles()
+    //const arquivos = request.allFiles()
 
     console.log('Chegou e validou:', params);
 
@@ -114,7 +118,7 @@ export default class IndividualPaymentController {
     let testValue = false;
     if(produtosGDF.includes(produtoComercial.id_prodcomerc)){
       testValue = true;
-      GDF = params.verifica ? params.verifica : false;
+      GDF = params.verifica ? params.verifica : true;
     }
     if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();
@@ -144,7 +148,7 @@ export default class IndividualPaymentController {
 
     const responsavelFinanceiroBanco = await this.saveResponsavelFinanceiro(params, associado, transaction);
 
-    const dependentes = await this.saveDependentes(params, associado, transaction);
+    await this.saveDependentes(params, associado, transaction);
 
     //await this.emailConsignado(params, associado)
 
@@ -154,7 +158,7 @@ export default class IndividualPaymentController {
     //   await this.salvarArquivos(dependentes, arquivos, associado);
     // }
 
-    return this.criarRetornoPagamento(returnPayment, params, associado, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
+    return this.criarRetornoPagamento(returnPayment, associado, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
   }
 
   async salvarArquivos(dependentes: TbDependente[], arquivos: MultipartFileContract, associado: TbAssociado) {
@@ -203,7 +207,7 @@ export default class IndividualPaymentController {
     return returnPayment;
   }
 
-  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoIndividual, params: any, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
+  private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoIndividual, associado: TbAssociado, quantidadeVidas: number, valorMensalidade: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
     returnPayment.idAssociado = associado.id_associado
     returnPayment.dataCadastro = associado.dt_Cadastro
     returnPayment.email = associado.ds_email
@@ -219,20 +223,6 @@ export default class IndividualPaymentController {
     returnPayment.ddd = associado.nu_dddCel
 
     return returnPayment;
-  }
-
-  async emailConsignado(params: any, associado: TbAssociado) {
-    if (params.chkDocumentoConsignado) {
-      //documento associado
-    } else {
-      // await Mail.send((message) => {
-      //   message
-      //     .to(associado.ds_email)
-      //     .subject('Formulário de Autorização de desconto em folha no GDF')
-      //     .htmlView('mail.sendFormAuthorizationMail', { cliente: associado.nm_associado })
-      //     .attach('https://www.odontogroup.com.br/vendas/PDF/AUTORIZACAO_DESCONTO_EM_FOLHA_GDF.pdf')
-      // })
-    }
   }
 
   createVendedor(vendedor: any) {
@@ -251,16 +241,6 @@ export default class IndividualPaymentController {
     }
 
     return vendedorRetorno
-  }
-
-  saveDocuments(params: any, associado: TbAssociado) {
-    params.docs && params.docs.forEach(doc => {
-        // if (doc.isValid) {
-        //   const path = this.documentService.uploadImage(doc, associado.id_associado);
-          
-        //   const storagePath = Drive.disk('local').get(path);
-        // }
-    });
   }
  
   async saveDependentes(params: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbDependente[]> {
