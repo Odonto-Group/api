@@ -21,7 +21,7 @@ export default class FormasPagamentoService {
       .preload('produtoComercial')
       .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_formaspgtoIF.id_prodcomerc_if')
       .where('tb_formaspgtoIF.id_prodcomerc_if', idProdutoComercial)
-      .where('tb_formaspgtoIF.id_meiopagto_if', formaPagamento.idPagto)
+      .whereIn('tb_formaspgtoIF.id_meiopagto_if', formaPagamento.idPagto === 1 ? [1, 16] : [formaPagamento.idPagto])
       .first();
     }
   }
@@ -32,7 +32,7 @@ export default class FormasPagamentoService {
       .preload('produtoComercial')
       .innerJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_formaspgtoCol.id_prodcomerc_fc')
       .where('tb_formaspgtoCol.id_prodcomerc_fc', idProdutoComercial)
-      .where('tb_formaspgtoCol.id_meiopagto_fc', 14) // Id meio pagamento NF/FATURA
+      .where('tb_formaspgtoCol.id_meiopagto_fc', 14)
       .first();
   }
   

@@ -26,6 +26,7 @@ import QuantidadeDeVidasAcimaDoMaximo from 'App/Exceptions/QuantidadeDeVidasAcim
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamentoEmpresa.interface';
 import CompanyPaymentValidator from 'App/Validators/CompanyPaymentValidator';
+import LogService from 'App/Services/Log/Log';
 
 @inject()
 export default class CompanyPaymentController {
@@ -41,8 +42,11 @@ export default class CompanyPaymentController {
     private formasPagamentoService: FormasPagamentoService,
     private dependenteFuncionalService: DependenteFuncionalService,
     private fluxoPagamentoBoletoEmpresa: FluxoPagamentoBoletoEmpresa,
+    private logService: LogService,
     private responsavelEmpresaService: ResponsavelEmpresaService
-  ) {} 
+  ) {
+    this.logService = new LogService();
+  } 
 
   async index({ request }: HttpContextContract) {
     const params = request.all()
@@ -62,19 +66,25 @@ export default class CompanyPaymentController {
   }
 
   async fluxoPagamentoPlanoEmpresa({ request, response }: HttpContextContract) {
-    let retorno = {}
+    
+    const entrada = request.all();
+    const tipoRequisicao = 'Pagamento';
+    const Id = entrada.proposta || 0;
+
+    this.logService.writeLog(Id, tipoRequisicao, { local:'empresarial', type: 'entrada', data: entrada });
     await Database.transaction(async (transaction) => {
       try {
-        retorno = await this.iniciarFluxoPagamentoPlanoEmpresa(request, transaction);
+        const retorno = await this.iniciarFluxoPagamentoPlanoEmpresa(request, transaction);
+        this.logService.writeLog(Id == 0 ? retorno.numeroProposta : Id , tipoRequisicao, { local:'empresarial', type: 'saida', data: retorno });
         transaction.commit();
 
         return retorno;
       } catch (error) {
+        this.logService.writeLog(Id, tipoRequisicao, { local:'empresarial', type: 'erro', data: error });
         transaction.rollback();
         throw error;
       }
     })
-    return retorno;
   }
 
   async iniciarFluxoPagamentoPlanoEmpresa(request: RequestContract, transaction: TransactionClientContract) {
@@ -109,7 +119,7 @@ export default class CompanyPaymentController {
       throw new DataExpiracaoInvalida();
     }
 
-    let valorMensalidade = parseFloat(formaPagamento.vl_valor)
+    let valorMensalidade = formaPagamento.vl_valor;
 
     let quantidadeVidas = this.calcularQuantidadeVidas(params)
 
@@ -129,12 +139,13 @@ export default class CompanyPaymentController {
 
     await this.saveFuncionario(params, empresa, produtoComercial, transaction);
 
-    let retunPayment = await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, formaPagamento: FormaPagamento.BOLETO_EMPRESA})
+    let retunPayment = await this.fluxoPagamentoBoletoEmpresa.iniciarFluxoPagamento({empresa, dataPrimeiroVencimento, transaction, nomePlano: produtoComercial.nm_prodcomerc, produtoComercial, formaPagamento: FormaPagamento.BOLETO_EMPRESA, params})
 
     return this.criarRetornoPagamento(retunPayment, empresa, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc,  tokenParceiro.vendedor.tx_nome, dataPrimeiroVencimento);
   }
 
   private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoEmpresa, empresa: TbEmpresa, quantidadeVidas: number, valorContrato: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
+    console.log('chegou aqui');
     returnPayment.idEmpresa = empresa.id_cdempresa
     returnPayment.dataCadastro = empresa.DT_CADASTRO
     returnPayment.email = empresa.ds_email
@@ -149,7 +160,7 @@ export default class CompanyPaymentController {
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
     returnPayment.ddd = empresa.nu_dddcel
     returnPayment.pagamentoStatus = empresa.cd_status
-
+    console.log('enviou: ', returnPayment);
     return returnPayment;
   }
 

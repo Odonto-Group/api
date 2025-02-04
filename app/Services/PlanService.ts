@@ -1,5 +1,6 @@
 import PlanoNaoEncontrado from 'App/Exceptions/PlanoNaoEncontrado';
 import TbParceiro from 'App/Models/TbParceiro';
+import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 
 
 export default class PlanService {
@@ -32,6 +33,73 @@ export default class PlanService {
     }
 
     return parceiro;
+  }
+  async getPlansbysellerId(vendedorId: number, produtoComercial:number): Promise<any> {
+    const result = await TbTokenIdParc
+        .query()
+        .select(
+            'tt.id_tokenidparc',
+            'tt.nu_cdVendedor4E_tk',
+            'tt.nu_cdCorretoraS4E_tk',
+            'tt.nu_IdParceiro_tk',
+            'tt.cd_Codtokenidparc'
+        )
+        .from('tb_tokenidparc as tt')
+        .innerJoin('tb_parceiro as tp', 'tp.id_parceiro', 'tt.nu_IdParceiro_tk')
+        .innerJoin('tb_vendedor as tv', 'tv.nu_cdVendedorS4E', 'tt.nu_cdVendedor4E_tk')
+        .innerJoin('tb_ProdutoComercial as tpc', 'tpc.id_prodcomerc', 'tp.id_prodcomerc_pr')
+        .where('tpc.id_prodcomerc', produtoComercial)
+        .where('tv.id_vendedor', vendedorId)
+        .andWhere('tt.status_token', 1)
+        .distinct()
+        .firstOrFail()
+
+    /* if (!result?.produtoComercial.formasPagamentoIndividual[0]?.vl_valor) {
+      throw new PlanoNaoEncontrado();
+    } */
+    return result;
+  }
+  async getPlansbys4eId(vendedorId: number, s4eToken:number): Promise<any> {
+    const result = await TbTokenIdParc
+    .query()
+    .select([
+        'tb_tokenidparc.id_tokenidparc',
+        'tb_tokenidparc.nu_cdVendedor4E_tk',
+        'tb_tokenidparc.nu_cdCorretoraS4E_tk',
+        'tb_tokenidparc.nu_IdParceiro_tk',
+        'tb_tokenidparc.cd_Codtokenidparc',
+        'tb_vendedor.id_vendedor',
+        'tb_vendedor.tx_nome',
+        'tb_ProdutoComercial.nm_prodcomerc',
+        'tb_ProdutoComercial.id_prodcomerc'
+    ])
+    .innerJoin('tb_parceiro', 'tb_parceiro.id_parceiro', 'tb_tokenidparc.nu_IdParceiro_tk')
+    .leftJoin('tb_vendedor', 'tb_vendedor.nu_cdVendedorS4E', 'tb_tokenidparc.nu_cdVendedor4E_tk')
+    .leftJoin('tb_ProdutoComercial', 'tb_ProdutoComercial.id_prodcomerc', 'tb_parceiro.id_prodcomerc_pr')
+    .where('tb_ProdutoComercial.id_ProdutoS4E_c', s4eToken)
+    .whereIn('tb_ProdutoComercial.id_prodcomerc', [993, 994, 998, 999, 1000])
+    .where('tb_tokenidparc.status_token', 1)
+    .andWhere(qb => {
+        qb.where('tb_vendedor.id_vendedor', vendedorId)
+          .orWhere('tb_vendedor.nu_cdVendedorS4E', vendedorId)
+          .orWhere('tb_vendedor.id_vendedor', 65083);
+    });
+
+    let filterResult = result.find(x => x.nu_cdVendedor4E_tk == vendedorId);
+    if (!filterResult) {
+      filterResult = result.find(x => x.$extras.id_vendedor == 65083);
+    }
+
+    if (!filterResult?.cd_Codtokenidparc) {
+      throw new PlanoNaoEncontrado();
+    }
+    
+    const formattedResult = {
+      ...filterResult.$original,
+      ...filterResult.$extras
+    };
+    console.log('retornando plano: ', formattedResult);
+    return formattedResult;
   }
 
   async getBasicPlanIndividual(sigla: string, idCategoria: number[]): Promise<TbParceiro> {

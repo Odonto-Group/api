@@ -17,4 +17,7 @@ export default class TbOrgao extends BaseModel {
 
   @column({columnName: 'tx_NmOrgao'})
   public tx_NmOrgao: string | null
+
+  @column({columnName: 'nu_CodDeptoEmpS4E_o'})
+  public nu_CodDeptoEmpS4E_o: number | null
 }
