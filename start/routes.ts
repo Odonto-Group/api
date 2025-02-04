@@ -55,6 +55,7 @@ Route.group(() => {
   Route.get('/AssociadoServidor','GDFAssertivaController.getDadosAssociado')
 }).prefix('/info')
 
+
 Route.group(() => {
   Route.post('/individual/plan', 'IndividualPaymentController.index')
   Route.post('/company/plan/old', 'CompanyPaymentController.index')
