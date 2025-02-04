@@ -23,6 +23,7 @@ import EnderecoS4e from "App/interfaces/EnderecoS4e";
 import ApiV3Service from "App/Services/ApiV3";
 import { format, parse } from "date-fns";
 import { PaymentStatus } from "App/Enums/PaymentStatus";
+import LogService from "App/Services/Log/Log";
 
 
 @inject()
@@ -34,6 +35,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
     constructor(
         private pagamentoBoletoOdontoCobService: PagamentoBoletoOdontoCobService,
         private pagamentoPixOdontoCobService: PagamentoPixOdontoCobService,
+        private logService: LogService,
         private ufService: UfService,
         private empresaService: EmpresaService,
         private mailSenderService: MailSenderService,
@@ -50,12 +52,12 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
 
         tipoPessoa = await this.criaBodyPessoaJuridica(empresa, dataPrimeiroVencimento, empresa.nu_vl_mensalidade);
 
-        const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento);
+        const payment = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento);
 
         const retorno = {} as RetornoGeracaoPagamentoEmpresa;
         
-        if (pagamento) {
-            
+        if (payment.status) {
+            const pagamento = payment.data;
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
             await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(empresa.nu_cnpj)
@@ -178,11 +180,11 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                 const paymentStatus = PaymentStatus.EXPORTADO;
                 await this.empresaService.ativarPlanoEmpresa(empresa, transaction, paymentStatus);
                 const pix = {
-                    copiaCola: pagamento.pix.copiaCola,
-                    qrCode: pagamento.pix.base64
+                    copiaCola: pagamento.pix ? pagamento.pix.copiaCola : null,
+                    qrCode: pagamento.pix ? pagamento.pix.base64: null
                 } as Pix
             
-                retorno.pix = pix
+                retorno.pix = pix; 
                 retorno.linkPagamento = linkPagamento;
                 retorno.formaPagamento = formaPagamento
 
@@ -192,6 +194,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                 throw Error(error.message)
             }   
         } else {
+            this.logService.writeLog(params.cnpj, 'erro', { local:'empresarial', type: 'erro', data: payment });
             throw new NaoFoiPossivelCriarPagamento()
         }
         return retorno;
@@ -472,7 +475,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         const nossoNumero = `2${Math.floor(Math.random() * 900000) + 100000}${empresa.id_cdempresa}0`;
 
         const bodyPagamento = {
-            pagadorDocumentoTipo: 2,
+            pagadorDocumentoTipo: 1,
             pagadorDocumentoNumero: empresa.nu_cpf_resp,
             pagadorNome: empresa.nm_responsavel,
             pagadorEndereco: empresa.tx_EndLograd || 'XXX',

@@ -15,6 +15,7 @@ import ApiV3Service from './ApiV3';
 import ProdutoComercialService from './ProdutoComercialService';
 import formatDateToBrazil from 'App/utils/formatDate';
 import formatNumberBrValue from 'App/utils/FormatNumber';
+import AssociadoService from './AssociadoService';
 
 @inject()
 export class MailSenderService {
@@ -28,7 +29,8 @@ export class MailSenderService {
   constructor(
     private readonly produtoService: ProdutoComercialService,
     private readonly ApiV3: ApiV3Service,
-    private fileService: FileService
+    private fileService: FileService,
+    private readonly associadoService: AssociadoService
   ) {
     this.fromEmail = Env.get('MAIL_FROM');
     this.bccEmail = Env.get('MAIL_BCC');
@@ -282,6 +284,7 @@ export class MailSenderService {
     try{
       const associado = await this.ApiV3.getDadosMail(cpf);      
       const titular = associado.dados.find(x => x.CD_GRAU_PARENTESCO == 1);
+      const associadoVO = await this.associadoService.findAssociadoByCpf(cpf);
       if(titular){
         const plano = await this.getPlanoS4e(titular.cd_plano);
         const dependentsPlan: number[] = Array.from(
@@ -290,6 +293,7 @@ export class MailSenderService {
               .filter(x => x.CD_GRAU_PARENTESCO !== 1)
               .map(x => x.cd_plano)
           )
+
         );
         const dependentsPlanId: number[] = [];
         for (const planId of dependentsPlan) {
@@ -303,7 +307,7 @@ export class MailSenderService {
           NOMEPLANO: plano.nm_prodcomerc,
           DATAVENCIMENTO: vigencia,
           NOMECLIENTE: titular.NM_DEPENDENTE,
-          LINKPAGAMENTO: String(titular.CD_SEQUENCIAL),
+          LINKPAGAMENTO: associadoVO ? String(associadoVO.id_associado) : String(titular.CD_SEQUENCIAL),
           VALORPLANO: formatNumberBrValue(mensalidade),
           METODOPAGAMENTO: FormaPagamento.CONSIGNADO
         } as AdesaoEmailContent;

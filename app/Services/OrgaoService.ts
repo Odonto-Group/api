@@ -33,6 +33,19 @@ export default class OrgaoService {
 
     return orgao;
   }
+  async getOrgaoWithS4eCodOrgao(codOrgao: string): Promise<TbOrgao> {
+    const orgao = await TbOrgao
+    .query()
+    .where('nu_CodDeptoEmpS4E_o', codOrgao)
+    .distinct()
+    .first();
+
+    if (!orgao) {
+      throw new PlanoNaoEncontrado();
+    }
+
+    return orgao;
+  }
   async getOrgaoWithFP(codFP: string): Promise<TbOrgao[]> {
     const orgao = await TbOrgao
     .query()

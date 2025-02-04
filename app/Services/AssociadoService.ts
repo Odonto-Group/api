@@ -88,7 +88,6 @@ export default class AssociadoService {
     associado.nu_MatriculaFuncional = params.matricula || null;
     associado.tx_Cargo = params.cargo || null;
     associado.dt_operacao = DateTime.now().toString();
-    associado.dt_Cadastro = DateTime.now().toString()
     associado.dt_alteraStatus = DateTime.local().toString()
     associado.id_parentesco_a = 1;
     associado.nu_CEP = params.cep ? params.cep.replace(/\D/g, "") : "";

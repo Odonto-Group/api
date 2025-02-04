@@ -63,6 +63,7 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post('/servidor/dependent', 'DependentController.index')
+  Route.get('/servidor', 'AssociadoController.index')
 }).prefix('/include')
 
 Route.group(() => {

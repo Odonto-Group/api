@@ -53,31 +53,35 @@ export default class IndividualPaymentController {
         this.logService = new LogService();
       }
 
-  async index({ request }: HttpContextContract) {   
+  async index({ request, response }: HttpContextContract) {   
     const entrada = request.all();
     const tipoRequisicao = 'Pagamento';
     const Id = entrada.proposta || entrada.cpf;
-
+    const dataCadastro = DateTime.now().toString();
     this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'entrada', data: entrada });
 
     await Database.transaction(async (transaction) => {
       try {
-        const retorno = await this.fluxoPagamentoPlano(request, transaction);
+        const retorno = await this.fluxoPagamentoPlano(request, transaction, dataCadastro);
         this.logService.writeLog(Id , tipoRequisicao, { local:'individual', type: 'saida', data: retorno });
+        
         transaction.commit();
 
-        return retorno;
+        return response.json(retorno);
       } catch (error) {
         this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error.message });
         const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
-        if (associado && associado.$original.length > 0){
-          if (typeof error.message === 'string' && error.message.includes('Titular já cadastrado e ativo no contrato.')){
-            await this.associadoService.updateAssociadoIncompleto(associado, 5, transaction);
+        if (error.message.includes('Titular já cadastrado')){
+          if (associado && associado.$attributes.id_associado && associado.$attributes.dt_Cadastro != dataCadastro){
+            transaction.rollback();
           } else {
-            await this.associadoService.updateAssociadoIncompleto(associado, 0, transaction);
+            associado.dt_Cadastro = dataCadastro;
+            await this.associadoService.updateAssociadoIncompleto(associado, 5, transaction);
           }
-          
-        }        
+        } else {
+          associado.dt_Cadastro = dataCadastro;
+          await this.associadoService.updateAssociadoIncompleto(associado, 0, transaction);
+        }
         transaction.commit();
         
         await this.mailService.sendMailError(associado, entrada.formaPagamento.gpPagto, Id);
@@ -87,10 +91,10 @@ export default class IndividualPaymentController {
     })
   }
 
- // private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
+  //private linkArquivoIndividualDependente = Env.get('LINK_ARQUIVO_INDIVIDUAL_DEPENDENTE')
   //private nomeArquivoIndividualDependente = Env.get('COMPROVANTE_VINCULO_INDIVIDUAL_DEPENDENTE_ARQUIVO')
 
-  async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract) {
+  async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract, dataCadastro: string) {
     //const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
     //const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
     const teste = request.all();
@@ -118,7 +122,7 @@ export default class IndividualPaymentController {
     let testValue = false;
     if(produtosGDF.includes(produtoComercial.id_prodcomerc)){
       testValue = true;
-      GDF = params.verifica ? params.verifica : true;
+      GDF = params.verifica ? params.verifica : false;
     }
     if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();
@@ -157,8 +161,9 @@ export default class IndividualPaymentController {
     // if (arquivos) {
     //   await this.salvarArquivos(dependentes, arquivos, associado);
     // }
-
-    return this.criarRetornoPagamento(returnPayment, associado, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
+    associado.dt_Cadastro = dataCadastro;
+    const retorno = await this.criarRetornoPagamento(returnPayment, associado, quantidadeVidas, valorContrato, produtoComercial.nm_prodcomerc, tokenParceiro.vendedor.tx_nome, dataExpiracao);
+    return retorno;
   }
 
   async salvarArquivos(dependentes: TbDependente[], arquivos: MultipartFileContract, associado: TbAssociado) {

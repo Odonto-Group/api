@@ -14,7 +14,7 @@ export default class P4XService {
     async geraPagamentoP4XBoleto(body: any) {
         try {
             const token = await this.geraToken();
-
+            console.log('body: ', body);
             const response = await axios.post(`${this.urlBaseP4x}/boletos`, body, {
                 headers: {
                 'Content-Type': 'application/json',
@@ -23,13 +23,25 @@ export default class P4XService {
             });
     
             if (response.status === 200) {
-                return response.data;
+                const resposta = {
+                    status: true,
+                    data: response.data
+                }
+                return resposta;
             } else {
-                return false;
+                const resposta = {
+                    status: false,
+                    data: response
+                }
+                return resposta;
             }
         } catch (erro) {
             console.log('erro: ', erro);
-            return false
+            const resposta = {
+                status: false,
+                data: erro
+            }
+            return resposta;
         }
     }
 

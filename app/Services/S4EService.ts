@@ -11,7 +11,8 @@ import ErroConsultaCepS4EException from 'App/Exceptions/ErroConsultaCepS4EExcept
 export default class S4EService {
   private s4eInclude = Env.get('S4E_URL_INCLUSAO')
   private s4eToken = Env.get('SE4_TOKEN')
-  private s4eIncludePj = Env.get('S4E_URL_INCLUSAO_PJ')
+  private s4eIncludePj = Env.get('S4E_URL_INCLUSAO_PJ') 
+  private s4eApiV2 = Env.get('S4E_URL_API_V2') 
   private s4eTokenV1 = Env.get('S4E_TOKEN_V1')
   constructor() {}
 
@@ -73,6 +74,60 @@ export default class S4EService {
     throw new ErroConsultaCepS4EException()
   }
 }
+  async getAssociadoById(cod: number) {
+  try {
+    const response = await axios.get(`${this.s4eApiV2}Associados?token=${this.s4eTokenV1}&codigoAssociado=${cod}`)
+        if (response.status !== 200) {
+      throw new Error('Erro ao buscar Associado: ' + response.data.title)
+    }
+    if (!response.data.dados[0]){
+      throw new Error('Associado não encontrado');
+    }
+    const retorno = response.data.dados[0];
+
+    return retorno;
+
+  } catch (error) {
+    console.error('Erro ao Associado S4e:', error.message)
+    throw new Error(error.message);
+  }
+}
+  async getAssociadoByCpf(cpf: string) {
+  try {
+    const response = await axios.get(`${this.s4eApiV2}Associados?token=${this.s4eTokenV1}&cpfAssociado=${cpf}`)
+        if (response.status !== 200) {
+      throw new Error('Erro ao buscar Associado: ' + response.data.title)
+    }
+    if (!response.data.dados[0]){
+      throw new Error('Associado não encontrado');
+    }
+    const retorno = response.data.dados[0];
+
+    return retorno;
+
+  } catch (error) {
+    console.error('Erro ao Associado S4e:', error.message)
+    throw new Error(error.message);
+  }
+}
+  async getAssociadoByCpfGDF(cpf: string) {
+  try {
+    const response = await axios.get(`${this.s4eApiV2}Associados?token=${this.s4eTokenV1}&cpfAssociado=${cpf}`)
+        if (response.status !== 200) {
+      throw new Error('Erro ao buscar Associado: ' + response.data.title)
+    }
+    const retorno = response.data.dados.find(x => x.codigoDaEmpresa == 27855);
+
+    if (!retorno){
+      throw new Error('Associado não encontrado');
+    }; 
+    return retorno;
+
+  } catch (error) {
+    console.error('Erro ao Buscar Associado S4e:', error.message)
+    throw new Error(error.message);
+  }
+}
 
 async includeEmpresa(body: any) {
   try {
@@ -123,14 +178,14 @@ async includeEmpresa(body: any) {
         if(response.data.codigo == 1){
           return response.data
         } else {
-          throw new Error('Erro na inclusão dos Dependentes, mensagem:' + response.data.mensagem);
+          throw new Error('Erro na inclusão dos Dependentes, mensagem: ' + response.data.mensagem);
         }
       } else {
         throw new Error('Erro na inclusão dos Dependentes' + response.status);
       }
     } catch (error) {
-      console.log('error message includeAssociadoPJ: ', error.message);
-      throw new Error('Erro na inclusão dos Dependentes, mensagem:' + error.message);
+      //console.log('error message includeAssociadoPJ: ', error.message);
+      throw new Error(error.message);
     }
   }
 }

@@ -1,4 +1,5 @@
 export default function formatDateToBrazil(dateString: string): string {
+  
     const date = new Date(dateString); 
   
     const day = String(date.getUTCDate()).padStart(2, '0');

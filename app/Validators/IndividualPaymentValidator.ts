@@ -25,7 +25,7 @@ export default class PayloadValidator {
     cns: schema.string.optional(),
     rg: schema.string.optional(),
     idSexo: schema.number(),
-    qtdVidas: schema.number(),
+    qtdVidas: schema.number.optional(),
     idEstadoCivil: schema.number(),
     idFontePagadora: schema.number.optional(),
     idOrgaoExpedidor: schema.number(),
@@ -48,7 +48,7 @@ export default class PayloadValidator {
     dependentes: schema.array.optional().members(
       schema.object().members({
         nome: schema.string(),
-        cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
+        cpf: schema.string.optional({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
         rg: schema.string.optional(),
         idOrgaoExpedidor: schema.number(),
         idOrgaoExpedidorUf: schema.number(),

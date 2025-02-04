@@ -6,7 +6,7 @@ class LogService {
   private baseLogDirectory: string;
 
   constructor() {
-    
+
     this.baseLogDirectory = path.join(__dirname, '..', '..', '..', 'logs');
 
     if (!fs.existsSync(this.baseLogDirectory)) {
@@ -20,8 +20,11 @@ class LogService {
   }
 
   private getLogDirectory(tipoLog: string, local: string): string {
+
     let logDirectory = this.baseLogDirectory;
+
     if (local === 'individual'){
+
       if (tipoLog === 'erro') {
         logDirectory = path.join(this.baseLogDirectory, 'individual', 'erros');
       } else if (tipoLog === 'saida') {
@@ -29,9 +32,11 @@ class LogService {
       } else if (tipoLog === 'entrada') {
         logDirectory = path.join(this.baseLogDirectory, 'individual', 'entradas');
       } else if (tipoLog === 'api') {
-          logDirectory = path.join(this.baseLogDirectory, 'individual', 'RetornosApi');
-        }
+        logDirectory = path.join(this.baseLogDirectory, 'individual', 'RetornosApi');
+      }
+
     } else if (local === 'empresarial') {
+
       if (tipoLog === 'erro') {
         logDirectory = path.join(this.baseLogDirectory, 'PME', 'erros');
       } else if (tipoLog === 'saida') {
@@ -39,15 +44,38 @@ class LogService {
       } else if (tipoLog === 'entrada') {
         logDirectory = path.join(this.baseLogDirectory, 'PME', 'entradas');
       } else if (tipoLog === 'api') {
-          logDirectory = path.join(this.baseLogDirectory, 'PME', 'RetornosApi');
-        }
+        logDirectory = path.join(this.baseLogDirectory, 'PME', 'RetornosApi');
+      }
+
+    } else if (local === 'Dependents') {
+
+      if (tipoLog === 'erro') {
+        logDirectory = path.join(this.baseLogDirectory, 'Dependents', 'erros');
+      } else if (tipoLog === 'saida') {
+        logDirectory = path.join(this.baseLogDirectory, 'Dependents', 'saidas');
+      } else if (tipoLog === 'entrada') {
+        logDirectory = path.join(this.baseLogDirectory, 'Dependents', 'entradas');
+      } else if (tipoLog === 'api') {
+        logDirectory = path.join(this.baseLogDirectory, 'Dependents', 'RetornosApi');
+      }
+      
+    } else if (local === 'Associado') {
+
+      if (tipoLog === 'erro') {
+        logDirectory = path.join(this.baseLogDirectory, 'Associado', 'erros');
+      } else if (tipoLog === 'saida') {
+        logDirectory = path.join(this.baseLogDirectory, 'Associado', 'saidas');
+      } else if (tipoLog === 'entrada') {
+        logDirectory = path.join(this.baseLogDirectory, 'Associado', 'entradas');
+      } else if (tipoLog === 'api') {
+        logDirectory = path.join(this.baseLogDirectory, 'Associado', 'RetornosApi');
+      }
+      
     }
-    
 
     if (!fs.existsSync(logDirectory)) {
       fs.mkdirSync(logDirectory, { recursive: true });
     }
-
     return logDirectory;
   }
 
