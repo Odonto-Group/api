@@ -1,0 +1,86 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ sandbox ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: yarn list
+
+      - name: Build artifacts
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+      - run: yarn install --non-interactive
+      - run: node ace build --production --ignore-ts-errors
+      - run: |
+          cd build
+          yarn install --production --non-interactive
+          tar cf ../develop-artifact.tar .
+          cd ..
+          # NPM não efetua copia do diretorio email para build
+          tar r -f develop-artifact.tar email/
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-folder
+          path: |
+            *.tar
+            .env*
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-folder
+
+      - name: Display structure of downloaded files
+        run: ls
+        working-directory: ./
+
+      - name: Deploy to Staging server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avz"
+          SOURCE: ""
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: "trocar aqui"
+          EXCLUDE: ""
+          SCRIPT_BEFORE: ""
+          SCRIPT_AFTER: |
+            echo $RSYNC_STDOUT
+            cd "trocar aqui"
+            pwd
+            tar xfv develop-artifact.tar
+            rm -rf develop-artifact.tar
+            cp .env.dev .env
+            screen -XS api-dev quit
+            yarn install --production --non-interactive
+            screen -SL api-dev -dm forever server.js
