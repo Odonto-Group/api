@@ -78,6 +78,7 @@ jobs:
             echo $RSYNC_STDOUT
             cd /home/apiv2/dev.apiv2.odontogroup.com.br/www/build
             pwd
+            ls -lah
             tar xfv develop-artifact.tar
             rm -rf develop-artifact.tar
             cp .env.sand .env
