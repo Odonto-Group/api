@@ -24,6 +24,7 @@ import { GrupoPagamento } from "App/Enums/GrupoPagamento";
 import ConfirmacaoPagamentoCartaoCredito from "App/Services/Fluxo/Confimacao/Pagamento/ConfirmacaoPagamentoCartaoCredito";
 import SituacaoPagamentoCartaoDesconhecidaException from "App/Exceptions/SituacaoPagamentoCartaoDesconhecidaException";
 import { format } from "date-fns";
+import ErroEmailContent from "App/interfaces/ErroEmailContent.interface";
 
 @inject()
 export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStrategy {
@@ -44,6 +45,8 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
     ){}
 
     async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, params}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, transaction: TransactionClientContract, dataPrimeiroVencimento: DateTime, nomePlano: string, idPlanoS4E:number, params: any}): Promise<RetornoGeracaoPagamentoIndividual> {
+        
+      
         await this.pagamentoCartaoOdontoCobService.deletePagamento(associado, transaction);
 
         const body = await this.buildBodyRequest(associado, responsavelFinanceiro, params)
@@ -59,6 +62,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
         const pagamento = await this.p4XService.geraPagamentoP4XCartaoCredito(body)
 
         if (pagamento) {
+          try{
             const dataD7 = DateTime.local().plus({ days: 7 }).toFormat('yyyy-MM-dd')
 
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.pagamentoId)
@@ -68,11 +72,6 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
             if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
                 let dataDependente = format(associado.dt_nasc, 'dd/MM/yyyy');
                 let dataRespFinanc = format(responsavelFinanceiro.dt_NascRespFin, 'dd/MM/yyyy');
-
-                paymentStatus = PaymentStatus.PRE_CADASTRO;// No caso de cartão status 1 é considerado pago TODO: Refatorar para status 2 quando refazer o admin
-                
-                
-                await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
 
                 /* response.mensagem = await this.confirmacaoPagamentoCartaoCredito.confirmarPagamento(pagamento, associado,paymentStatus, transaction) */
 
@@ -128,11 +127,11 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
                             dado: associado.nu_dddCel+associado.nu_Celular
                           }
                       ] */
-                    },
-                    cartao: {
+                      cartao: {
                         codSeguranca: params.cartaoCredito.codigoSeguranca,
                         pagamentoId: pagamento.pagamentoId,
                         tokenCartao: pagamento.cartaoId
+                      },
                     },
                     dependentes: [
                       {
@@ -143,7 +142,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
                         grauParentesco: associado.id_parentesco_a,
                         plano: idPlanoS4E,
                         numeroProposta: associado.nr_proposta,
-                        planoValor: String(associado.nu_vl_mensalidade),
+                        planoValor: String(associado.nu_vl_mensalidade).replace('.',','),
                         nomeMae: associado.nm_mae,
                         carenciaAtendimento: 3,
                         cdOrientacaoSexual: 0,
@@ -154,8 +153,12 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
                     ]
                   
             }
-
                 await this.S4EService.includeAssociado(associadoBody);
+
+                paymentStatus = PaymentStatus.EXPORTADO;// No caso de cartão status 1 é considerado pago TODO: Refatorar para status 2 quando refazer o admin
+                
+                
+                await this.associadoService.ativarPlanoAssociado(associado, transaction, paymentStatus);
 
                 await this.mailSenderService.sendEmailPagamentoAprovado(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', associado.id_prodcomerc_a, planoContent)
             } else if (pagamento.situacao == SituacaoRetornoCartao.NAO_APROVADA) {
@@ -176,11 +179,23 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
     
             retorno.linkPagamento = linkPagamento
             retorno.paymentStatus = paymentStatus
+          } catch(error) {
+            const planoContent = {
+              NOMECLIENTE: associado.nm_associado,
+              TIPO_PAGAMENTO: FormaPagamento.CARTAO_CREDITO
+          } as ErroEmailContent;
+            if(pagamento){
+              if (pagamento.situacao == SituacaoRetornoCartao.APROVADA) {
+                const cancelamento = await this.p4XService.cancelaPagamentoP4XCartaoCredito(pagamento);
+              }              
+            };
+            await this.mailSenderService.sendEmailErro('erick.calza@odontogroup.com.br','erro ao cadastrar um novo associado', planoContent)
+          }
         } else {
             throw new NaoFoiPossivelCriarPagamento()
         }
-
         return retorno;
+      
     }
 
     private async buildBodyRequest(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, params: any) {

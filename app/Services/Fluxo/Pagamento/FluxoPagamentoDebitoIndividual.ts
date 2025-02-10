@@ -122,7 +122,7 @@ export default class FluxoPagamentoDebitoIndividual implements FluxoPagamentoStr
                     ]
                   
             }
-
+            console.log('chegou o associado: ', associadoBody);
             await this.S4EService.includeAssociado(associadoBody);
             
             await this.mailSenderService.sendEmailAdesaoSemLinkPagamento(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent)

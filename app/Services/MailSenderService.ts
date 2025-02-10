@@ -7,6 +7,15 @@ import ErroEmailContent from 'App/interfaces/ErroEmailContent.interface';
 import FileService from './FileService';
 import { inject } from '@adonisjs/core/build/standalone';
 import AdesaoEmailContent from 'App/interfaces/AdesaoEmailContent.interface';
+import { GrupoPagamento } from 'App/Enums/GrupoPagamento';
+import { FormaPagamento } from 'App/Enums/FormaPagamento';
+import TbAssociado from 'App/Models/TbAssociado';
+import ErroInclusaoEmailContent from 'App/interfaces/ErroEmailContent.interface';
+import ApiV3Service from './ApiV3';
+import ProdutoComercialService from './ProdutoComercialService';
+import formatDateToBrazil from 'App/utils/formatDate';
+import formatNumberBrValue from 'App/utils/FormatNumber';
+import AssociadoService from './AssociadoService';
 
 @inject()
 export class MailSenderService {
@@ -18,7 +27,10 @@ export class MailSenderService {
   private readonly bccEmail: string;
 
   constructor(
-    private fileService: FileService
+    private readonly produtoService: ProdutoComercialService,
+    private readonly ApiV3: ApiV3Service,
+    private fileService: FileService,
+    private readonly associadoService: AssociadoService
   ) {
     this.fromEmail = Env.get('MAIL_FROM');
     this.bccEmail = Env.get('MAIL_BCC');
@@ -184,6 +196,133 @@ export class MailSenderService {
       throw new ErroAoEnviarEmailException(to);
     }
   };
+  async sendEmailAdesaoConsignado(
+    to: string,
+    subject: string,
+    idContrato: number,
+    idContratoDependent: number[] | null,
+    contentView: AdesaoEmailContent
+  ) {
+    const htmlFilePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'email',
+      'adesao',
+      'Consignado',
+      `AdesaoTemplate.html`
+    );
+
+    // Anexar contrato principal
+    const file = await this.fileService.buscarContrato(idContrato);
+    if (!file) {
+      return ErroAoEnviarEmailException;
+    };
+    const regularAttachments = [
+      {
+        filename: 'contrato.pdf',
+        content: file,
+      },
+    ];
+  
+    if (idContratoDependent) {
+      for (const id of idContratoDependent) {
+        const dependentFile = await this.fileService.buscarContrato(id);
+        if (dependentFile) {
+          regularAttachments.push({
+            filename: `contratoDependente${id}.pdf`,
+            content: dependentFile,
+          });
+        }
+      }
+    }
+  
+    const attachments = [...regularAttachments];
+  
+    const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
+    let finalHtmlContent = htmlContent;
+    for (const key in contentView) {
+      const value = contentView[key];
+      finalHtmlContent = finalHtmlContent.replace(
+        new RegExp(`{{${key}}}`, 'g'),
+        value
+      );
+    }
+  
+    const mailOptions = {
+      from: Env.get('MAIL_FROM'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com', 'fiscais@odontogroup.com.br'],
+      to,
+      subject,
+      html: finalHtmlContent,
+      attachments,
+    };
+  
+    try {
+      await mailerConfig.sendMail(mailOptions);
+    } catch (error) {
+      throw new ErroAoEnviarEmailException(to);
+    }
+  }
+  
+  async findFilesById(directory: string, id: string): Promise<string[]> {
+    try {
+        // Lê o conteúdo do diretório
+        const files = await fs.promises.readdir(directory);
+
+        // Filtra os arquivos que contêm o ID no nome
+        const matchingFiles = files.filter(file => file.includes(id));
+
+        return matchingFiles;
+    } catch (error) {
+        console.error('Erro ao ler o diretório:', error);
+        throw error;
+    }
+  }
+
+  async getmailGDF(cpf: string){
+    try{
+      const associado = await this.ApiV3.getDadosMail(cpf);      
+      const titular = associado.dados.find(x => x.CD_GRAU_PARENTESCO == 1);
+      const associadoVO = await this.associadoService.findAssociadoByCpf(cpf);
+      if(titular){
+        const plano = await this.getPlanoS4e(titular.cd_plano);
+        const dependentsPlan: number[] = Array.from(
+          new Set(
+            associado.dados
+              .filter(x => x.CD_GRAU_PARENTESCO !== 1)
+              .map(x => x.cd_plano)
+          )
+
+        );
+        const dependentsPlanId: number[] = [];
+        for (const planId of dependentsPlan) {
+          const result = await this.getPlanoS4e(planId); 
+          dependentsPlanId.push(result.id_prodcomerc);
+        }
+        const mensalidade: number = associado.dados
+        .reduce((sum, x) => sum + x.vl_plano, 0);
+        const vigencia = formatDateToBrazil(titular.dt_assinatura_contrato);
+        const planoContent = {
+          NOMEPLANO: plano.nm_prodcomerc,
+          DATAVENCIMENTO: vigencia,
+          NOMECLIENTE: titular.NM_DEPENDENTE,
+          LINKPAGAMENTO: associadoVO ? String(associadoVO.id_associado) : String(titular.CD_SEQUENCIAL),
+          VALORPLANO: formatNumberBrValue(mensalidade),
+          METODOPAGAMENTO: FormaPagamento.CONSIGNADO
+        } as AdesaoEmailContent;
+        console.log('plano: ', plano.id_prodcomerc);
+        console.log('dependentes planos: ', dependentsPlanId);
+        //await this.sendEmailAdesaoConsignado('erick.calza@odontogroup.com.br', 'Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
+        await this.sendEmailAdesaoConsignado(titular.email, 'Bem-vindo à OdontoGroup.', plano.id_prodcomerc, dependentsPlanId, planoContent);
+        return true;
+      } else {
+        throw new Error('não foi possivel enviar o email');
+      }
+    } catch(error) {
+      throw new Error('não foi possivel enviar o email' + error.message);
+    }
+  }
 
   async sendEmailAdesaoSemLinkPagamento(
     to: string,
@@ -249,17 +388,116 @@ export class MailSenderService {
     }
   };
 
+  async sendMailError(associado: TbAssociado, grupo: number, id: string){
+    
+    const GrupoPagamentoToFormaPagamentoMap: Record<GrupoPagamento, FormaPagamento> = {
+      [GrupoPagamento.BOLETO]: FormaPagamento.BOLETO,
+      [GrupoPagamento.CARTAO_CREDITO]: FormaPagamento.CARTAO_CREDITO,
+      [GrupoPagamento.DEBITO_EM_CONTA]: FormaPagamento.DEBITO_EM_CONTA,
+      [GrupoPagamento.CONSIGNADO]: FormaPagamento.CONSIGNADO,
+    };
+    if (!Object.values(GrupoPagamento).includes(grupo)) {
+      throw new Error(`GrupoPagamento inválido: ${grupo}`);
+    }
+
+    const grupoPagamentoNome = grupo as GrupoPagamento;
+    const formaPagamentoNome = GrupoPagamentoToFormaPagamentoMap[grupoPagamentoNome];
+    const telefone = '(' + associado.nu_dddCel + ') ' + associado.$extras.nu_Celular;
+  
+    const emailConfig = {
+      NOMECLIENTE: associado.nm_associado,
+      CPF: associado.nu_cpf,
+      EMAIL: associado.ds_email,
+      TELEFONE: telefone,
+      TIPO_PAGAMENTO: formaPagamentoNome
+    } as ErroInclusaoEmailContent;
+    await this.sendEmailErroInclusao('erick.calza@odontogroup.com.br', 'erro na inclusão do associado', emailConfig, id);
+  }
+
+  async sendEmailErroInclusao(
+    to: string,
+    subject: string,
+    contentView: ErroInclusaoEmailContent,
+    id: string,
+  ) {
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ErroInclusao.html`);
+    const pastaLog = path.join(__dirname, '..', '..', 'logs', 'individual');
+
+    const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
+
+    // Substituir os campos dinâmicos no HTML
+    let finalHtmlContent = htmlContent;
+
+    const attachments: any = [];
+    const logEntrada = await this.findFilesById(pastaLog + '/entradas', id);
+    const logApi = await this.findFilesById(pastaLog + '/RetornosApi', id);
+    const logSaida = await this.findFilesById(pastaLog + '/saidas', id);
+    const logErros = await this.findFilesById(pastaLog + '/erros', id);
+    console.log('Retornos Logs: ', logEntrada[0], logApi[0], logSaida[0], logErros[0]);
+    if (logEntrada[0]) {
+      const entrada = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'entradas', logEntrada[0]));
+      const arquivo = {
+        filename: id + '_Entrada.json', 
+        content: entrada
+      }
+      attachments.push(arquivo);
+    }
+    if (logApi[0]) {
+      const RetornoApi = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'RetornosApi', logApi[0]));
+      const arquivo = {
+        filename: id + '_RetornoApi.json', 
+        content: RetornoApi
+      }
+      attachments.push(arquivo);
+    }
+    if (logSaida[0]) {
+      const saida = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'saidas', logSaida[0]));
+      const arquivo = {
+        filename: id + '_Saida.json', 
+        content: saida
+      }
+      attachments.push(arquivo);
+    }
+    if (logErros[0]) {
+      const count = logErros.length;
+      const erro = await fs.promises.readFile(path.join(__dirname, '..', '..', 'logs', 'individual', 'erros', logErros[count - 1]));
+      const arquivo = {
+        filename: id + '_Erro.json', 
+        content: erro
+      }
+      attachments.push(arquivo);
+    }
+    for (const key in contentView) {
+      const value = contentView[key];
+      finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+
+    const mailOptions = {
+      from: Env.get('MAIL_FROM'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
+      to,
+      subject,
+      html: finalHtmlContent,
+      attachments: attachments
+    };
+
+    try {
+      await mailerConfig.sendMail(mailOptions);
+    } catch (error) {
+      throw new ErroAoEnviarEmailException(to);
+    }
+  }; 
   async sendEmailErro(
     to: string,
     subject: string,
     contentView: ErroEmailContent,
   ) {
-    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `ErroPagamentoSuporte.html`);
-    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `capa-mulher.png`));
-    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `linkedin-logo.png`));
-    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `ANS.png`));
-    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `odonto-group.png`));
-    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'pagamento', `instagram-logo.png`));
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ErroInclusao.html`);
+    const capa = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `capa-mulher.png`));
+    const linkedin = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `linkedin-logo.png`));
+    const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `ANS.png`));
+    const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `odonto-group.png`));
+    const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'erro', 'inclusao', `instagram-logo.png`));
 
     const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
 
@@ -273,7 +511,7 @@ export class MailSenderService {
 
     const mailOptions = {
       from: Env.get('MAIL_FROM'),
-      bcc: Env.get('MAIL_BCC'),
+      bcc: [Env.get('MAIL_BCC'), 'odontogroup.2018@gmail.com'],
       to,
       subject,
       html: finalHtmlContent,
@@ -496,6 +734,33 @@ export class MailSenderService {
       await mailerConfig.sendMail(mailOptions);
     } catch (error) {
       throw new ErroAoEnviarEmailException(to);
+    }
+  }
+
+  async getPlano(plano) {
+    try {
+      const planoData = await this.produtoService.getById(plano);
+      if(planoData){
+        return planoData;
+      } else {
+        throw Error('Plano Não encontrado.' + plano);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar o plano:", error);
+      throw Error('Plano Não encontrado.' + plano);
+    }
+  }
+  async getPlanoS4e(plano) {
+    try {
+      const planoData = await this.produtoService.getByS4eId(plano);
+      if(planoData){
+        return planoData;
+      } else {
+        throw Error('Plano Não encontrado.' + plano);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar o plano:", error);
+      throw Error('Plano Não encontrado.' + plano);
     }
   }
 }

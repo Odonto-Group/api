@@ -1,0 +1,1 @@
+{"version":3,"file":"VendedorNaoEncontradoException.js","sourceRoot":"","sources":["../../../app/Exceptions/VendedorNaoEncontradoException.ts"],"names":[],"mappings":";;;;;AAAA,oFAAoD;AAEpD,MAAqB,8BAA+B,SAAQ,+BAAa;IACvE;QACE,KAAK,CAAC,gCAAgC,EAAE,GAAG,EAAE,IAAI,CAAC,CAAC;IACrD,CAAC;CACF;AAJD,iDAIC"}

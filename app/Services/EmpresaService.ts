@@ -49,4 +49,11 @@ export default class EmpresaService {
             .first() || new TbEmpresa;
     }
 
+    async ativarPlanoEmpresa(empresa: TbEmpresa, transaction: TransactionClientContract, cdStatus: number) {
+        await TbEmpresa.query()
+          .where("id_cdempresa", empresa.id_cdempresa)
+          .useTransaction(transaction)
+          .update({cd_status: cdStatus})
+      }
+
 }

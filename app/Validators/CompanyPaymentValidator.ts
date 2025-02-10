@@ -22,8 +22,8 @@ export default class CompanyPaymentValidator {
       quantidadeFuncionarios: schema.number(),
       nomeResponsavel: schema.string(),
       cpfResponsavel: schema.string({}, [
-        rules.minLength(8),
-        rules.regex(/^\d{8}$/),
+        rules.minLength(11),
+        rules.regex(/^\d{11}$/),
       ]),
       email: schema.string(),
       dddFixo: schema.string(),
@@ -53,8 +53,8 @@ export default class CompanyPaymentValidator {
         idSexo: schema.number(),
         idParentesco: schema.number(),
         nomeMae: schema.string(),
-        dddFixo: schema.string(),
-        telefoneFixo: schema.string(),
+        dddFixo: schema.string.optional(),
+        telefoneFixo: schema.string.optional(),
         dddCelular: schema.string(),
         celular: schema.string(),
         email: schema.string(),
@@ -66,7 +66,7 @@ export default class CompanyPaymentValidator {
         complemento: schema.string.optional(),
         bairro: schema.string(),
         cidade: schema.string(),
-        dependentes: schema.array().members(
+        dependentes: schema.array.optional().members(
           schema.object().members({
             cpf: schema.string({}, [
               rules.minLength(11),
@@ -74,7 +74,7 @@ export default class CompanyPaymentValidator {
             ]),
             rg: schema.string(),
             idOrgaoExpedidor: schema.number(),
-            cns: schema.string(),
+            cns: schema.string.optional(),
             nomeMae: schema.string(),
             idSexo: schema.number(),
             idParentesco: schema.number(),

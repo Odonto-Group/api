@@ -12,8 +12,8 @@ export default class AssertivaController {
   async getAssertivaInfo({ request, response }: HttpContextContract) {
 
     const data = await this.assertivaService.getAssertivaCPFDetails(request.params().cpf);
-
-    if (data.status !== 200 || data.erro) {
+    console.log('data: ', data);
+    if (!data.resposta.dadosCadastrais || data.erro) {
       return response.json({ message: 'Problema ao buscar informações!' });
     }
     return response.json({nome: data.resposta.dadosCadastrais.nome, dataNascimento: data.resposta.dadosCadastrais.dataNascimento, maeNome: data.resposta.dadosCadastrais.maeNome});
