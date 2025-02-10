@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Seu título aqui</title>
+	<style type="text/css">
+    @font-face {
+      font-family: 'Inter';
+      src: url('static/Inter-Regular.ttf') format('truetype');
+    }
+
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: 'Inter';
+			background-color: #fff;
+		}
+		.outer-container {
+			margin: 0 auto;
+			max-width: 778px;
+		}
+
+    .inner-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10%;
+      padding-bottom: 5%;
+      padding-top: 5%;
+    }
+
+    .inner-inner-container {
+      text-align: left;
+    }
+
+		.container {
+			background-color: rgba(83, 151, 178, 0.06);
+			box-sizing: border-box;
+			margin-top: 10%;
+      max-width: 778px;
+			color: #fff;
+		}
+
+		h1, p {
+			margin: 0;
+			padding: 0;
+			font-size: 16px;
+			line-height: 1.5;
+			color: #fff;
+		}
+
+		.button {
+      display: block;
+      background-color: #282A62;
+      color: #fff !important;
+      text-align: center;
+      padding: 10px;
+      margin: 20px auto;
+      max-width: 200px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    
+		.footer_box {
+      display: flex;
+      flex-direction: column;
+			background-color: #282A62;
+			padding: 20px;
+			font-size: 12px;
+			line-height: 1.5;
+			text-align: center;
+      margin-bottom: 5%;
+		}
+
+    p {
+      color: #001359;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 400;
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 20px;
+      color: #001359;
+    }
+
+    .footer_text {
+      font-size: 16px;
+      font-weight: 400;
+      color: #fff;
+    }
+
+    .footer_text_mini {
+      font-size: 12px;
+      font-weight: 400;
+      color: #fff;
+    }
+    
+    .block_footer { 
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .block_footer_icons { 
+      display: flex;
+      gap: 15px;
+      padding-top: 20px;
+      justify-content: left;
+    }
+
+    .block_footer_images {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .images_block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title_mini {
+      font-weight: 700;
+      font-size: 16px;
+      color: #001359;
+    }
+
+
+	</style>
+</head>
+<body>
+	<div class="outer-container">
+		<div class="container">
+			<img src="https://www.odontogroup.com.br/vendas/images/emailGDF/capa-mulher.png" alt="Descrição da imagem" style="display:block; margin:0 auto; width: 779px;">
+      <div class="inner-container">
+        <div class="inner-inner-container">
+          <span class="title_mini">A Inclusão do cliente {{NOMECLIENTE}},</span>
+          <br><br>
+          <span class="title_mini">CPF: {{CPF}},</span>
+          <br><br>
+          <span class="title_mini">TELEFONE: {{TELEFONE}},</span>
+          <br><br>
+          <span class="title_mini">EMAIL: {{EMAIL}},</span>
+          <br><br>
+          <span class="title_mini">FORMA DE PAGAMENTO: {{TIPO_PAGAMENTO}},</span>
+          <br><br>
+          <p> Apresentou um erro, LOGS disponíveis enviados em anexo neste e-mail.</p>
+          <br>
+          <span class="title_mini">OdontoGroup Sistema de Saúde</span>
+        </div>
+      </div>
+    </div>  
+  </div>
+</body>
+</html>

@@ -17,6 +17,14 @@ export default class AssociadoService {
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 
+  async updateAssociadoIncompleto(associado: TbAssociado, status: number, transaction: TransactionClientContract) {
+      const dataAlteracao = DateTime.now().toString()
+      await TbAssociado.query()
+        .where('id_associado', associado.id_associado)
+        .useTransaction(transaction)
+        .update({ cd_status: status, dt_alteraStatus: dataAlteracao})
+  }
+
   async ativarPlanoAssociado(associado: TbAssociado, transaction: TransactionClientContract, cdStatus: number) {
     await TbAssociado.query()
       .where("id_associado", associado.id_associado)
@@ -57,7 +65,7 @@ export default class AssociadoService {
   }
 
  
-  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number, transaction: TransactionClientContract) {
+  async buildAssociado(associado: TbAssociado, params: any, formaPagamento: TbFormasPagamentoIndividual, valorContrato: number, dataExpiracao: DateTime, idVendedor: number,GDF:boolean, transaction: TransactionClientContract) {
     const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(params.idOrgaoExpedidor)
     const uf = await TbUf.findOrFail(params.idOrgaoExpedidorUf)
     
@@ -80,7 +88,6 @@ export default class AssociadoService {
     associado.nu_MatriculaFuncional = params.matricula || null;
     associado.tx_Cargo = params.cargo || null;
     associado.dt_operacao = DateTime.now().toString();
-    associado.dt_Cadastro = DateTime.now().toString()
     associado.dt_alteraStatus = DateTime.local().toString()
     associado.id_parentesco_a = 1;
     associado.nu_CEP = params.cep ? params.cep.replace(/\D/g, "") : "";
@@ -103,7 +110,7 @@ export default class AssociadoService {
     associado.cd_status = 0;
     associado.st_mail = 0;
 
-    associado.nr_proposta = gerarNumeroProposta()
+    associado.nr_proposta = GDF ? params.proposta : gerarNumeroProposta()
     associado.id_prodcomerc_a = formaPagamento.produtoComercial.id_prodcomerc;
 
     await associado.useTransaction(transaction).save()

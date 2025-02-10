@@ -19,6 +19,11 @@ import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import UfService from 'App/Services/UfService';
 import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
+import TbTokenIdParc from 'App/Models/TbTokenIdParc';
+import TbVendedor from 'App/Models/TbVendedor';
+import TbProdutoComercial from 'App/Models/TbProdutoComercial';
+import TbParceiro from 'App/Models/TbParceiro';
+import { all } from 'axios';
 
 @inject()
 export default class IndividualPlanController {
@@ -224,12 +229,14 @@ export default class IndividualPlanController {
     })
     
 
-    let dataVencimento = this.criarDataVencimento()
+    let dataVencimento = this.criarDataVencimento('boleto');
+    let vencimentoDebito = this.criarDataVencimento('debito');
 
     return {
       type: 'individual',
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
+      vendedorId: tokenBanco?.vendedor?.id_vendedor,
       corretora: tokenBanco.corretora,
       parceiro: tokenBanco.parceiro,
       formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
@@ -252,18 +259,20 @@ export default class IndividualPlanController {
       listaEspec: liste, 
       arrGeral: arrGeral,
       vencimentoBoletos: dataVencimento,
+      vencimentoDebito: vencimentoDebito,
       bancos: listaBancos,
       carencias: carencias
     };
   }
 
-  criarDataVencimento() {
+  criarDataVencimento(tipo: string) {
     let datas = [] as any;
     let todayIm = DateTime.local().toFormat('yyyy-MM-dd');
     let nextValue = DateTime.local().plus({ days: 4 }).toFormat('yyyy-MM-dd');
 
     let month = DateTime.local().month;
     let year = DateTime.local().year;
+    let day = DateTime.local().day;
 
     let i = 0;
     let dia = 5;
@@ -279,16 +288,30 @@ export default class IndividualPlanController {
 
     dia = 5;
     do {
+      
       let dtValue = DateTime.local(year, month, dia).plus({ months: 1 }).toFormat('yyyy-MM-dd');
       let dtSelect = DateTime.local(year, month, dia).plus({ months: 1 }).toFormat('yyyy/MM/dd');
+      if(day > 20){
+        dtValue = DateTime.local(year, month, dia).plus({ months: 2 }).toFormat('yyyy-MM-dd');
+        dtSelect = DateTime.local(year, month, dia).plus({ months: 2 }).toFormat('yyyy/MM/dd');
+
+      }
 
       datas[i] = { value: dtValue, select: dtSelect };
 
       dia += 5;
       i++;
     } while (dia < 30);
-    
-    let expiryDates = datas.filter(data => data.value > todayIm && data.value > nextValue).slice(0, 3);
+    let expiryDates = [];
+    if(tipo == 'boleto'){
+      expiryDates = datas.filter(data => data.value > todayIm && data.value > nextValue).slice(0, 4);
+    } else if (tipo === 'debito') {
+      expiryDates = datas.filter(data => {
+        const dataObject = DateTime.fromISO(data.value);
+        const mes = dataObject.month;
+        return data.value > todayIm && mes !== month;
+      });
+    }
 
     return expiryDates;
   }
@@ -306,5 +329,13 @@ export default class IndividualPlanController {
     if(token && !(await this.tokenService.isTokenValido(token))) {
       throw new TokenInvalidoException()
     }
+  }
+  async getPlansBySeller({request}: HttpContextContract) {
+    const params =  request.all();
+
+    const result = await this.planService.getPlansbysellerId(params.vendedorId, params.produtoComercial);
+
+  return result;
+
   }
 }

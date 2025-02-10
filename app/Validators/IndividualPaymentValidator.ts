@@ -4,6 +4,7 @@ export default class PayloadValidator {
   public schema = schema.create({
     token: schema.string(),
     cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
+    verifica: schema.boolean.optional(),
     idBanco: schema.string.optional(),
     conta: schema.string.optional(),
     agencia: schema.string.optional(),
@@ -24,12 +25,15 @@ export default class PayloadValidator {
     cns: schema.string.optional(),
     rg: schema.string.optional(),
     idSexo: schema.number(),
+    qtdVidas: schema.number.optional(),
     idEstadoCivil: schema.number(),
     idFontePagadora: schema.number.optional(),
     idOrgaoExpedidor: schema.number(),
     idOrgaoExpedidorUf: schema.number(),
     perfil: schema.string.optional(),
-    matricula: schema.string.optional(),
+    matricula: schema.string.optional({}, [
+      rules.regex(/^[A-Za-z0-9]{8}$/)
+    ]),
     cargo: schema.string.optional(),
     formaPagamento: schema.object().members({
       gpPagto: schema.number(),
@@ -37,10 +41,14 @@ export default class PayloadValidator {
     }),
     vencimentoDebito: schema.string.optional(),
     vencimentoBoleto: schema.string.optional(),
+    vencimentoConsignado: schema.string.optional(),
+    valor_Mensalidade: schema.number.optional(),
+    proposta: schema.string.optional(),
+    dependenteSamePlan:schema.boolean.optional(),
     dependentes: schema.array.optional().members(
       schema.object().members({
         nome: schema.string(),
-        cpf: schema.string({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
+        cpf: schema.string.optional({}, [rules.minLength(11), rules.regex(/^\d{11}$/)]),
         rg: schema.string.optional(),
         idOrgaoExpedidor: schema.number(),
         idOrgaoExpedidorUf: schema.number(),
@@ -49,6 +57,8 @@ export default class PayloadValidator {
         nomeMae: schema.string(),
         idSexo: schema.number(),
         idParentesco: schema.number(),
+        plano:schema.string.optional(),
+        valor_plano:schema.string.optional(),
       })
     ),
     responsavelFinanceiro: schema.object().members({

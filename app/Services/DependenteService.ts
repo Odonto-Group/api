@@ -5,10 +5,9 @@ import TbOrgaoExpedidor from "App/Models/TbOrgaoExpedidor";
 import TbUf from "App/Models/TbUf";
 import { DateTime } from "luxon";
 export default class DependenteService {
-
   async saveDependente(novoDependente: any, associado: TbAssociado, transaction: TransactionClientContract): Promise<TbDependente> {
-    const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(novoDependente.idOrgaoExpedidor)
-    const uf = await TbUf.findOrFail(novoDependente.idOrgaoExpedidorUf)
+    const orgaoExpedidor = await TbOrgaoExpedidor.findOrFail(novoDependente.idOrgaoExpedidor);
+    const uf = await TbUf.findOrFail(novoDependente.idOrgaoExpedidorUf);
 
     const dependente = new TbDependente();
     dependente.nm_dependente = novoDependente.nome ? novoDependente.nome.toUpperCase() : "";
@@ -25,7 +24,7 @@ export default class DependenteService {
     dependente.id_sexo_d = novoDependente.idSexo || 0;
     dependente.id_parentesco_d = novoDependente.idParentesco || 14;
     dependente.cd_status = 0;
+
     return await dependente.useTransaction(transaction).save();
   }
-
 }

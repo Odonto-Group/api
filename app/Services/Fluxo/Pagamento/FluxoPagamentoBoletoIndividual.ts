@@ -36,12 +36,12 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
 
-        const pagamento = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
+        const payment = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
         const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
 
-        if (pagamento) {
-            
+        if (payment.status) {
+            const pagamento = payment.data;
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
 
             await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(associado.id_associado.toString())
