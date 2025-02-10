@@ -47,7 +47,6 @@ export default class PagamentoBoletoOdontoCobService {
         pagamento.dt_vencimento              = dataPrimeiroVencimento.toString();
         pagamento.tx_linkboleto_odontocob    = linkPagamento;
         pagamento.nu_statusboleto            = 0;
-        pagamento.nu_unico                   = 0;
         pagamento.tx_linhaDigitavel          = geraOc.registro.linhaDigitavel;
         pagamento.tx_codigoBarra             = geraOc.registro.codigoBarra;
         pagamento.tipo_cliente               = tipoPessoa;
