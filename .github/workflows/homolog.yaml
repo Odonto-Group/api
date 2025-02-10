@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ homolog ]
 
 jobs:
   build:
@@ -71,16 +71,16 @@ jobs:
           SOURCE: ""
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          TARGET: /home/apiv2/apiv2.odontogroup.com.br/www/build
+          TARGET: /home/apiv2/hom.apiv2.odontogroup.com.br/www/build
           EXCLUDE: ""
           SCRIPT_BEFORE: ""
           SCRIPT_AFTER: |
             echo $RSYNC_STDOUT
-            cd /home/apiv2/apiv2.odontogroup.com.br/www/build
+            cd /home/apiv2/hom.apiv2.odontogroup.com.br/www/build
             pwd
             tar xfv develop-artifact.tar > deploy_log.txt 2>&1
             rm -rf develop-artifact.tar
-            cp .env.prod .env
+            cp .env.hom .env
             screen -XS api-dev quit
             yarn install --production --non-interactive >> deploy_log.txt 2>&1
             screen -SL api-dev -dm forever start server.js >> deploy_log.txt 2>&1

@@ -23,6 +23,9 @@ import Route from '@ioc:Adonis/Core/Route';
 Route.get('/', async () => {
   return { hello: 'world' }
 })
+Route.get('/teste', async () => {
+  return { hello: 'nothing' }
+})
 
 Route.post('/login', 'AuthenticationController.login')
 Route.post('/logout', 'AuthenticationController.logout').middleware('auth:api')
@@ -54,6 +57,7 @@ Route.group(() => {
   Route.get('/enderecoId','enderecosIdController.getEnderecoInfo')
   Route.get('/AssociadoServidor','GDFAssertivaController.getDadosAssociado')
 }).prefix('/info')
+
 
 Route.group(() => {
   Route.post('/individual/plan', 'IndividualPaymentController.index')

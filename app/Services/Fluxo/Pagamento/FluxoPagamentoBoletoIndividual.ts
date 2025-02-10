@@ -16,6 +16,7 @@ import PagamentoPixOdontoCobService from "App/Services/PagamentoPixOdontoCobServ
 import formatNumberBrValue from "App/utils/FormatNumber";
 import AdesaoEmailContent from "App/interfaces/AdesaoEmailContent.interface";
 import { GrupoPagamento } from "App/Enums/GrupoPagamento";
+import { log } from "console";
 
 @inject()
 export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStrategy {
@@ -31,7 +32,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         private p4XService: P4XService
     ){}
 
-    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, formaPagamento, boletoUnico}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, idPlanoS4E:number, formaPagamento: FormaPagamento, boletoUnico: number}): Promise<RetornoGeracaoPagamentoIndividual> {
+    async iniciarFluxoPagamento({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction, nomePlano, idPlanoS4E, formaPagamento}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract, nomePlano: string, idPlanoS4E:number, formaPagamento: FormaPagamento}): Promise<RetornoGeracaoPagamentoIndividual> {
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
         
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
@@ -40,6 +41,13 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
 
         const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
 
+        let boletoUnico = 0;
+        if(nomePlano.toUpperCase().includes('ANUAL')){
+            console.log('plano anual');
+            associado.nu_vl_mensalidade = associado.nu_vl_mensalidade / 12;
+            associado.save();
+            boletoUnico = 1;
+        }
         if (payment.status) {
             const pagamento = payment.data;
             const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
