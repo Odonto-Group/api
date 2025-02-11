@@ -27,6 +27,7 @@ import formatNumberBrValue from 'App/utils/FormatNumber';
 import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamentoEmpresa.interface';
 import CompanyPaymentValidator from 'App/Validators/CompanyPaymentValidator';
 import LogService from 'App/Services/Log/Log';
+import Application from '@ioc:Adonis/Core/Application'
 
 @inject()
 export default class CompanyPaymentController {
@@ -199,6 +200,59 @@ export default class CompanyPaymentController {
     if (categoria.nu_vidas_max && numeroVidas > categoria.nu_vidas_max) {
       throw new QuantidadeDeVidasAcimaDoMaximo()
     }
+  }
+
+  public async uploadFiles( request: RequestContract ) {
+
+    // Processar arquivos na raiz
+    const rootFiles = ['CNPJCard', 'CSMei', 'ComprovanteResi', 'Identidade']
+    for (const fileTag of rootFiles) {
+      const file = request.file(fileTag, {
+        extnames: ['pdf', 'jpg', 'jpeg'],
+        size: '2mb',
+      })
+
+      if (file) {
+        if (!file.isValid) {
+          throw new Error(file.errors.toString());
+        }
+        await file.move(Application.tmpPath('uploads'))
+      }
+    }
+
+    // Processar arquivos de funcionários e dependentes
+    const funcionarios = request.input('funcionarios', [])
+    for (const funcionario of funcionarios) {
+      const funcionarioFile = request.file(`funcionario_${funcionario.id}_file`, {
+        extnames: ['pdf', 'jpg', 'jpeg'],
+        size: '2mb',
+      })
+
+      if (funcionarioFile) {
+        if (!funcionarioFile.isValid) {
+          throw new Error(funcionarioFile.errors.toString());
+        }
+        await funcionarioFile.move(Application.tmpPath('uploads'))
+      }
+
+      const dependentes = funcionario.dependentes || []
+      for (const dependente of dependentes) {
+        const dependenteFile = request.file(`dependente_${dependente.id}_file`, {
+          extnames: ['pdf', 'jpg', 'jpeg'],
+          size: '2mb',
+        })
+
+        if (dependenteFile) {
+          if (!dependenteFile.isValid) {
+            throw new Error(dependenteFile.errors.toString());
+          }
+          await dependenteFile.move(Application.tmpPath('uploads'))
+        }
+      }
+    }
+
+
+    return true;
   }
 
 }
