@@ -36,7 +36,6 @@ export default class AssertivaService {
           'Authorization': 'Bearer ' + `${token.access_token}`,
         },
       });
-
       if (response.status === 200) {
         return response.data;
       } else {

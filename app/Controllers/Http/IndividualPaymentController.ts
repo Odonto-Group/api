@@ -198,7 +198,7 @@ export default class IndividualPaymentController {
       //throw new Exception("PAGAMENTO CONSIGNADO NÃO FOI DESENVOLVIDO");
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.BOLETO) { // BOLETO
 
-      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, formaPagamento: FormaPagamento.BOLETO, boletoUnico: 0})
+      returnPayment = await this.fluxoPagamentoBoleto.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, formaPagamento: FormaPagamento.BOLETO})
     } else if (params.formaPagamento.gpPagto == GrupoPagamento.CARTAO_CREDITO)  { //CARTAO
       returnPayment = await this.fluxoPagamentoCartao.iniciarFluxoPagamento({associado, responsavelFinanceiro, transaction, dataPrimeiroVencimento, nomePlano, idPlanoS4E, params})
     } else {
@@ -306,5 +306,20 @@ export default class IndividualPaymentController {
       default:
         throw new FormaPagamentoNaoEncontrada();
     }
+  }
+  async fluxoGerarBoleto({ request, response }: HttpContextContract) {
+    const dados = request.all();
+    const associado = await this.associadoService.findAssociadoByCpf(dados.cpf);
+    const responsavelFinanceiro = await this.responsavelFinanceiroService.buscarResponsavelFinanceiroPorIdAssociado(associado.id_associado);
+    const dataPrimeiroVencimento = DateTime.fromFormat(dados.vencimentoBoleto, "dd/MM/yyyy");
+    console.log('associado:', associado);
+    console.log('responsavelFinanceiro:', responsavelFinanceiro);
+    console.log('dataPrimeiroVencimento:', dataPrimeiroVencimento);
+    await Database.transaction(async (transaction) => {
+      const boletoGerado = await this.fluxoPagamentoBoleto.gerarBoleto({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction});      
+      return boletoGerado;
+    });
+
+    return null;
   }
 }

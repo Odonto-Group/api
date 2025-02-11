@@ -78,9 +78,9 @@ jobs:
             echo $RSYNC_STDOUT
             cd /home/apiv2/dev.apiv2.odontogroup.com.br/www/build
             pwd
-            tar xfv develop-artifact.tar
+            tar xfv develop-artifact.tar > deploy_log.txt 2>&1
             rm -rf develop-artifact.tar
-            cp .env.dev .env
+            cp .env.sand .env
             screen -XS api-dev quit
-            yarn install --production --non-interactive
-            screen -SL api-dev -dm forever server.js
+            yarn install --production --non-interactive >> deploy_log.txt 2>&1
+            screen -SL api-dev -dm forever start server.js >> deploy_log.txt 2>&1
