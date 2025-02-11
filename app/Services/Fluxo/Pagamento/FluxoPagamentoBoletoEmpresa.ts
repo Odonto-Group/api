@@ -174,7 +174,9 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                     await this.ApiV3Service.createCarenciaPME(empresaS4e.dados, empresa.DT_CADASTRO);
                     for (const funcionario of params.funcionarios) {
                         const associadoBody = await this.criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, empresaS4e.dados, produtoComercial.id_ProdutoS4E_c, mensalidade ,TokenV1);
-                        await this.S4eService.includeAssociadoPJ(associadoBody);
+                        console.log('associadoBody: ', associadoBody);
+                        const retornoCriarAssociado = await this.S4eService.includeAssociadoPJ(associadoBody);
+                        console.log('retorno criar associado: ', retornoCriarAssociado);
                     }
                 }
                 const paymentStatus = PaymentStatus.EXPORTADO;
