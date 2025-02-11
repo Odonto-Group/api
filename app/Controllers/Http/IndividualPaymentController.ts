@@ -32,6 +32,7 @@ import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPaga
 import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidator';
 import LogService from 'App/Services/Log/Log';
 import { MailSenderService } from 'App/Services/MailSenderService';
+import { decryptData, encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
 
 
 @inject()
@@ -54,7 +55,8 @@ export default class IndividualPaymentController {
       }
 
   async index({ request, response }: HttpContextContract) {   
-    const entrada = request.all();
+    const encryptedEntrada = request.all();
+    const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
     const tipoRequisicao = 'Pagamento';
     const Id = entrada.proposta || entrada.cpf;
     const dataCadastro = DateTime.now().toString();
@@ -67,7 +69,8 @@ export default class IndividualPaymentController {
         
         transaction.commit();
 
-        return response.json(retorno);
+        const encryptedRetorno = encryptData(JSON.stringify(retorno)); // criptografar aqui
+        return response.json({ data: encryptedRetorno }); // enviar resposta criptografada
       } catch (error) {
         this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error.message });
         const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
