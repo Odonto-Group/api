@@ -61,6 +61,7 @@ Route.group(() => {
 
 Route.group(() => {
   Route.post('/individual/plan', 'IndividualPaymentController.index')
+  Route.post('/individual/boleto', 'IndividualPaymentController.fluxoGerarBoleto')
   Route.post('/company/plan/old', 'CompanyPaymentController.index')
   Route.post('/company/plan', 'CompanyPaymentController.fluxoPagamentoPlanoEmpresa')
 }).prefix('/payment')

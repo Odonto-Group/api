@@ -47,8 +47,8 @@ export default class ApiV3Service {
           return false;
         }
       } catch (error) {
-        console.log('error message createCarencias: ', error.message);
-        throw new ErroInclusaoAssociadoS4EException()
+        console.log('error message createCarencias: ', error);
+        throw new Error('Erro ao criar carencias: ' + error.message);
       }
     } else {
       throw Error('Erro ao solicitar Token Api V3 na chamada carencias ');
