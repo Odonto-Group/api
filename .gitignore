@@ -1,6 +1,7 @@
 node_modules
 build
 coverage
+/logs
 .vscode
 .DS_STORE
 .env

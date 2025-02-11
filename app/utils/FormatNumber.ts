@@ -6,6 +6,6 @@ export default function formatNumberBrValue(value: number) {
       }
   
     let brazilString = new Intl.NumberFormat( 'pt-br', formatting_options );
-    
+    console.log(brazilString.format(value));
     return brazilString.format(value)
 }

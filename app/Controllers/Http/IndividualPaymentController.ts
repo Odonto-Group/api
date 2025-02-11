@@ -304,4 +304,19 @@ export default class IndividualPaymentController {
         throw new FormaPagamentoNaoEncontrada();
     }
   }
+  async fluxoGerarBoleto({ request, response }: HttpContextContract) {
+    const dados = request.all();
+    const associado = await this.associadoService.findAssociadoByCpf(dados.cpf);
+    const responsavelFinanceiro = await this.responsavelFinanceiroService.buscarResponsavelFinanceiroPorIdAssociado(associado.id_associado);
+    const dataPrimeiroVencimento = DateTime.fromFormat(dados.vencimentoBoleto, "dd/MM/yyyy");
+    console.log('associado:', associado);
+    console.log('responsavelFinanceiro:', responsavelFinanceiro);
+    console.log('dataPrimeiroVencimento:', dataPrimeiroVencimento);
+    await Database.transaction(async (transaction) => {
+      const boletoGerado = await this.fluxoPagamentoBoleto.gerarBoleto({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction});      
+      return boletoGerado;
+    });
+
+    return null;
+  }
 }

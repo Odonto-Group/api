@@ -36,7 +36,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         let tipoPessoa = {} as TipoPessoaBoletoIndividual
         
         tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
-
+        console.log('tipoPessoa', tipoPessoa.bodyPagamento);
         const payment = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
 
         const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
@@ -45,7 +45,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         if(nomePlano.toUpperCase().includes('ANUAL')){
             console.log('plano anual');
             associado.nu_vl_mensalidade = associado.nu_vl_mensalidade / 12;
-            associado.save();
+            associado.useTransaction(transaction).save();
             boletoUnico = 1;
         }
         if (payment.status) {
@@ -86,6 +86,45 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         }
 
         return retorno
+    }
+
+    async gerarBoleto({associado, responsavelFinanceiro, dataPrimeiroVencimento, transaction}: {associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime, transaction: TransactionClientContract}): Promise<RetornoGeracaoPagamentoIndividual> {
+        let tipoPessoa = {} as TipoPessoaBoletoIndividual
+        const retorno = {grupoPagamento: GrupoPagamento.BOLETO} as RetornoGeracaoPagamentoIndividual
+        
+        tipoPessoa = await this.criaBodyPessoaFisica(associado, responsavelFinanceiro, dataPrimeiroVencimento);
+        console.log('tipoPessoa', tipoPessoa.bodyPagamento);
+        
+        const payment = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
+
+
+        let boletoUnico = 0;
+        if (payment.status) {
+            const pagamento = payment.data;
+            const linkPagamento = this.urlP4xLinkPagamento.replace('idPagamento', pagamento.id)
+
+            await this.pagamentoBoletoOdontoCobService.blAtivoFalseByCliente(associado.id_associado.toString())
+
+            await this.pagamentoBoletoOdontoCobService.removeByClient(tipoPessoa.idAssociado, transaction);
+
+            await this.pagamentoBoletoOdontoCobService.savePagamento(tipoPessoa.idAssociado, pagamento, dataPrimeiroVencimento, linkPagamento, "PF", tipoPessoa.numeroProsposta, boletoUnico, transaction);
+
+            await this.pagamentoPixOdontoCobService.removePagamentoIndividualPix(tipoPessoa.idAssociado, transaction);
+
+            await this.pagamentoPixOdontoCobService.savePagamentoIndividual(tipoPessoa.idAssociado, associado.nu_vl_mensalidade, pagamento, dataPrimeiroVencimento, transaction);
+            const pix = {
+                copiaCola: pagamento.pix ? pagamento.pix.copiaCola : null,
+                qrCode: pagamento.pix ? pagamento.pix.base64: null
+            } as Pix
+
+            retorno.pix = pix
+            retorno.linkPagamento = linkPagamento;
+            retorno.formaPagamento = FormaPagamento.BOLETO;
+    
+        } else {
+            throw new NaoFoiPossivelCriarPagamento();
+        }
+        return retorno;
     }
 
     async criaBodyPessoaFisica(associado: TbAssociado, responsavelFinanceiro: TbResponsavelFinanceiro, dataPrimeiroVencimento: DateTime): Promise<TipoPessoaBoletoIndividual> {
