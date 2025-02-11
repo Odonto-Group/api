@@ -44,15 +44,7 @@ const corsConfig: CorsConfig = {
   |                     one of the above values.
   |
   */
-  origin: [
-    'https://dev.vendas.odontogroup.com.br',
-    'https://dev.odontogroup.com.br',
-    'https://hom.odontogroup.com.br',
-    'https://odontogroup.com.br',
-    'https://app.odontogroup.com.br',
-    'https://dev.app.odontogroup.com.br',
-    'https://hom.app.odontogroup.com.br'
-   ],
+  origin: '*',
   
   /*
   |--------------------------------------------------------------------------
