@@ -1,8 +1,11 @@
 {
   "extends": "adonis-preset-ts/tsconfig.json",
   "include": [
-    "**/*"
-, "app/Exceptions/.ts"  ],
+    "**/*",
+    "app/Exceptions/.ts",
+    "app/**/*.ts",
+    "tests/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "build"
@@ -31,7 +34,14 @@
       "@adonisjs/repl",
       "@japa/preset-adonis/build/adonis-typings",
       "@adonisjs/auth",
-      "@adonisjs/lucid"
-    ]
+      "@adonisjs/lucid",
+      "node",
+      "mocha"
+    ],
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
 }

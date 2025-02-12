@@ -55,6 +55,10 @@ export default class IndividualPaymentController {
       }
 
   async index({ request, response }: HttpContextContract) {   
+    
+    console.log('ENCRYPTION_KEY:', process.env.ENCRYPTION_KEY);
+    console.log('REACT_APP_ENCRYPTION_KEY:', process.env.REACT_APP_ENCRYPTION_KEY);
+
     const encryptedEntrada = request.all();
     const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
     const tipoRequisicao = 'Pagamento';
