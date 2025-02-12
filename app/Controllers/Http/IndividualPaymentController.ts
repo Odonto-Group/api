@@ -31,6 +31,7 @@ import { MultipartFileContract } from '@ioc:Adonis/Core/BodyParser';
 import RetornoGeracaoPagamentoIndividual from 'App/interfaces/RetornoGeracaoPagamentoIndividual.interface';
 import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidator';
 import LogService from 'App/Services/Log/Log';
+import { validator } from '@ioc:Adonis/Core/Validator'
 import { MailSenderService } from 'App/Services/MailSenderService';
 import { decryptData, encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
 
@@ -60,7 +61,10 @@ export default class IndividualPaymentController {
     console.log('REACT_APP_ENCRYPTION_KEY:', process.env.REACT_APP_ENCRYPTION_KEY);
 
     const encryptedEntrada = request.all();
+
+    console.log('chego aqui: ', encryptedEntrada);
     const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
+    console.log('entrada: ', entrada);
     const tipoRequisicao = 'Pagamento';
     const Id = entrada.proposta || entrada.cpf;
     const dataCadastro = DateTime.now().toString();
@@ -104,9 +108,13 @@ export default class IndividualPaymentController {
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract, dataCadastro: string) {
     //const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
     //const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
-    const teste = request.all();
-    console.log('entrada teste:', teste);
-    const params = await request.validate(IndividualPaymentValidator)
+    const encryptedEntrada = request.all();
+    console.log('entrada teste:', encryptedEntrada);
+    const entrada = decryptData(encryptedEntrada.data);
+    const params = await validator.validate({
+      schema: new IndividualPaymentValidator().schema,
+      data: entrada
+    });
     const token = params.token
     //const arquivos = request.allFiles()
 

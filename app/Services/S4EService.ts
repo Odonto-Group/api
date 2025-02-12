@@ -62,7 +62,7 @@ export default class S4EService {
 
     const endereco = response.data.dados;
 
-    const enderecoValidado = await  await validator.validate({
+    const enderecoValidado =  await validator.validate({
       schema: new EnderecoValidator().schema,
       data: endereco
     });
