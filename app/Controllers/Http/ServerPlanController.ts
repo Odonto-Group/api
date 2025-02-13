@@ -19,6 +19,7 @@ import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import UfService from 'App/Services/UfService';
 import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
+import { encryptData } from 'App/utils/cryptoUtils';
 
 @inject()
 export default class ServerPlanController {
@@ -60,7 +61,7 @@ export default class ServerPlanController {
     
     return response.json(data);
   }
-  async getPlanDetails({ request }: HttpContextContract) {
+  async getPlanDetails({ request, response }: HttpContextContract) {
     const token = request.params().token
 
     await this.validaToken(token)
@@ -231,7 +232,7 @@ export default class ServerPlanController {
     let dataVencimento = this.criarDataVencimento()
     const ProdGdf = [993,998,999,1000];
 
-    return {
+    const responseData = {
       type: ProdGdf.includes(produtoComercial.id_prodcomerc) ? 'Servidor GDF'  : 'Servidor',
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
@@ -262,6 +263,12 @@ export default class ServerPlanController {
       bancos: listaBancos,
       carencias: carencias
     };
+
+    // Enviando a resposta criptografada para a aplicação
+    const encryptedResponse = encryptData(JSON.stringify(responseData));
+
+     // Enviando a resposta criptografada para a aplicação
+    return response.json({ data: encryptedResponse});
   }
 
   criarDataVencimento() {

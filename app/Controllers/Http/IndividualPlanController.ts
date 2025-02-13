@@ -24,7 +24,7 @@ import TbVendedor from 'App/Models/TbVendedor';
 import TbProdutoComercial from 'App/Models/TbProdutoComercial';
 import TbParceiro from 'App/Models/TbParceiro';
 import { all } from 'axios';
-import { decryptData, encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
+import { encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
 
 @inject()
 export default class IndividualPlanController {

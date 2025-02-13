@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 
 import { inject } from '@adonisjs/fold';
 import AssertivaService from 'App/Services/AssertivaService';
+import { encryptData } from 'App/utils/cryptoUtils';
 
 @inject()
 export default class AssertivaController {
@@ -16,6 +17,15 @@ export default class AssertivaController {
     if (!data.resposta.dadosCadastrais || data.erro) {
       return response.json({ message: 'Problema ao buscar informações!' });
     }
-    return response.json({nome: data.resposta.dadosCadastrais.nome, dataNascimento: data.resposta.dadosCadastrais.dataNascimento, maeNome: data.resposta.dadosCadastrais.maeNome});
+
+    const responseData = {
+      nome: data.resposta.dadosCadastrais.nome,
+      dataNascimento: data.resposta.dadosCadastrais.dataNascimento,
+      maeNome: data.resposta.dadosCadastrais.maeNome,
+    };
+
+    const encryptedResponse = encryptData(JSON.stringify(responseData));
+
+    return response.json({ data: encryptedResponse});
   }
 }
