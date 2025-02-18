@@ -33,7 +33,7 @@ import IndividualPaymentValidator from 'App/Validators/IndividualPaymentValidato
 import LogService from 'App/Services/Log/Log';
 import { validator } from '@ioc:Adonis/Core/Validator'
 import { MailSenderService } from 'App/Services/MailSenderService';
-import { decryptData, encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
+//import { decryptData, encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
 
 
 @inject()
@@ -62,9 +62,8 @@ export default class IndividualPaymentController {
 
     const encryptedEntrada = request.all();
 
-    console.log('chego aqui: ', encryptedEntrada);
-    const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
-    console.log('entrada: ', entrada);
+    //const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
+    const entrada = request.all(); // decriptar aqui
     const tipoRequisicao = 'Pagamento';
     const Id = entrada.proposta || entrada.cpf;
     const dataCadastro = DateTime.now().toString();
@@ -77,8 +76,9 @@ export default class IndividualPaymentController {
         
         transaction.commit();
 
-        const encryptedRetorno = encryptData(JSON.stringify(retorno)); // criptografar aqui
-        return response.json({ data: encryptedRetorno }); // enviar resposta criptografada
+        //const encryptedRetorno = encryptData(JSON.stringify(retorno)); // criptografar aqui
+        //return response.json({ data: encryptedRetorno }); // enviar resposta criptografada
+        return response.json({ data: retorno }); // enviar resposta criptografada
       } catch (error) {
         this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error.message });
         const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
@@ -110,7 +110,8 @@ export default class IndividualPaymentController {
     //const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
     const encryptedEntrada = request.all();
     console.log('entrada teste:', encryptedEntrada);
-    const entrada = decryptData(encryptedEntrada.data);
+    //const entrada = decryptData(encryptedEntrada.data);
+    const entrada = request.all();
     const params = await validator.validate({
       schema: new IndividualPaymentValidator().schema,
       data: entrada

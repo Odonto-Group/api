@@ -90,4 +90,5 @@ Route.group(() => {
   Route.get('/mailAllUsers', 'SendMailController.sendMailAllUsers');
   Route.get('/ErrorMail', 'SendMailController.ErrorMail');
   Route.post('/createCarencia', 'CarenciaController.testeCarencia');
+  Route.get('/reroll', 'fixController.fixlogs');
 }).prefix('/test');

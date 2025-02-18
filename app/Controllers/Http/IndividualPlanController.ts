@@ -24,7 +24,7 @@ import TbVendedor from 'App/Models/TbVendedor';
 import TbProdutoComercial from 'App/Models/TbProdutoComercial';
 import TbParceiro from 'App/Models/TbParceiro';
 import { all } from 'axios';
-import { encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
+//import { encryptData } from 'App/utils/cryptoUtils'; // Caminho corrigido
 
 @inject()
 export default class IndividualPlanController {
@@ -266,10 +266,41 @@ export default class IndividualPlanController {
     };
 
     // Criptografando a resposta
-    const encryptedResponse = encryptData(JSON.stringify(responseData));
+    //const encryptedResponse = encryptData(JSON.stringify(responseData));
 
     // Enviando a resposta criptografada para a aplicação
-    return response.json({ data: encryptedResponse });
+   // return response.json({ data: encryptedResponse });
+    return response.json({
+      type: 'individual',
+      produtoComercial: produtoComercial,
+      vendedor: tokenBanco?.vendedor?.tx_nome,
+      vendedorId: tokenBanco?.vendedor?.id_vendedor,
+      corretora: tokenBanco.corretora,
+      parceiro: tokenBanco.parceiro,
+      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
+      listaFormaPagamentos: formasPagamento,
+      equipes: equipe,
+      angariadores: angariador,
+      promotores: promotor,
+      agencias: agencia,
+      categoria: tokenBanco.parceiro.produtoComercial.categoria,
+      listaUFS: ufs,
+      vendedorPN: tokenBanco?.vendedor?.tx_nome?.split(" ")[0],
+      listaOrgaosExpedidor: listaOrgaoExpedidor,
+      listaSexos: listaSexos,
+      listaEstadosCivil: listaEstadoCivil,
+      orgaos: orgaos,
+      perfis: perfils,
+      fontePagamentos: fontePagadora,
+      listaParentescos: listaParentesco,
+      token: token,
+      listaEspec: liste, 
+      arrGeral: arrGeral,
+      vencimentoBoletos: dataVencimento,
+      vencimentoDebito: vencimentoDebito,
+      bancos: listaBancos,
+      carencias: carencias
+    });
   }
 
   criarDataVencimento(tipo: string) {

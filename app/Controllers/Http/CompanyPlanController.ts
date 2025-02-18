@@ -19,7 +19,7 @@ import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import UfService from 'App/Services/UfService';
 import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
-import { encryptData } from 'App/utils/cryptoUtils';
+//import { encryptData } from 'App/utils/cryptoUtils';
 
 @inject()
 export default class CompanyPlanController {
@@ -255,10 +255,11 @@ export default class CompanyPlanController {
     };
 
     // Criptografando a resposta
-    const encryptedResponse = encryptData(JSON.stringify(responseData));
+    //const encryptedResponse = encryptData(JSON.stringify(responseData));
 
     // Enviando a resposta criptografada para a aplicação
-    return response.json({data: encryptedResponse });
+    //return response.json({data: encryptedResponse });
+    return response.json({data: responseData });
   }
 
   criarDataVencimento() {

@@ -129,6 +129,27 @@ export default class S4EService {
   }
 }
 
+async getAssociadoByCpfProposta(cpf: string) {
+  try {
+    const response = await axios.get(`${this.s4eApiV2}Associados?token=${this.s4eTokenV1}&cpfAssociado=${cpf}`)
+        if (response.status !== 200) {
+      throw new Error('Erro ao buscar Associado: ' + response.data.title)
+    }
+    
+    const retorno = response.data.dados.find(x => 
+      x.dependentes.some(dep => dep.codigoGrauParentesco == 1 && dep.codigoSituacao == 1)
+  );
+    if (!retorno){
+      throw new Error('Associado não encontrado');
+    }
+    return retorno;
+
+  } catch (error) {
+    console.error('Erro ao Associado S4e:', error.message)
+    throw new Error(error.message);
+  }
+}
+
 async includeEmpresa(body: any) {
   try {
     const response = await axios.post(`${this.s4eIncludePj}empresa/NovaEmpresa`, body);
