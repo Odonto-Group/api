@@ -5,6 +5,7 @@ import TbOrgaoExpedidor from 'App/Models/TbOrgaoExpedidor';
 import TbUf from 'App/Models/TbUf';
 import gerarNumeroProposta from 'App/utils/Proposta';
 import { DateTime } from 'luxon';
+import { subDays, format } from 'date-fns';
 
 export default class AssociadoService {
   
@@ -17,11 +18,10 @@ export default class AssociadoService {
         .update({ cd_status: 2, dt_alteraStatus: dataPagamento, dt_inicio_vigencia: dataPagamento})
   }
 
-  async updateAssociadoIncompleto(associado: TbAssociado, status: number, transaction: TransactionClientContract) {
+  async updateAssociadoIncompleto(associado: TbAssociado, status: number) {
       const dataAlteracao = DateTime.now().toString()
       await TbAssociado.query()
         .where('id_associado', associado.id_associado)
-        .useTransaction(transaction)
         .update({ cd_status: status, dt_alteraStatus: dataAlteracao})
   }
 
@@ -38,6 +38,19 @@ export default class AssociadoService {
     .preload('responsavelFinanceiro')
     .where("nu_cpf", cpfAssociado)
     .first();
+
+    return associado || new TbAssociado;
+
+  }
+
+  async findAssociadoByStatusandEmpresa(status: string, idEmpresa: string): Promise<TbAssociado[]> {
+    const data = format(subDays(new Date(), 30), "yyyy-MM-dd");
+    const associado = await TbAssociado
+    .query()
+    .preload('responsavelFinanceiro')
+    .where("cd_status", status)
+    .where("dt_operacao", ">" ,data)
+    .where("cd_CodContratoS4E", idEmpresa);
 
     return associado || new TbAssociado;
 

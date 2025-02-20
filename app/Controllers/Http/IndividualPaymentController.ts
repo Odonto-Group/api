@@ -56,10 +56,6 @@ export default class IndividualPaymentController {
       }
 
   async index({ request, response }: HttpContextContract) {   
-    
-    console.log('ENCRYPTION_KEY:', process.env.ENCRYPTION_KEY);
-    console.log('REACT_APP_ENCRYPTION_KEY:', process.env.REACT_APP_ENCRYPTION_KEY);
-
     const encryptedEntrada = request.all();
 
     //const entrada = decryptData(encryptedEntrada.data); // decriptar aqui
@@ -80,18 +76,19 @@ export default class IndividualPaymentController {
         //return response.json({ data: encryptedRetorno }); // enviar resposta criptografada
         return response.json({ data: retorno }); // enviar resposta criptografada
       } catch (error) {
+        transaction.commit();
         this.logService.writeLog(Id, tipoRequisicao, { local:'individual', type: 'erro', data: error.message });
         const associado = await this.associadoService.findAssociadoByCpf(entrada.cpf);
+        console.log('associado:', associado);
         if (error.message.includes('Titular já cadastrado')){
           if (associado && associado.$attributes.id_associado && associado.$attributes.dt_Cadastro != dataCadastro){
-            transaction.rollback();
           } else {
             associado.dt_Cadastro = dataCadastro;
-            await this.associadoService.updateAssociadoIncompleto(associado, 5, transaction);
+            await this.associadoService.updateAssociadoIncompleto(associado, 5);
           }
         } else {
           associado.dt_Cadastro = dataCadastro;
-          await this.associadoService.updateAssociadoIncompleto(associado, 0, transaction);
+          await this.associadoService.updateAssociadoIncompleto(associado, 0);
         }
         transaction.commit();
         
@@ -108,8 +105,8 @@ export default class IndividualPaymentController {
   async fluxoPagamentoPlano(request: RequestContract, transaction: TransactionClientContract, dataCadastro: string) {
     //const nomeArquivo = this.nomeArquivoIndividualDependente.replace("idDependente", "123TESTE123".toString());
     //const caminhoArquivo = this.linkArquivoIndividualDependente.replace("idAssociado", "123TESTE123".toString());
-    const encryptedEntrada = request.all();
-    console.log('entrada teste:', encryptedEntrada);
+    /* const encryptedEntrada = request.all();
+    console.log('entrada teste:', encryptedEntrada); */
     //const entrada = decryptData(encryptedEntrada.data);
     const entrada = request.all();
     const params = await validator.validate({
@@ -138,7 +135,7 @@ export default class IndividualPaymentController {
     let testValue = false;
     if(produtosGDF.includes(produtoComercial.id_prodcomerc)){
       testValue = true;
-      GDF = params.verifica ? params.verifica : false;
+      GDF = true;
     }
     if (associado.cd_status && associado.cd_status != 0 && !GDF) {
         throw new AssociadoComPlanoJaCadastrado();

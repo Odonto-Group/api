@@ -79,12 +79,10 @@ class FixInsertService {
 
     private async sendDataToApi(data: any) {
         try {
-            console.log('chegou informação: ', data);
-            const envio = encryptData(JSON.stringify(data));
-            const url = 'http://localhost:3334';
-            const response = await axios.post(`${url}/payment/individual/plan`, envio);
+            const url = 'https://api.v2.odontogroup.com.br';
+            const response = await axios.post(`${url}/payment/individual/plan`, data);
             console.log('Data sent successfully:', response.data);
-            const resposta = decryptData(response.data);
+            const resposta = response.data;
             return resposta;
         } catch (error) {
             console.error('Error sending data to API:', error);

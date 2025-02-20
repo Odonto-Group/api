@@ -1,6 +1,7 @@
 import Env from '@ioc:Adonis/Core/Env'
 import TbAssociado from 'App/Models/TbAssociado';
 import TbResponsavelFinanceiro from 'App/Models/TbResponsavelFinanceiro';
+import { default as axios } from 'axios';
 import fetch from 'node-fetch';
 
 export default class SmsService {
@@ -35,21 +36,25 @@ export default class SmsService {
   async sendSmsUrlAdesao(number: string, plano: string, nomeCliente: string, linkPagamento: string) {
 
     const payload = {
-      body: `Prezado(a) ${nomeCliente},
+      messages: [{
+      from: 'OdontoGroup',
+      text: `Prezado(a) ${nomeCliente},
       Gostaríamos de informar que sua adesão do plano ${plano}
       está quase concluída, segue o link do pagamento: ${linkPagamento}.
       OdontoGroup Sistema de Saúde`,
-      to: this.smsDefaultTeste || number,
-    };
+      destinations:[{
+      to:"55" + (this.smsDefaultTeste || number),
+      }],
+    }]};
 
     try {
-      await fetch(Env.get('SMS_PROVIDER_URL'), {
-        method: 'POST',
+      const url = Env.get('SMS_PROVIDER_URL');
+      const Token = Env.get('SMS_PROVIDER_TOKEN');
+      const teste = await axios.post(url, JSON.stringify(payload),{
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Env.get('SMS_PROVIDER_TOKEN')}`,
-        },
-        body: JSON.stringify(payload),
+          'Authorization': `App ${Token}`,
+          },
       });
     } catch (error) {
       console.error('Erro ao enviar SMS:', error);
