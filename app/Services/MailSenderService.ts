@@ -684,21 +684,25 @@ export class MailSenderService {
     const ans = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'empresa', `ANS.png`));
     const odontoGroup = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'empresa', `odonto-group.png`));
     const instagram = await fs.promises.readFile(path.join(__dirname, '..', '..', 'email', 'adesao', 'empresa', `instagram-logo.png`));
-
+  
     const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
-
+  
     let finalHtmlContent = htmlContent;
-
+  
+    // Substitui os placeholders do HTML com os dados enviados
     for (const key in data) {
       const value = data[key];
       finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
     }
-
+  
     const to = this.emailOuvidoria;
+    const userEmail = data.email;  // O e-mail preenchido no formulário
+  
+    // Criação das opções de e-mail, incluindo o e-mail do usuário
     const mailOptions = {
       from: this.fromEmail,
       bcc: this.bccEmail,
-      to,
+      to: [to, userEmail],  // Envia para o e-mail do usuário e também para o destinatário principal
       subject: `Ouvidoria - ${data.subject ?? data.name}`,
       html: finalHtmlContent,
       attachments: [
@@ -729,7 +733,7 @@ export class MailSenderService {
         }
       ]
     };
-
+  
     try {
       await mailerConfig.sendMail(mailOptions);
     } catch (error) {
