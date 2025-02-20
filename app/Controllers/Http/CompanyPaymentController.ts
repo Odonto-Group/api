@@ -79,7 +79,7 @@ export default class CompanyPaymentController {
         this.logService.writeLog(Id == 0 ? retorno.numeroProposta : Id , tipoRequisicao, { local:'empresarial', type: 'saida', data: retorno });
         transaction.commit();
 
-        return retorno;
+        return response.json({ data: retorno });
       } catch (error) {
         this.logService.writeLog(Id, tipoRequisicao, { local:'empresarial', type: 'erro', data: error });
         transaction.rollback();

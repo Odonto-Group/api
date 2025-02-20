@@ -53,8 +53,9 @@ export default class S4EService {
 
   async getEnderecoByCep(cep: string): Promise<EnderecoS4e> {
   try {
+    console.log('cep enviado: ', cep);
     const response = await axios.post(`${this.s4eIncludePj}redeatendimento/Endereco?token=${this.s4eTokenV1}&cep=${cep}`)
-    console.log("Retorno da consulta do cep:", response.data.dados);
+    console.log("Retorno da consulta do cep:", response);
 
     if (response.status !== 200) {
       throw new Error('Erro ao buscar endereço')

@@ -173,7 +173,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                 if (empresaS4e) {
                     await this.ApiV3Service.createCarenciaPME(empresaS4e.dados, empresa.DT_CADASTRO);
                     for (const funcionario of params.funcionarios) {
-                        const associadoBody = await this.criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, empresaS4e.dados, produtoComercial.id_ProdutoS4E_c, mensalidade ,TokenV1);
+                        const associadoBody = await this.criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, empresaS4e.dados, produtoComercial.id_ProdutoS4E_c, String(mensalidade) ,TokenV1);
                         console.log('associadoBody: ', associadoBody);
                         const retornoCriarAssociado = await this.S4eService.includeAssociadoPJ(associadoBody);
                         console.log('retorno criar associado: ', retornoCriarAssociado);
@@ -202,7 +202,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         return retorno;
     }
 
-    async processDependentes(associado, dataPrimeiroVencimento, planoId, valor) {
+    async processDependentes(associado, dataPrimeiroVencimento, planoId, valor: string) {
         const dependents = associado.dependentes;
         const deps: any[] = [];
         const nascimento = await this.parseDate(associado.dataNascimento);
@@ -214,7 +214,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
             cpf: associado.cpf,
             sexo: associado.idSexo === 1 ? 0 : 1, // 0 - Feminino, 1 - Masculino
             plano: planoId,
-            planoValor: valor,
+            planoValor: valor.replace('.', ','),
             nomeMae: associado.nomeMae,
             numeroCarteira: "",
             carenciaAtendimento: 0,
@@ -248,7 +248,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
                     tipo: item.idParentesco === 10 ? 3 : 4,
                     plano: planoId,
                     numeroProposta: Number(associado.nr_proposta),
-                    planoValor: valor,
+                    planoValor: valor.replace('.', ','),
                     nomeMae: item.nomeMae,
                     numeroCarteira: "",
                     carenciaAtendimento: 0,
@@ -391,7 +391,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
         return formattedDate;
     }
     
-    async criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, codEmpresa, planoId, valor, TokenV1) {        
+    async criarFuncionarioBody(params, dataPrimeiroVencimento, funcionario, codEmpresa, planoId, valor: string, TokenV1) {        
         const CEP = funcionario.cep.replace('.', '').replace('-','');
         const dependentes = await this.processDependentes(funcionario, dataPrimeiroVencimento, planoId, valor);
         const endereco = await this.S4eService.getEnderecoByCep(CEP);
