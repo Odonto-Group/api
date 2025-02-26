@@ -16,6 +16,7 @@ import ProdutoComercialService from './ProdutoComercialService';
 import formatDateToBrazil from 'App/utils/formatDate';
 import formatNumberBrValue from 'App/utils/FormatNumber';
 import AssociadoService from './AssociadoService';
+import CrmEmailContent from 'App/interfaces/CrmEmailContent.interface';
 
 @inject()
 export class MailSenderService {
@@ -290,8 +291,8 @@ export class MailSenderService {
         const dependentsPlan: number[] = Array.from(
           new Set(
             associado.dados
-              .filter(x => x.CD_GRAU_PARENTESCO !== 1)
-              .map(x => x.cd_plano)
+              .filter((x: any) => x.CD_GRAU_PARENTESCO !== 1)
+              .map((x: any) => x.cd_plano)
           )
 
         );
@@ -301,7 +302,7 @@ export class MailSenderService {
           dependentsPlanId.push(result.id_prodcomerc);
         }
         const mensalidade: number = associado.dados
-        .reduce((sum, x) => sum + x.vl_plano, 0);
+        .reduce((sum: any, x: any) => sum + x.vl_plano, 0);
         const vigencia = formatDateToBrazil(titular.dt_assinatura_contrato);
         const planoContent = {
           NOMEPLANO: plano.nm_prodcomerc,
@@ -319,7 +320,7 @@ export class MailSenderService {
       } else {
         throw new Error('não foi possivel enviar o email');
       }
-    } catch(error) {
+    } catch(error: any) {
       throw new Error('não foi possivel enviar o email' + error.message);
     }
   }
@@ -740,8 +741,38 @@ export class MailSenderService {
       throw new ErroAoEnviarEmailException(to);
     }
   }
+  async sendCrmCliente(to: string, contentView: CrmEmailContent) {
+    const htmlFilePath = path.join(__dirname, '..', '..', 'email', 'FaleConosco', 'Abertura', `CRMTemplate.html`);
+    
+    const htmlContent = await fs.promises.readFile(htmlFilePath, 'utf8');
+  
+    let finalHtmlContent = htmlContent;
+  
+    // Substitui os placeholders do HTML com os dados enviados
+    for (const key in contentView) {
+      const value = contentView[key];
+      finalHtmlContent = finalHtmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    }
+  
+  
+    // Criação das opções de e-mail, incluindo o e-mail do usuário
+    const mailOptions = {
+      from: this.fromEmail,
+      bcc: [this.bccEmail, 'odontogroup.2018@gmail.com'],
+      to: [to],  
+      subject: `Protocolo: ${contentView['PROTOCOLO']} - Registro "fale Conosco" Odontogroup`,
+      html: finalHtmlContent,
+      attachments: []
+    };
+  
+    try {
+      await mailerConfig.sendMail(mailOptions);
+    } catch (error) {
+      throw new ErroAoEnviarEmailException('odontogroup.2018@gmail.com');
+    }
+  }
 
-  async getPlano(plano) {
+  async getPlano(plano: string) {
     try {
       const planoData = await this.produtoService.getById(plano);
       if(planoData){
@@ -754,7 +785,7 @@ export class MailSenderService {
       throw Error('Plano Não encontrado.' + plano);
     }
   }
-  async getPlanoS4e(plano) {
+  async getPlanoS4e(plano: string) {
     try {
       const planoData = await this.produtoService.getByS4eId(plano);
       if(planoData){

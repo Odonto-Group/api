@@ -65,7 +65,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
             if (!params.verifica) {
                 try{
                     await this.pagamentoConsignadoService.savePagamento(associado, pagamento, dataAdicionada, transaction);
-                } catch (error) {
+                } catch (error: any) {
                     throw new Error(error.message);
                 }
             }
@@ -112,7 +112,7 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                 funcionarioCadastro: 0,
                 dataCadastroLoteContrato: ""
                 }
-                const parseDate = (dateString) => {
+                const parseDate = (dateString: string) => {
                     const [day, month, year] = dateString.split('/');
                     return new Date(`${year}-${month}-${day}T00:00:00`); // ISO 8601 format
                 };
@@ -249,65 +249,16 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
             }
             try{
                 this.logService.writeLog(params.proposta, 'FluxoPagamento-BodyApi', { local:'individual', type: 'api', data: associadoBody });
-                const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
-                this.logService.writeLog(params.proposta, 'FluxoPagamento-RetornoApi', { local:'individual', type: 'api', data: associadoPJ });
-                if (associadoPJ){
+                //const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
+                //this.logService.writeLog(params.proposta, 'FluxoPagamento-RetornoApi', { local:'individual', type: 'api', data: associadoPJ });
+                if (true/* associadoPJ */){
                     /* if (associadoPJ.codigo == 3){
                         throw new Error(associadoPJ.mensagem);
                     } */
-                    /* const bodyCrm = {
-                        token: TokenV1,
-                        motivoDetalhadoId: 611,
-                        descricao: `Nova Adesão Servidor GDF`,
-                        tipoUsuario: 1,
-                        usuarioId: 7021,
-                        tipoSolicitanteId: 3,
-                        solicitanteId: 7021,
-                        arquivo: "",
-                        extensao: "",
-                        mostraPortal: 1,
-                        situacaoChamado: 1
-                    }
-                    const newCrm = await this.S4EService.includeCrm(bodyCrm);
-                    console.log('Crm criado: ', newCrm);
-                    if (newCrm.codigo == 1) {
-                        const bodyOcorrencia = {
-                            token: TokenV1,
-                            ocorrencia:{
-                                protocolo: newCrm?.dados?.protocolo,
-                                usuario: 7021,
-                                tipoUsuario: 1,
-                                descricao: `Nova Adesão Servidor GDF 
-                                                Dados:
-                                                  nome: ${associado.nm_associado},
-                                                  Cpf: ${associado.nu_cpf},
-                                                  Sexo: ${associado.id_sexo_a == 1 ? "Masculino" : "Feminino"},
-                                                  Matricula: ${associado.nu_MatriculaFuncional},
-                                                  orgao: ${Orgao.tx_NmOrgao},
-                                                  situação: ${associado.cd_situacao},
-                                                  planoId: ${params.idPlanoS4E},
-                                                  valorTotal: ${associado.nu_vl_mensalidade},
-                                                  dependentes: ${dependentes}; 
-                                            `,
-                                status: 1,
-                                arquivo: ""
-                            }
-                            
-                        }
-                        const newOcorrencia = await this.S4EService.includeOcorrencia(bodyOcorrencia);
-                        console.log('nova ocorrencia retorno: ', newOcorrencia);
-                        if (newOcorrencia.codigo == 3){
-                            const mensagem = `erro ao criar novo Ocorrencia no Crm: ${newCrm?.dados?.protocolo} com os dados do Associado, Erro: ${newOcorrencia.mensagem}`;
-                            throw new Error(mensagem);
-                        }
-                        
-                    } else {
-                        throw new Error('erro ao criar novo Crm com os dados do Associado, Erro: ' + newCrm.mensagem);
-                    } */
+                    
                 }
-            } catch(error) {
+            } catch(error: any) {
                 console.log('error message: ', error);
-                //this.logService.writeLog(params.proposta, 'FluxoPagamento', { local:'individual', type: 'erro', data: error.message });
                 throw new Error(error.message);
             }
 
