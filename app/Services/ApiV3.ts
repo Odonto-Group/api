@@ -21,7 +21,7 @@ export default class ApiV3Service {
         console.log('Error getToken ApiV3', response);
         throw new Error('Erro ao solicitar Token Api V3');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Erro ao solicitar Token Api V3: ' , error.message);
       throw new Error('Erro ao solicitar Token Api V3: ' + error.message);
     }
@@ -46,7 +46,7 @@ export default class ApiV3Service {
         } else {
           return false;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log('error message createCarencias: ', error);
         throw new Error('Erro ao criar carencias: ' + error.message);
       }
@@ -72,7 +72,7 @@ export default class ApiV3Service {
         } else {
           throw Error(response.data.Error);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log('error message GetDadosMail: ', error.message);
         throw new ErroInclusaoAssociadoS4EException()
       }
@@ -98,7 +98,7 @@ export default class ApiV3Service {
         } else {
           throw Error(response.data.Error);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log('error message GetAssocsMail: ', error.message);
         throw new Error('Erro ao na chamada Assoc E-mail: ' + error.message);
       }
@@ -125,7 +125,7 @@ export default class ApiV3Service {
 
     return enderecoValidado;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao buscar endereço por CEP:', error.message)
     throw new ErroConsultaCepS4EException()
   }
@@ -139,7 +139,7 @@ async includeEmpresa(body: any) {
     } else {
       return false;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log('error message includeAssociadoPJ: ', error.message);
     throw new ErroInclusaoAssociadoS4EException()
   }
@@ -154,7 +154,7 @@ async includeEmpresa(body: any) {
       } else {
         return false
       }
-    } catch (error) {
+    } catch (error: any) {
       throw new ErroInclusaoAssociadoS4EException()
     }
   }
@@ -167,7 +167,7 @@ async includeEmpresa(body: any) {
       } else {
         return false
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('error message includeAssociadoPJ: ', error.message);
       throw new ErroInclusaoAssociadoS4EException()
     }

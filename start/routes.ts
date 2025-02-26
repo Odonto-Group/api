@@ -90,4 +90,7 @@ Route.group(() => {
   Route.get('/mailAllUsers', 'SendMailController.sendMailAllUsers');
   Route.get('/ErrorMail', 'SendMailController.ErrorMail');
   Route.post('/createCarencia', 'CarenciaController.testeCarencia');
+  Route.get('/reroll', 'fixController.fixlogs');
+  //Route.get('/sendCClink', 'gerarLinkCCController.fixlogs');
+  Route.get('/generateCClink', 'gerarLinkCCController.GenerateLinkIndividual');
 }).prefix('/test');

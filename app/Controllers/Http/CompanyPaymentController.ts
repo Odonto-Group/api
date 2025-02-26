@@ -28,6 +28,7 @@ import RetornoGeracaoPagamentoEmpresa from 'App/interfaces/RetornoGeracaoPagamen
 import CompanyPaymentValidator from 'App/Validators/CompanyPaymentValidator';
 import LogService from 'App/Services/Log/Log';
 import Application from '@ioc:Adonis/Core/Application'
+import FileService from 'App/Services/FileService';
 
 @inject()
 export default class CompanyPaymentController {
@@ -44,7 +45,8 @@ export default class CompanyPaymentController {
     private dependenteFuncionalService: DependenteFuncionalService,
     private fluxoPagamentoBoletoEmpresa: FluxoPagamentoBoletoEmpresa,
     private logService: LogService,
-    private responsavelEmpresaService: ResponsavelEmpresaService
+    private responsavelEmpresaService: ResponsavelEmpresaService,
+    private fileService: FileService
   ) {
     this.logService = new LogService();
   } 
@@ -79,7 +81,7 @@ export default class CompanyPaymentController {
         this.logService.writeLog(Id == 0 ? retorno.numeroProposta : Id , tipoRequisicao, { local:'empresarial', type: 'saida', data: retorno });
         transaction.commit();
 
-        return retorno;
+        return response.json({ data: retorno });
       } catch (error) {
         this.logService.writeLog(Id, tipoRequisicao, { local:'empresarial', type: 'erro', data: error });
         transaction.rollback();
@@ -95,6 +97,7 @@ export default class CompanyPaymentController {
     if(token && !(await this.tokenService.isTokenValido(token))) {
         throw new TokenInvalidoException();
     }
+    //await this.uploadFiles(request);
 
     const tokenParceiro = await this.tokenService.findTokenParceiroEmpresa(token);
 
@@ -120,7 +123,8 @@ export default class CompanyPaymentController {
       throw new DataExpiracaoInvalida();
     }
 
-    let valorMensalidade = formaPagamento.vl_valor;
+    //let valorMensalidade = formaPagamento.vl_valor;
+    let valorMensalidade = 2.5;
 
     let quantidadeVidas = this.calcularQuantidadeVidas(params)
 
@@ -217,6 +221,7 @@ export default class CompanyPaymentController {
           throw new Error(file.errors.toString());
         }
         await file.move(Application.tmpPath('uploads'))
+        //await this.fileService.salvarArquivoEmpresaDependente()
       }
     }
 

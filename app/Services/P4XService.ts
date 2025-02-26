@@ -1,7 +1,7 @@
 import { default as axios } from 'axios';
 import { inject } from '@adonisjs/core/build/standalone';
 import Env from '@ioc:Adonis/Core/Env'
-
+import https from 'https';
 @inject()
 export default class P4XService {
     private usuario = Env.get('USUARIO_P4X')
@@ -69,8 +69,33 @@ export default class P4XService {
             //console.log('deu erro catch:', erro);            
             return false
         }
-        
     }
+    async geraLinkP4XCartaoCredito(body: any) {
+        try {
+            const token = await this.geraToken();
+            const urlcc = process.env.URL_P4X_LINK_CARTAO
+
+            const linkPagamentoCartao = `${urlcc}`
+            
+            const response = await axios.post(linkPagamentoCartao, body, {
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                },
+                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            });
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                console.log('erro response: ', response);
+                return false;
+            }
+        } catch (erro) {
+            console.log('deu erro catch:', erro);            
+            return false
+        }
+    }
+
     async cancelaPagamentoP4XCartaoCredito(body: any) {
         try {
             const token = await this.geraToken();

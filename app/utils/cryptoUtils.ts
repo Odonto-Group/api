@@ -1,0 +1,14 @@
+const CryptoJS = require('crypto-js');
+
+const decryptData = (encryptedData: string): any => {
+  const passphrase = process.env.ENCRYPTION_KEY;
+  const bytes = CryptoJS.AES.decrypt(encryptedData, passphrase);
+  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+};
+
+const encryptData = (data: string): string => {
+  const passphrase = process.env.REACT_APP_ENCRYPTION_KEY;
+  return CryptoJS.AES.encrypt(data, passphrase).toString();
+};
+
+export { encryptData, decryptData };

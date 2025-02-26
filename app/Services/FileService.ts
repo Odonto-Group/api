@@ -67,6 +67,19 @@ export default class FileService {
 
     return url;
   }
+  async salvarArquivoEmpresa(idDependente: number, arquivo: any, idAssociado: number) {
+    const nomeArquivo = this.nomeArquivoEmpresaDependente.replace("idDependente", idDependente)
+    const caminhoArquivo = this.linkArquivoEmpresaDependente.replace("idAssociado", idAssociado)
+
+    // garantia de que o diretoriio de destino exista
+    await fsExtra.ensureDir(caminhoArquivo);
+
+    const url = path.join(caminhoArquivo, nomeArquivo);
+
+    await fsExtra.move(arquivo.path, url);
+
+    return url;
+  }
 
 
 }

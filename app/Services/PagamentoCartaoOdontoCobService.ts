@@ -29,6 +29,25 @@ export default class PagamentoCartaoOdontoCobService {
         
         await pagamento.useTransaction(transaction).save();
     }
+    async savePagamentoLink(associado: TbAssociado, pagamentoGerado: any, dataVencimento: string, linkPagamento: string) {
+        const pagamento = new TbPagamentoCartaoOdontoCob
+        pagamento.cd_associado_pco = associado.id_associado
+        pagamento.tx_token = pagamentoGerado.id
+        pagamento.vl_valor = associado.nu_vl_mensalidade
+        pagamento.dt_cadastro = DateTime.now().toString()
+        pagamento.dt_vencimento = dataVencimento
+        pagamento.nr_proposta = pagamentoGerado.compraId
+        pagamento.dt_pagamento = ''
+        pagamento.pagamentoId =  ''
+        pagamento.nsu = '0'
+        pagamento.autorizacaoCodigo = '0'
+        pagamento.cartaoId = pagamentoGerado.cartaoId
+        pagamento.blAtivo = 1
+        pagamento.linkPgto = linkPagamento
+
+        
+        await pagamento.save();
+    }
 
     async savePagamentoEfetuadoOdontoCob(associado: TbAssociado, params: any, transaction: TransactionClientContract) {
         let pagamentoCartaoOdontoCob = await this.findByAssociado(associado.id_associado);
@@ -52,6 +71,12 @@ export default class PagamentoCartaoOdontoCobService {
         .query()
         .where('cd_associado_pco', associado.id_associado)
         .useTransaction(transaction)
+        .delete()
+    }
+    async deletePagamentoLink(associado: TbAssociado) {
+        await TbPagamentoCartaoOdontoCob
+        .query()
+        .where('cd_associado_pco', associado.id_associado)
         .delete()
     }
 }

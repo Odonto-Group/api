@@ -19,6 +19,7 @@ import TokenInvalidoException from 'App/Exceptions/TokenInvalidoException';
 import UfService from 'App/Services/UfService';
 import UfInvalidoException from 'App/Exceptions/UfInvalidoException';
 import VendedorNaoEncontradoException from 'App/Exceptions/VendedorNaoEncontradoException';
+//import { encryptData } from 'App/utils/cryptoUtils';
 
 @inject()
 export default class CompanyPlanController {
@@ -41,9 +42,10 @@ export default class CompanyPlanController {
     }
 
     let plan;
-
+    console.log('token: ', token);
     if (token) {
       plan = await this.planService.getPlanWithTokenCompany(state, token, [Category.PME_2_29_VIDAS, Category.PME_30_199_VIDAS])
+      console.log('plan: ', plan);
     } else {
       plan = await this.planService.getBasicPlanCompany(state, [Category.PME_2_29_VIDAS, Category.PME_30_199_VIDAS])
     }
@@ -53,7 +55,7 @@ export default class CompanyPlanController {
     }
   }
   
-  async getPlanDetails({ request }: HttpContextContract) {
+  async getPlanDetails({ request, response }: HttpContextContract) {
     const token = request.params().token
 
     await this.validaToken(token)
@@ -223,7 +225,7 @@ export default class CompanyPlanController {
 
     let dataVencimento = this.criarDataVencimento()
 
-    return {
+    const responseData = {
       type: 'bussiness',
       produtoComercial: produtoComercial,
       vendedor: tokenBanco?.vendedor?.tx_nome,
@@ -252,6 +254,41 @@ export default class CompanyPlanController {
       bancos: listaBancos,
       carencias: carencias
     };
+
+    // Criptografando a resposta
+    //const encryptedResponse = encryptData(JSON.stringify(responseData));
+
+    // Enviando a resposta criptografada para a aplicação
+    //return response.json({data: encryptedResponse });
+    return response.json({
+      type: 'bussiness',
+      produtoComercial: produtoComercial,
+      vendedor: tokenBanco?.vendedor?.tx_nome,
+      corretora: tokenBanco.corretora,
+      parceiro: tokenBanco.parceiro,
+      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoEmpresa,
+      listaFormaPagamentos: formasPagamento,
+      equipes: equipe,
+      angariadores: angariador,
+      promotores: promotor,
+      agencias: agencia,
+      categoria: tokenBanco.parceiro.produtoComercial.categoria,
+      listaUFS: ufs,
+      vendedorPN: tokenBanco?.vendedor?.tx_nome?.split(" ")[0],
+      listaOrgaosExpedidor: listaOrgaoExpedidor,
+      listaSexos: listaSexos,
+      listaEstadosCivil: listaEstadoCivil,
+      orgaos: orgaos,
+      perfis: perfils,
+      fontePagamentos: fontePagadora,
+      listaParentescos: listaParentesco,
+      token: token,
+      listaEspec: liste, 
+      arrGeral: arrGeral,
+      vencimentoBoletos: dataVencimento,
+      bancos: listaBancos,
+      carencias: carencias
+    });
   }
 
   criarDataVencimento() {

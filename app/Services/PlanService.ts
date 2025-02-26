@@ -1,5 +1,6 @@
 import PlanoNaoEncontrado from 'App/Exceptions/PlanoNaoEncontrado';
 import TbParceiro from 'App/Models/TbParceiro';
+import TbProdutoComercial from 'App/Models/TbProdutoComercial';
 import TbTokenIdParc from 'App/Models/TbTokenIdParc';
 
 
@@ -59,6 +60,11 @@ export default class PlanService {
     } */
     return result;
   }
+
+  async getPlanById(id: number): Promise<TbProdutoComercial> {
+    return await TbProdutoComercial.findOrFail(id);
+  }
+
   async getPlansbys4eId(vendedorId: number, s4eToken:number): Promise<any> {
     const result = await TbTokenIdParc
     .query()
@@ -129,6 +135,8 @@ export default class PlanService {
   }
 
   async getPlanWithTokenCompany(sigla: string, token: string, idsCategoria: number[]): Promise<TbParceiro> {
+    console.log('sigla: ', sigla);
+    console.log('idsCategoria: ', idsCategoria);
     const parceiro = await TbParceiro
     .query()
     .preload('produtoComercial', (query) => {
@@ -145,12 +153,12 @@ export default class PlanService {
     .where('tb_ProdutoComercial.nu_PublicaInt', 1)
     .where('tb_ProdutoComercial.en_status', 1)
     .where('tb_UF.sigla', sigla)
-    .whereIn('tb_categoria.id_categoria', idsCategoria)
+    //.whereIn('tb_categoria.id_categoria', idsCategoria)
     .where('tb_tokenidparc.cd_Codtokenidparc', token)
     .orderBy('tb_formaspgtoCol.vl_valor', 'asc')
     .distinct()
     .first();
-
+    
     if (!parceiro?.produtoComercial.formasPagamentoEmpresa[0].vl_valor) {
       throw new PlanoNaoEncontrado();
     }

@@ -81,7 +81,6 @@ export default class CompanyPaymentValidator {
             nome: schema.string(),
             dataNascimento: schema.string(),
             email: schema.string(),
-            documentoVinculo: schema.string(),
           })
         ),
       })

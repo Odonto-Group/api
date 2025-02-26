@@ -20,7 +20,7 @@ export default class OrgaoController {
   async getOrgaobyId({ request, response }: HttpContextContract) {
     const params = request.all();
     const data = await this.orgaoService.getOrgaoWithCodOrgao(params.id);
-    
+    console.log('data: ', data);
     return response.json(data.$original);
   }
 
