@@ -249,12 +249,12 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
             }
             try{
                 this.logService.writeLog(params.proposta, 'FluxoPagamento-BodyApi', { local:'individual', type: 'api', data: associadoBody });
-                //const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
-                //this.logService.writeLog(params.proposta, 'FluxoPagamento-RetornoApi', { local:'individual', type: 'api', data: associadoPJ });
-                if (true/* associadoPJ */){
-                    /* if (associadoPJ.codigo == 3){
+                const associadoPJ = await this.S4EService.includeAssociadoPJ(associadoBody);
+                this.logService.writeLog(params.proposta, 'FluxoPagamento-RetornoApi', { local:'individual', type: 'api', data: associadoPJ });
+                if ( associadoPJ ){
+                    if (associadoPJ.codigo == 3){
                         throw new Error(associadoPJ.mensagem);
-                    } */
+                    }
                     
                 }
             } catch(error: any) {
