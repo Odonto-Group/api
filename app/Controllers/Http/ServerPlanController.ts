@@ -269,37 +269,7 @@ export default class ServerPlanController {
 
      // Enviando a resposta criptografada para a aplicação
     //return response.json({ data: encryptedResponse});
-    return response.json({
-      type: ProdGdf.includes(produtoComercial.id_prodcomerc) ? 'Servidor GDF'  : 'Servidor',
-      produtoComercial: produtoComercial,
-      vendedor: tokenBanco?.vendedor?.tx_nome,
-      vendedorId: tokenBanco?.vendedor?.id_vendedor,
-      vendedorS4eId: tokenBanco?.vendedor?.nu_cdVendedorS4E,
-      corretora: tokenBanco.corretora,
-      parceiro: tokenBanco.parceiro,
-      formasPagamento: tokenBanco.parceiro.produtoComercial.formasPagamentoIndividual,
-      listaFormaPagamentos: formasPagamento,
-      equipes: equipe,
-      angariadores: angariador,
-      promotores: promotor,
-      agencias: agencia,
-      categoria: tokenBanco.parceiro.produtoComercial.categoria,
-      listaUFS: ufs,
-      vendedorPN: tokenBanco?.vendedor?.tx_nome?.split(" ")[0],
-      listaOrgaosExpedidor: listaOrgaoExpedidor,
-      listaSexos: listaSexos,
-      listaEstadosCivil: listaEstadoCivil,
-      orgaos: orgaos,
-      perfis: perfils,
-      fontePagamentos: fontePagadora,
-      listaParentescos: listaParentesco,
-      token: token,
-      listaEspec: liste, 
-      arrGeral: arrGeral,
-      vencimentoBoletos: dataVencimento,
-      bancos: listaBancos,
-      carencias: carencias
-    });
+    return response.json(responseData);
   }
 
   criarDataVencimento() {
