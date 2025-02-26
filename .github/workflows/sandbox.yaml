@@ -31,7 +31,7 @@ jobs:
       - name: Build artifacts
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - run: yarn install --non-interactive
       - run: node ace build --production --ignore-ts-errors
       - run: |
@@ -41,6 +41,7 @@ jobs:
           cd ..
           # NPM não efetua copia do diretorio email para build
           tar r -f develop-artifact.tar email/
+          tar r -f develop-artifact.tar .env.sand
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
