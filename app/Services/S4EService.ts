@@ -64,12 +64,12 @@ export default class S4EService {
 
     const endereco = response.data.dados;
 
-    const enderecoValidado =  await validator.validate({
+    /* const enderecoValidado =  await validator.validate({
       schema: new EnderecoValidator().schema,
       data: endereco
-    });
+    }); */
 
-    return enderecoValidado;
+    return endereco;
 
   } catch (error: any) {
     console.error('Erro ao buscar endereço por CEP:', error.message)
