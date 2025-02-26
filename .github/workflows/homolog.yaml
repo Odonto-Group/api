@@ -41,6 +41,7 @@ jobs:
           cd ..
           # NPM não efetua copia do diretorio email para build
           tar r -f develop-artifact.tar email/
+          tar r -f develop-artifact.tar .env.hom
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
