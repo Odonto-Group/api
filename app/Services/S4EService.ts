@@ -72,8 +72,8 @@ export default class S4EService {
     return endereco;
 
   } catch (error: any) {
-    console.error('Erro ao buscar endereço por CEP:', error.message)
-    throw new ErroConsultaCepS4EException()
+    console.error('Erro ao buscar endereço por CEP:', error.message);
+    throw new Error('Erro ao buscar endereço por CEP:' + error.message);
   }
 }
   async getAssociadoById(cod: number) {
