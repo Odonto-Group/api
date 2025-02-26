@@ -88,8 +88,8 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
             const centroCusto = await this.getCentroCusto(endereco.IdUf);
             //console.log('chegou aqui: ', produtoComercial);
             console.log('formas de pagamento: ', produtoComercial.formasPagamentoEmpresa[0].vl_valor);
-            //const mensalidade = Number(produtoComercial.formasPagamentoEmpresa[0].vl_valor);
-            const mensalidade = 2.5;
+            const mensalidade = Number(produtoComercial.formasPagamentoEmpresa[0].vl_valor);
+            //const mensalidade = 2.5;
 
             const mesAno = await this.formatarMesAno(empresa.DT_CADASTRO);
             const celular = empresa.nu_dddcel + empresa.nu_celular;
@@ -194,7 +194,7 @@ export default class FluxoPagamentoBoletoEmpresa implements FluxoPagamentoStrate
 
 
 
-            } catch(error) {
+            } catch(error: any) {
                 throw Error(error.message)
             }   
         } else {

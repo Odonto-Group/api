@@ -123,8 +123,7 @@ export default class CompanyPaymentController {
       throw new DataExpiracaoInvalida();
     }
 
-    //let valorMensalidade = formaPagamento.vl_valor;
-    let valorMensalidade = 2.5;
+    let valorMensalidade = formaPagamento.vl_valor;
 
     let quantidadeVidas = this.calcularQuantidadeVidas(params)
 
