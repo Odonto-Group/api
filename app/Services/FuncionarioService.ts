@@ -54,4 +54,10 @@ export default class FuncionarioService {
             .useTransaction(transaction).delete()
     }
 
+    async buscaFuncionarioByIdEmpresa(IdEmpresa: number): Promise<TbFuncionario[]>{
+        return await TbFuncionario.query()
+                .where('id_cdempresa_f', IdEmpresa)
+                .preload('dependentes');
+    }
+
 }

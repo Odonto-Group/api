@@ -47,7 +47,7 @@ export default class ApiV3Service {
           return false;
         }
       } catch (error: any) {
-        console.log('error message createCarencias: ', error);
+        //console.log('error message createCarencias: ', error);
         throw new Error('Erro ao criar carencias: ' + error.message);
       }
     } else {

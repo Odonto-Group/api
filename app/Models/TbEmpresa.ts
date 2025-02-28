@@ -1,5 +1,6 @@
 import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import TbProdutoComercial from './TbProdutoComercial'
+import TbVendedor from './TbVendedor'
 
 export default class TbEmpresa extends BaseModel {
   public static table = 'tb_empresa'
@@ -112,5 +113,10 @@ export default class TbEmpresa extends BaseModel {
   @belongsTo(() => TbProdutoComercial, {
     foreignKey: "id_prodcomerc_e"
   })
-  public produtoComercial: BelongsTo<typeof TbProdutoComercial>
+  public produtoComercial!: BelongsTo<typeof TbProdutoComercial>
+
+  @belongsTo(() => TbVendedor, {
+    foreignKey: 'id_vendedor_e',
+  })
+  public vendedor!: BelongsTo<typeof TbVendedor>;
 }

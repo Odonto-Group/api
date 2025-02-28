@@ -17,9 +17,17 @@ export default class geraCrmController {
     const data = await request.validate(CreateCrmValidator);
 
     const descricao = 'Solicitação Fale Conosco Web Site';
-    const descricaoOcorrencia = `usdhfhas ${data.motivoDetalhado}`; 
+    const descricaoOcorrencia = `
+                                    Cliente: ${data.nome},
+                                    email: ${data.email},
+                                    telefone: ${data.telefone}
+
+                                    comentário
+
+                                    ${data.descricaoOcorrencia}
+                                  `; 
     const motivoDetalhado = data.motivoDetalhado;
-    const usuario = data.usuario;
+    const usuario = 7021;
     const solicitante = data.solicitante;
 
     const tipoSolicitante = 2;

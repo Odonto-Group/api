@@ -72,6 +72,11 @@ Route.group(() => {
 }).prefix('/include')
 
 Route.group(() => {
+  //Route.post('/servidor/dependent', 'DependentController.index')
+  Route.get('/company', 'CompanyPaymentController.exportCompany')
+}).prefix('/register')
+
+Route.group(() => {
   Route.post('/boleto', 'WebhookController.index')
   Route.post('/cartao', 'WebhookController.creditCardPayment')
   Route.post('/pix', 'WebhookController.pixPayment')
@@ -84,6 +89,10 @@ Route.group(() => {
 Route.group(() => {
   Route.post('/', 'OuvidoriaController.receiveForm');
 }).prefix('/ouvidoria');
+
+Route.group(() => {
+  Route.post('/', 'geraCrmController.index');
+}).prefix('/faleConosco');
 Route.group(() => {
   Route.get('/mailGdf', 'SendMailController.sendMailGdfTest');
   Route.get('/mailUser', 'SendMailController.sendMailUser');

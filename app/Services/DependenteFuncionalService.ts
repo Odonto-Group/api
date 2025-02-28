@@ -25,4 +25,9 @@ export default class DependenteFuncionalService {
 
         dependente.useTransaction(transaction).save()
     }
+
+    async buscaDependenteFuncionalByIdFuncionario (id: number): Promise<TbDependenteFuncional[] | null>{
+        return await TbDependenteFuncional.query()
+                     .where('id_funcionario_df', id) || null;
+    }
 }

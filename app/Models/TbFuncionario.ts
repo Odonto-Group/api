@@ -87,4 +87,9 @@ export default class TbFuncionario extends BaseModel {
 
   @column({columnName: "tx_EndCidade"})
   public tx_EndCidade: string;
+
+  @hasMany(() => TbDependenteFuncional, {
+    foreignKey: 'id_funcionario_df',
+  })
+  public dependentes!: HasMany<typeof TbDependenteFuncional>;
 }

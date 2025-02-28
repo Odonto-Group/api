@@ -96,6 +96,7 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
         console.log('tipoPessoa', tipoPessoa.bodyPagamento);
         
         const payment = await this.p4XService.geraPagamentoP4XBoleto(tipoPessoa.bodyPagamento)
+        
 
 
         let boletoUnico = 0;
@@ -116,11 +117,18 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
                 copiaCola: pagamento.pix ? pagamento.pix.copiaCola : null,
                 qrCode: pagamento.pix ? pagamento.pix.base64: null
             } as Pix
-
+            /* const planoContent = { 
+                NOMEPLANO: 'OdontoKids',
+                DATAVENCIMENTO: dataPrimeiroVencimento.toFormat('dd/MM/yyyy'),
+                NOMECLIENTE: associado.nm_associado,    
+                LINKPAGAMENTO: linkPagamento,
+                VALORPLANO: formatNumberBrValue(associado.nu_vl_mensalidade),
+                METODOPAGAMENTO: FormaPagamento.PRIMEIRA_NO_BOLETO
+            } as AdesaoEmailContent; */
             retorno.pix = pix
             retorno.linkPagamento = linkPagamento;
-            retorno.formaPagamento = FormaPagamento.BOLETO;
-    
+            retorno.formaPagamento = FormaPagamento.PRIMEIRA_NO_BOLETO;
+            //await this.mailSenderService.sendEmailAdesaoBoleto(this.emailDefault || responsavelFinanceiro.ds_emailRespFin, 'Bem-vindo à OdontoGroup.', planoContent);
         } else {
             throw new NaoFoiPossivelCriarPagamento();
         }
@@ -165,7 +173,8 @@ export default class FluxoPagamentoBoletoIndividual implements FluxoPagamentoStr
             nossoNumero: nossoNumero,
             convenioId: '618aadf0-b8d8-4aeb-aecf-7fcd0ae747cf',
             incluirPix: true,
-
+            webhookUrl: "http://webapp222104.ip-45-33-75-58.cloudezapp.io/api/baixaPagamentoBoleto",
+            webhookUrlPix: "http://webapp222104.ip-45-33-75-58.cloudezapp.io/api/baixaPagamentoBoleto",
             };
 
         let tipoPessoa = {} as TipoPessoaBoletoIndividual

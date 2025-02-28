@@ -242,7 +242,7 @@ export default class FluxoPagamentoCartaoIndividual implements FluxoPagamentoStr
           }
     }
 
-    getBandeiraCartao(number) {
+    getBandeiraCartao(number: string) {
         const cardTypes = creditCardType(number);
         
         if (cardTypes && cardTypes.length > 0) {

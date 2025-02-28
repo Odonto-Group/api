@@ -58,7 +58,7 @@ export default class CompanyPaymentValidator {
         dddCelular: schema.string(),
         celular: schema.string(),
         email: schema.string(),
-        matriculaFuncional: schema.string(),
+        matriculaFuncional: schema.string.optional(),
         idUf: schema.number(),
         cep: schema.string(),
         logradouro: schema.string(),

@@ -1,12 +1,12 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
-import { schema, rules, type CustomMessages } from '@ioc:Adonis/Core/Validator';
+import { schema,  type CustomMessages } from '@ioc:Adonis/Core/Validator';
 
 export default class CreateCrmValidator {
   constructor(protected ctx: HttpContextContract) { }
   public schema = schema.create({
     nome: schema.string(),
     email: schema.string(),
-    usuario: schema.number(),
+    telefone:schema.string(),
     motivoDetalhado: schema.number(),
     subject: schema.string(),
     solicitante: schema.number(),

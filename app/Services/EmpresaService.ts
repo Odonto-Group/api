@@ -48,11 +48,26 @@ export default class EmpresaService {
             .where('nu_cnpj', cnpj)
             .first() || new TbEmpresa;
     }
+    async buscarEmpresaById(id: number): Promise<TbEmpresa> {
+        return await TbEmpresa.query()
+            .where('id_cdempresa', id)
+            .preload('vendedor')
+            .preload('produtoComercial', (query) => {
+                query.preload('formasPagamentoEmpresa', (query => {
+                  query.preload('meioPagamentoEmpresa')
+                }))})
+            .first() || new TbEmpresa;
+    }
 
     async ativarPlanoEmpresa(empresa: TbEmpresa, transaction: TransactionClientContract, cdStatus: number) {
         await TbEmpresa.query()
           .where("id_cdempresa", empresa.id_cdempresa)
           .useTransaction(transaction)
+          .update({cd_status: cdStatus})
+      }
+    async ativarPlanoEmpresaFull(empresa: TbEmpresa, cdStatus: number) {
+        await TbEmpresa.query()
+          .where("id_cdempresa", empresa.id_cdempresa)
           .update({cd_status: cdStatus})
       }
 

@@ -89,6 +89,12 @@ export default class CompanyPaymentController {
       }
     })
   }
+  async exportCompany ({ request, response }: HttpContextContract){
+    const params = request.all();
+    console.log('params: ', params);
+    await this.fluxoPagamentoBoletoEmpresa.insertS4eCompany(params.cd_empresa);
+    
+  }
 
   async iniciarFluxoPagamentoPlanoEmpresa(request: RequestContract, transaction: TransactionClientContract) {
     const params = await request.validate(CompanyPaymentValidator)
@@ -149,7 +155,7 @@ export default class CompanyPaymentController {
   }
 
   private async criarRetornoPagamento(returnPayment: RetornoGeracaoPagamentoEmpresa, empresa: TbEmpresa, quantidadeVidas: number, valorContrato: number, nomePlano: string, nomeVendedor: string, dataPrimeiroVencimento: DateTime) {
-    console.log('chegou aqui');
+    //console.log('chegou aqui');
     returnPayment.idEmpresa = empresa.id_cdempresa
     returnPayment.dataCadastro = empresa.DT_CADASTRO
     returnPayment.email = empresa.ds_email
@@ -164,7 +170,7 @@ export default class CompanyPaymentController {
     returnPayment.dataVencimento = dataPrimeiroVencimento.toString()
     returnPayment.ddd = empresa.nu_dddcel
     returnPayment.pagamentoStatus = empresa.cd_status
-    console.log('enviou: ', returnPayment);
+    //console.log('enviou: ', returnPayment);
     return returnPayment;
   }
 

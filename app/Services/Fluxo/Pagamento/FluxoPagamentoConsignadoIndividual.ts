@@ -131,8 +131,10 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                         if (plano != null) {
                           planoId = plano.id_ProdutoS4E_c;
                         }
+                        console.log('item: ', item);
                         valor = item.valor_plano;
                       } else {
+                        console.log('idPlanoS4E: ', idPlanoS4E)
                         if (idPlanoS4E == 124) {
                             if (!produtosDependentes.includes(994)) {
                                 produtosDependentes.push(994);
@@ -141,12 +143,14 @@ export default class FluxoPagamentoConsignadoIndividual implements FluxoPagament
                             valor = "22,90";
                         } else{
                             planoId = idPlanoS4E;
+                            console.log('valor: ', associado.nu_vl_mensalidade)
                             valor = String(associado.nu_vl_mensalidade / params.qtdVidas).replace('.', ',');
                         }
                       }
                     if (idPlanoS4E == 124 && !produtosDependentes.includes(item.plano)){
                         produtosDependentes.push(item.plano);
                     }
+                    console.log('valor: ', valor);
                     const nascimento = parseDate(item.dataNascimento);
                     const dependent = {
                         nome: item.nome,
