@@ -39,7 +39,7 @@ const corsConfig: CorsConfig = {
   |                     one of the above values.
   |
   */
-  origin: 'https://dev.odontogroup.com.br', // Permite apenas o domínio dev.odontogroup.com.br
+  origin: 'https://dev.odontogroup.com.br/faleconosco', // Permite apenas o domínio dev.odontogroup.com.br
   
   /*
   |--------------------------------------------------------------------------
