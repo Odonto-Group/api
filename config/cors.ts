@@ -16,14 +16,11 @@ const corsConfig: CorsConfig = {
   | A boolean to enable or disable CORS integration from your AdonisJs
   | application.
   |
-  | Setting the value to `true` will enable the CORS for all HTTP request. However,
-  | you can define a function to enable/disable it on per request basis as well.
+  | Setting the value to `true` will enable the CORS for all HTTP requests. However,
+  | you can define a function to enable/disable it on a per-request basis as well.
   |
   */
   enabled: true,
-
-  // You can also use a function that return true or false.
-  // enabled: (request) => request.url().startsWith('/api')
 
   /*
   |--------------------------------------------------------------------------
@@ -32,8 +29,6 @@ const corsConfig: CorsConfig = {
   |
   | Set a list of origins to be allowed for `Access-Control-Allow-Origin`.
   | The value can be one of the following:
-  |
-  | https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
   |
   | Boolean (true)    - Allow current request origin.
   | Boolean (false)   - Disallow all.
@@ -44,7 +39,7 @@ const corsConfig: CorsConfig = {
   |                     one of the above values.
   |
   */
-  origin: '*',
+  origin: 'https://dev.odontogroup.com.br', // Permite apenas o domínio dev.odontogroup.com.br
   
   /*
   |--------------------------------------------------------------------------
@@ -66,8 +61,6 @@ const corsConfig: CorsConfig = {
   | List of headers to be allowed for `Access-Control-Allow-Headers` header.
   | The value can be one of the following:
   |
-  | https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Request-Headers
-  |
   | Boolean(true)     - Allow all headers mentioned in `Access-Control-Request-Headers`.
   | Boolean(false)    - Disallow all headers.
   | String            - Comma separated list of allowed headers.
@@ -83,7 +76,7 @@ const corsConfig: CorsConfig = {
   |--------------------------------------------------------------------------
   |
   | A list of headers to be exposed by setting `Access-Control-Expose-Headers`.
-  | header. By default following 6 simple response headers are exposed.
+  | By default following 6 simple response headers are exposed:
   |
   | Cache-Control
   | Content-Language
@@ -112,7 +105,7 @@ const corsConfig: CorsConfig = {
   |--------------------------------------------------------------------------
   |
   | Toggle `Access-Control-Allow-Credentials` header. If value is set to `true`,
-  | then header will be set, otherwise not.
+  | then the header will be set, otherwise not.
   |
   | https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
   |
