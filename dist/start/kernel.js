@@ -1,4 +1,5 @@
 "use strict";
+
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -26,17 +27,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+
 const Server_1 = __importDefault(global[Symbol.for('ioc.use')]("Adonis/Core/Server"));
 
-// Registro do middleware BodyParser
+// Registro do middleware BodyParser, CORS e Autenticação de forma unificada
 Server_1.default.middleware.register([
-  () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Core/BodyParser"))),
-  
-  // Registro do middleware CORS
-  () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Middleware/Cors")))
+    // BodyParser
+    () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Core/BodyParser"))),
+    
+    // Middleware CORS
+    () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Middleware/Cors"))),
+
+    // Middleware Auth
+    () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]('App/Middleware/Auth')))
 ]);
 
-// Registro do middleware de autenticação
+// Registro de middlewares nomeados (autenticação)
 Server_1.default.middleware.registerNamed({
     auth: () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]('App/Middleware/Auth')))
 });
