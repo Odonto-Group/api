@@ -29,9 +29,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Server_1 = __importDefault(global[Symbol.for('ioc.use')]("Adonis/Core/Server"));
 
 // Registro do middleware BodyParser
-Server_1.default.middleware.register([() => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Core/BodyParser")))]);
-// Registro do middleware CORS (adicionei a linha abaixo)
-Server_1.default.middleware.register([() => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Middleware/Cors")))]);
+Server_1.default.middleware.register([
+  () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Core/BodyParser"))),
+  
+  // Registro do middleware CORS
+  () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]("Adonis/Middleware/Cors")))
+]);
+
 // Registro do middleware de autenticação
 Server_1.default.middleware.registerNamed({
     auth: () => Promise.resolve().then(() => __importStar(global[Symbol.for('ioc.use')]('App/Middleware/Auth')))
