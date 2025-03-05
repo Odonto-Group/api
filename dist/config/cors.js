@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const corsConfig = {
     enabled: true,
-    origin: '*',
+    origin: 'https://dev.odontogroup.com.br',
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
     headers: true,
     exposeHeaders: [
