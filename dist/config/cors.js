@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const corsConfig = {
     enabled: true,
-    origin: '*',
+    origin: 'https://dev.odontogroup.com.br',
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
     headers: true,
     exposeHeaders: [
@@ -13,8 +11,6 @@ const corsConfig = {
         'last-modified',
         'pragma',
     ],
-    credentials: true,
+    credentials: false,  // Teste com 'false'
     maxAge: 90,
 };
-exports.default = corsConfig;
-//# sourceMappingURL=cors.js.map
